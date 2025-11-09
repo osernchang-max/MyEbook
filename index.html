@@ -100,10 +100,10 @@
         </div>
         
         <div id="editor-wrapper">
-            <div id="editor" contenteditable="true">
-                Loading project data from Firestore...
+            <div id="editor" contenteditable="true"><canvas id="drawingCanvas"></canvas>
+                Loading project data from Firestore...            
             </div>
-            <canvas id="drawingCanvas"></canvas>
+
         </div>
     </div>
     
@@ -125,7 +125,7 @@
         <input type="text" id="fname" value="default_file.json">
         <div id="pagelist"></div>
         <div id="Navi"></div>
-        <input type="text" id="temp" value="" >
+        <textarea  id="temp"   ></textarea>
         <img id="coverpic" src="placeholder.png">
          
     </div>
@@ -174,15 +174,15 @@
 
 
 <span  id="pentool" onclick="dropmenu();" style="position:relative;width:40px;font-size:20px" class="mx-2 text-gray-400 rounded-lg hover:bg-purple-600  shadow-md">✒️
-            <span  id="pentool_menu" style="display:none;position:absolute;top:-60px;left:-0px;z-index:30;width:900px;background:white;border-radius:16px;border:2px solid gray;padding:4px"         class="mx-2 text-gray-400" > 
-            <button onclick="setDrawingTool(null);document.getElementById('pentool_menu').style.display='none';"  title="選取移動-Select/Move" class="px-4 py-2  text-white font-semibold rounded-lg hover:bg-gray-700 transition duration-150 shadow-md" id="selectMoveBtn">🖱️</button>
+            <span  id="pentool_menu" style="display:;position:absolute;top:-60px;left:-0px;z-index:30;width:900px;background:white;border-radius:16px;border:2px solid gray;padding:4px"         class="mx-2 text-gray-400" > 
+            <button onclick="window.setDrawingTool(null);document.getElementById('pentool_menu').style.display='none';"  title="選取移動-Select/Move" class="px-4 py-2  text-white font-semibold rounded-lg hover:bg-gray-700 transition duration-150 shadow-md" id="selectMoveBtn">🖱️</button>
             
-            <button onclick="setDrawingTool('pen')" title="畫筆-Pen" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">🖌️</button>
-            <button onclick="setDrawingTool('eraser')"  title="擦布-Eraser" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-150 shadow-md">🧽</button>
-            <button onclick="setDrawingTool('line')"  title="畫線-Line" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md"><b>/</b></button>
-<button onclick="setDrawingTool('arrow')" title="箭頭線-Arrow"  class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md"><b>↗</b></button>
-            <button onclick="setDrawingTool('rect')"  title="方塊-Rectangle" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">🔲</button>
-            <button onclick="setDrawingTool('circle')"  title="圓圈-Circle" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md"><b>⭕</b></button>
+            <button onclick="window.setDrawingTool('pen')" title="畫筆-Pen" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">🖌️</button>
+            <button onclick="window.setDrawingTool('eraser')"  title="擦布-Eraser" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-150 shadow-md">🧽</button>
+            <button onclick="window.setDrawingTool('line')"  title="畫線-Line" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md"><b>/</b></button>
+<button onclick="window.setDrawingTool('arrow')" title="箭頭線-Arrow"  class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md"><b>↗</b></button>
+            <button onclick="window.setDrawingTool('rect')"  title="方塊-Rectangle" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">🔲</button>
+            <button onclick="window.setDrawingTool('circle')"  title="圓圈-Circle" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md"><b>⭕</b></button>
 
             
  框線 <input type="color" id="penColor" value="#000000" title="框線顏色-Stroke Color" class="h-7 w-10 border-none rounded-lg p-0">  
@@ -192,7 +192,7 @@
 
             <label for="lineWidth" class="text-sm text-gray-600 ml-2">筆寬:</label>
             <input type="range" id="lineWidth" min="1" max="20" value="3" title="粗細-Line Width" class="w-20">
-            <button onclick="clearCanvas()"  title="清除-Clear" class="px-4 py-2 bg-gray-300 text-gray-800 font-xlargebold rounded-lg hover:bg-gray-400 transition duration-150 shadow-md">🗑</button>
+            <button onclick="VclearCanvas()"  title="清除-Clear" class="px-4 py-2 bg-gray-300 text-gray-800 font-xlargebold rounded-lg hover:bg-gray-400 transition duration-150 shadow-md">🗑</button>
           </span ><!--pentool_menu-->
 </span>  <!--pentool-->
 
@@ -443,7 +443,7 @@
 
   <button onclick="FullScreen()"><font size="6" title=="全螢幕">💻</font></button>
 		<button onclick="window.PicNav()">	<font size="6" title=="閃示卡" >🖼️</font></button>       <button onclick="window.textSlider()"><font size="6" title=="動畫" >📽️</font></button><button onclick="pickNumber();" style="font-size:25px" > 🙋‍♂️</button><button onclick="insertDice();" style="font-size:25px" > 🎲</button><button onclick="restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
-<button onclick="gameMode=!gameMode;window.speakText('get'+randomItem());this.textContent=(gameMode)?'🎯off':'🎯on'"  title=="遊戲模式" style="font-size:20px" >🎯on</button>
+<button onclick="gameMode=!gameMode;this.textContent=(gameMode)?'🎯off':'🎯on';window.speakText('get'+randomItem())"  title=="遊戲模式" style="font-size:20px" >🎯on</button>
 
 
 
@@ -465,7 +465,7 @@
     TIME:<span id="gameTimerDisplay" class="text-xl font-mono text-gray-700 p-2 bg-green-400 rounded-lg border border-gray-300">
         1:00 </span>
 </div>
-    <button id="toggleGameModeBtn" onclick="window.toggleGameMode();speakText('get'+randomItem());document.getElementById('timerBar').style.display=(document.getElementById('timerBar').style.display=='none')?'':'none';" 
+    <button id="toggleGameModeBtn" onclick="window.toggleGameMode();speakText('get'+window.randomItem());document.getElementById('timerBar').style.display=(document.getElementById('timerBar').style.display=='none')?'':'none';" 
             title="Start Continuous Background Animation" 
             class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-150 shadow-md">
         ▶️ 🎮
@@ -650,14 +650,110 @@ let startTop = 0;
 let startWidth = 0;
 let startHeight = 0;
 const lastClickPos = { x: 100, y: 100 }; // Used in handleStart
-let currentTool = null; // Used in handleStart
 
+// ====================================================================
+// GLOBAL/MODULE VARIABLES (PLACE AT THE TOP OF YOUR SCRIPT)
+// ====================================================================
 
+// --- Editor State ---
+let initialX, initialY, initialWidth, initialHeight;
+
+let isInitialLoad = true; // CRITICAL for Firebase stability
+
+// --- Drawing & Canvas State ---
+let drawingCanvas = null;
+let ctx = null;
+let fillColorInput = null;
+let penColorInput = null;
+let lineWidthInput = null;
+let currentDrawMode = 'stroke'; // 'stroke', 'fill', or 'stroke-fill'
+let currentTool = null; // 'pen', 'line', 'rect', 'circle', 'arrow', 'eraser'
+let isDrawing = false;
+let drawStartX, drawStartY;
+
+// Temporary canvas for drawing shapes (avoids flashing)
+const tempCanvas = document.createElement('canvas');
+const  tempCtx = tempCanvas.getContext('2d');
+tempCanvas.id = 'tempCanvas';
 
         // --- 3. FIREBASE/PROJECT DATA MANAGEMENT ---
         
         /** Real-time Listener: Loads initial data and keeps projectData synced. */
-        function startRealtimeProjectListener() {
+ // Ensure this variable is defined outside the function, at the module scope
+// let isInitialLoad = true; 
+
+function startRealtimeProjectListener() {
+    document.getElementById('currentProjectDisplay').textContent = currentProjectDocumentId;
+
+    const projectRef = doc(db, PROJECTS_COLLECTION, currentProjectDocumentId);
+    
+    const projectListenerUnsubscribe = onSnapshot(projectRef, (docSnapshot) => {
+        
+        // --- 1. HANDLE DATA RECEIVED (SUCCESS PATH) ---
+        if (docSnapshot.exists() && docSnapshot.data().pages) {
+            const serverData = docSnapshot.data();
+            const newProjectData = serverData.pages;
+
+            // Protection: If the data structure is corrupt, stop here but keep the old data.
+            if (!Array.isArray(newProjectData)) {
+                console.warn("Server data structure is corrupt (pages is not an Array). Ignoring update.");
+                return; 
+            }
+            
+            projectData = newProjectData;
+            
+            // Logic to handle an empty project data array
+            if (projectData.length === 0) {
+                 // CRITICAL: Only initialize a blank project if it's the first time loading.
+                 // This assumes a user wouldn't idle for 5 minutes and THEN load an empty project.
+                 if (isInitialLoad) { 
+                     initializeBlankProject();
+                 } else {
+                     // If it becomes empty later, assume the user cleared it, 
+                     // but DON'T initialize a new one automatically during a sync.
+                     // The user needs to manually add the first page.
+                     console.log("Project list is empty after initial load. Awaiting user action.");
+                 }
+            }
+            
+            // Logic to switch page if the current one was deleted (always safe)
+            const currentExists = projectData.some(p => p.id === currentPageId);
+            if (!currentExists && projectData.length > 0) {
+                currentPageId = projectData[0].id;
+            }
+            
+            loadPageData(currentPageId);
+            renderPageList();
+            
+            // Set flag to false after first successful data fetch
+            isInitialLoad = false; 
+            console.log("Project data synced from Firestore.");
+
+        // --- 2. HANDLE DOCUMENT NOT FOUND (ERROR PATH) ---
+        } else if (!docSnapshot.exists()) {
+            
+            if (isInitialLoad) {
+                console.log(`Document '${currentProjectDocumentId}' not found. Initializing blank project.`);
+                initializeBlankProject();
+                isInitialLoad = false;
+            } else {
+                 // CRITICAL: The document disappeared AFTER a successful load.
+                 // This is the common sign-out/session-expiry issue. DO NOT clear data.
+                 console.warn("Document disappeared after initial load. Stopping action to protect local state.");
+            }
+        }
+    }, (error) => {
+        // --- 3. HANDLE LISTENER FAILURE (CONNECTION ERROR PATH) ---
+        console.error("Firestore listener error (Connection Loss): ", error);
+        // This runs on actual connection failure. Using local storage as backup is correct here.
+        loadProjectFromLocalStorage(); 
+    });
+}
+
+
+
+
+       function zzzzzzzzzzzzzzzzzzzstartRealtimeProjectListener() {
             // Update the display immediately
             document.getElementById('currentProjectDisplay').textContent = currentProjectDocumentId;
 
@@ -693,6 +789,50 @@ let currentTool = null; // Used in handleStart
             });
         }
 
+
+
+
+
+
+
+
+ isInitialLoad = true; // Define this globally or in the module scope
+
+function zzzstartRealtimeProjectListener() {
+    const docRef = doc(db, PROJECTS_COLLECTION, currentProjectDocumentId);
+
+    onSnapshot(docRef, (docSnapshot) => {
+        if (docSnapshot.exists()) {
+            // Document found: Load data
+const data = docSnapshot.data();
+            projectData = docSnapshot.data().pages;
+            loadPageData(currentPageId);
+            isInitialLoad = false; // Data successfully loaded once
+        } else {
+            // Document NOT found
+            if (isInitialLoad) {
+                // Only run this initialization/clear logic once on the very first load.
+                initializeBlankProject();
+            } else {
+                // 💡 CRITICAL: Do nothing if the document disappears after the initial load.
+                // This prevents idle timeouts or brief connection hiccups from clearing the page.
+                console.warn("Project document momentarily missing after initial load. Ignoring action.");
+            }
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
         /** Saves the current projectData array to Firestore. */
         window.saveProject = async function() {
             saveCurrentPageData();
@@ -707,9 +847,13 @@ let currentTool = null; // Used in handleStart
                 const projectRef = doc(db, PROJECTS_COLLECTION, currentProjectDocumentId);
                 await setDoc(projectRef, dataToSave);
                 console.log("Project successfully saved to Firestore!");
+	showModal(storageKey + '-' + currentProjectDocumentId,'已儲存:');
+	//alert('儲存完成');
                 localStorage.setItem(storageKey + '-' + currentProjectDocumentId, JSON.stringify(projectData)); 
+
             } catch (error) {
                 console.error("Error writing document to Firestore: ", error);
+	showModal('寫入錯誤','error');
             }
         }
         
@@ -829,7 +973,7 @@ let currentTool = null; // Used in handleStart
         
         // --- Page Management Functions (Existing) ---
 
-        function loadProjectFromLocalStorage() {
+        window.loadProjectFromLocalStorage=function() {
              const savedProject = localStorage.getItem(storageKey + '-' + currentProjectDocumentId);
              if (savedProject) {
                  projectData = JSON.parse(savedProject);
@@ -904,6 +1048,17 @@ async function ensureProjectExists() {
         function saveCurrentPageData() {
             const page = getCurrentPage();
             if (!page) return;
+// 2. Add the drawingCanvas if it's missing (it should be persistent)
+    if (!document.getElementById('drawingCanvas')) {
+        const canvasElement = document.createElement('canvas');
+        canvasElement.id = 'drawingCanvas';
+        // CRITICAL: Set initial position and z-index to cover the editor
+        canvasElement.style.position = 'absolute';
+        canvasElement.style.top = '0';
+        canvasElement.style.left = '0';
+        canvasElement.style.zIndex = '15'; // Must be above elements (z-index 10)
+        editor.appendChild(canvasElement);
+    }
             page.html = editor.innerHTML;
         }
 
@@ -911,6 +1066,13 @@ async function ensureProjectExists() {
             const page = projectData.find(p => p.id === pageId);
             if (!page) return;
             editor.innerHTML = page.html || '';
+if (!document.getElementById('drawingCanvas')) {
+    const canvasElement = document.createElement('canvas');
+    canvasElement.id = 'drawingCanvas';
+    // Use insertBefore to ensure it's the first child, as you requested
+    editor.insertBefore(canvasElement, editor.firstChild); 
+}
+
 	window.initElements();
         }
 
@@ -1214,7 +1376,7 @@ window.addDivWithImageBackgroundElement = function() {
             } else if (type === 'TTS') {
                 defaultContent = `<div  id=\"TTS"+randomNumber+"\"   class="TTS" ontouchstart="speakText(this.textContent)"  onclick="speakText(this.textContent)" style="background-size:contain" >按兩下在此打字電腦報讀語音</div>`;
             } else if (type === 'VRS') {
-                defaultContent = `<div  id="template" class="VRS"  ontouchstart="startVoiceRecognition(this.textContent.replace('*',randomItem()))"  onclick="startVoiceRecognition(this.textContent.replace('*',randomItem()));" style="background-size:contain" >Word to say #</div>`;
+                defaultContent = `<div  id="template" class="VRS"  ontouchstart="startVoiceRecognition(this.textContent.replace('*',window.randomItem()))"  onclick="startVoiceRecognition(this.textContent.replace('*',window.randomItem()));" style="background-size:contain" >Word to say #</div>`;
 
             } else {
                 return;
@@ -1330,13 +1492,14 @@ window.addDivWithImageBackgroundElement = function() {
 
 //回傳隨機圖片名稱
    window.randomItem=function(){
+	//alert('wtf');
 	   const seeds = editor.querySelectorAll('.draggable-image');
 	   
 	let seedx=Math.floor(Math.random()*seeds.length);
 		gameTarget=seeds[seedx].id;
 		quizCount +=1;
 		return seeds[seedx].id
-
+                          showModal(seeds[seedx].id,'get')
         }
 
 
@@ -1385,6 +1548,52 @@ window.addDivWithImageBackgroundElement = function() {
 	}
 
  
+ window.duplicateActiveItem=function() {
+    // 檢查是否有選中的元素 (activeItem 應該是您用來儲存當前選中元素的變數)
+    if (!activeItem) {
+        console.warn("No item selected for duplication.");
+        return;
+    }
+
+    // 1. 執行深層複製 (Deep Clone)
+    //    傳入 true 確保複製所有子節點、屬性和樣式
+    const newItem = activeItem.cloneNode(true);
+        document.getElementById('temp').value=activeItem.outerHTML;
+    // 2. 清除不需要的屬性或 ID
+    //    確保每個元素都有唯一的 ID (如果您的設計需要 ID)
+    if (newItem.id) {
+        // 假設您有一個 generateUniqueId() 函數來創建新的 ID
+        // newItem.id = generateUniqueId(); 
+    }
+    
+    // 3. 調整新元素的位置 (避免與原元素完全重疊)
+    //    複製後的元素樣式和位置通常會被複製過來，我們微調 left 和 top
+    const currentLeft = parseInt(activeItem.style.left) || 0;
+    const currentTop = parseInt(activeItem.style.top) || 0;
+
+    const offset = 10; // 偏移量，讓複製的元素在右下方可見
+    
+    newItem.style.left = (currentLeft + offset) + 'px';
+    newItem.style.top = (currentTop + offset) + 'px';
+ 
+ 
+    // 4. 將新元素插入 DOM
+   // const editor = document.getElementById('editor');
+    editor.appendChild(newItem);
+
+    // 5. 重新初始化 (關鍵步驟)
+    //    新複製的元素沒有拖曳事件，需要重新綁定
+    window.initElements();
+    
+    // 6. 設置新元素為當前選中項
+    setActiveItem(newItem); // 假設您有一個 setActiveItem 函數來處理選中狀態
+   showModal('已再製','')
+    console.log("Item duplicated successfully.");    
+
+}
+
+
+
  window.pasteClone=function(){
        
     const editor = document.getElementById('editor');
@@ -1414,7 +1623,7 @@ window.addDivWithImageBackgroundElement = function() {
 		
 
  }
-           //alert(randomItem());
+           //alert(window.randomItem());
 
  if (event.srcElement.getElementsByTagName("span") && event.srcElement.classList.contains('draggable-image')){
        const imgpool=event.srcElement.querySelectorAll("img");
@@ -1490,7 +1699,7 @@ window.addDivWithImageBackgroundElement = function() {
  window.showCard=function(mytarget){
    cardflag=!cardflag
       let coverpic=document.getElementById('coverpic').src; 
-      let mybk=document.getElementById(randomItem()).style.backgroundImage;
+      let mybk=document.getElementById(window.randomItem()).style.backgroundImage;
       let act=Math.floor(Math.random()*10);
 
   if(cardflag==false){
@@ -1504,7 +1713,7 @@ window.addDivWithImageBackgroundElement = function() {
        }
   }else{
   mytarget.style.cssText=`width:120px;height:160px;background-size:contain;background-repeat:no-repeat;background-position-y:center;background-color:;border:10px white solid;border-radius:15px;box-shadow:4px 4px 6px gray`;
-  mytarget.style.backgroundImage=document.getElementById(randomItem()).style.backgroundImage;
+  mytarget.style.backgroundImage=document.getElementById(window.randomItem()).style.backgroundImage;
    //mytarget.inneText='';
   window.startVoiceRecognition(gameTarget);
 
@@ -2236,10 +2445,10 @@ window.rotateElement = function(degrees) {
                           if(document.getElementById('gameInfo')){
 			    let mytext=	document.getElementById('gameInfo').innerText;
 				myinfo=mytext.split('*');
-				document.getElementById('gameInfo').innerHTML=myinfo[0]+'*<b>'+randomItem()+'</b>*'+myinfo[2];
+				document.getElementById('gameInfo').innerHTML=myinfo[0]+'*<b>'+window.randomItem()+'</b>*'+myinfo[2];
                                 window.speakText(document.getElementById('gameInfo').innerText);				
 			  }else{
-                           window.speakText('find '+randomItem());
+                           window.speakText('find '+window.randomItem());
 			  }
 
                        }else{
@@ -2645,7 +2854,7 @@ window.initElementForMovement =function(el) {
             }
         }
 
-        window.randomItem = function(){
+        window.zzzzzzzzzzzzzzrandomItem = function(){
             // *** PASTE YOUR FULL window.randomItem FUNCTION BODY HERE ***
             const seeds = editor.querySelectorAll('.draggable-image');
             let seedx=Math.floor(Math.random()*seeds.length);
@@ -2794,13 +3003,492 @@ window.initElementForMovement =function(el) {
             }
         }
 
-
+       //############################## DRAWIMG  #########################################
         
+// ====================================================================
+// I. DRAWING HELPERS (LOCAL FUNCTIONS)
+// ====================================================================
+
+function resizeCanvas() {
+    // Save current drawing content
+    const imageData = drawingCanvas.toDataURL();
+    
+    // Resize the canvases to match the editor size
+    drawingCanvas.width = editor.offsetWidth;
+    drawingCanvas.height = editor.offsetHeight;
+    tempCanvas.width = editor.offsetWidth;
+    tempCanvas.height = editor.offsetHeight;
+
+    // Restore the drawing content
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0);
+    img.src = imageData;
+}
+
+function drawArrowhead(targetCtx, x, y, angle, size) {
+    const arrowSize = size * 3; 
+    targetCtx.save();
+    targetCtx.beginPath();
+    targetCtx.translate(x, y);
+    targetCtx.rotate(angle);
+    targetCtx.moveTo(0, 0);
+    targetCtx.lineTo(-arrowSize, -arrowSize / 2);
+    targetCtx.lineTo(-arrowSize, arrowSize / 2);
+    targetCtx.closePath();
+
+    if (currentDrawMode === 'fill' || currentDrawMode === 'stroke-fill') {
+        targetCtx.fill();
+    }
+    if (currentDrawMode === 'stroke' || currentDrawMode === 'stroke-fill') {
+        targetCtx.stroke();
+    }
+    targetCtx.restore();
+}
+
+function drawShape(targetCtx, endX, endY) {
+    const w = endX - drawStartX;
+    const h = endY - drawStartY;
+
+    targetCtx.strokeStyle = penColorInput.value;
+    targetCtx.lineWidth = lineWidthInput.value;
+    targetCtx.fillStyle = fillColorInput.value;
+
+    targetCtx.beginPath();
+    
+    switch (currentTool) {
+        case 'line': 
+        case 'arrow':
+            targetCtx.moveTo(drawStartX, drawStartY);
+            targetCtx.lineTo(endX, endY);
+            break;
+        case 'rect':
+            targetCtx.rect(drawStartX, drawStartY, w, h);
+            break;
+        case 'circle':
+            const radiusX = Math.abs(w / 2);
+            const radiusY = Math.abs(h / 2);
+            const centerX = drawStartX + w / 2;
+            const centerY = drawStartY + h / 2;
+            targetCtx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+            break;
+    }
+    
+    // Apply stroke and fill
+    if (currentTool !== 'arrow') {
+        if (currentDrawMode === 'fill' || currentDrawMode === 'stroke-fill') {
+            targetCtx.fill();
+        }
+        if (currentDrawMode === 'stroke' || currentDrawMode === 'stroke-fill') {
+            targetCtx.stroke();
+        }
+    } else {
+        // Arrow is always a line stroke, followed by the arrowhead fill/stroke
+        targetCtx.stroke();
+        const angle = Math.atan2(endY - drawStartY, endX - drawStartX);
+        drawArrowhead(targetCtx, endX, endY, angle, targetCtx.lineWidth);
+    }
+}
+
+
+// ====================================================================
+// II. DRAWING EVENT HANDLERS (LOCAL FUNCTIONS)
+// ====================================================================
+
+function startDraw(e) {
+// TEMPORARY TEST CODE:
+ctx.fillStyle = 'red';
+ctx.fillRect(10, 10, 50, 50); 
+// END TEMPORARY TEST CODE
+if (!currentTool) return;
+
+    if (!currentTool) return;
+    isDrawing = true;
+    const rect = drawingCanvas.getBoundingClientRect();
+    
+    // Get correct client coordinates for mouse or touch
+    const clientX = e.clientX || e.touches[0].clientX;
+    const clientY = e.clientY || e.touches[0].clientY;
+
+    drawStartX = clientX - rect.left;
+    drawStartY = clientY - rect.top;
+    
+    // Set initial context properties
+    ctx.strokeStyle = penColorInput.value;
+    ctx.lineWidth = lineWidthInput.value;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    if (currentTool === 'pen') {
+        ctx.beginPath();
+        ctx.moveTo(drawStartX, drawStartY);
+    } else if (currentTool === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.moveTo(drawStartX, drawStartY);
+    } else { 
+        // For shapes (line, rect, circle, arrow)
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        tempCtx.strokeStyle = penColorInput.value;
+        tempCtx.lineWidth = lineWidthInput.value;
+        tempCtx.lineCap = 'round';
+        tempCtx.lineJoin = 'round';
+        tempCtx.fillStyle = fillColorInput.value;
+    }
+    e.preventDefault();
+}
+
+function draw(e) {
+    if (!isDrawing || !currentTool) return;
+    const rect = drawingCanvas.getBoundingClientRect();
+    
+    const clientX = e.clientX || e.touches[0].clientX;
+    const clientY = e.clientY || e.touches[0].clientY;
+    
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    if (currentTool === 'pen' || currentTool === 'eraser') {
+        // Continuous drawing
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y); // Resets path to prevent line connections on quick move
+    } else { 
+        // Shape preview (drawn on temporary canvas)
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        drawShape(tempCtx, x, y);
+    }
+    e.preventDefault();
+}
+
+function stopDraw(e) {
+    if (!isDrawing) return;
+    isDrawing = false;
+
+    // Reset composite operation to normal
+    ctx.globalCompositeOperation = 'source-over';
+    
+    if (currentTool === 'pen' || currentTool === 'eraser') {
+        // Complete the line path
+        ctx.beginPath();
+    } else if (currentTool) {
+        // Finalize shape (draw from temp canvas to main canvas)
+        const rect = drawingCanvas.getBoundingClientRect();
+        let endX = e.clientX, endY = e.clientY;
+        if (e.changedTouches) {
+            endX = e.changedTouches[0].clientX;
+            endY = e.changedTouches[0].clientY;
+        }
+        
+        // Draw the final shape onto the permanent canvas
+        drawShape(ctx, endX - rect.left, endY - rect.top);
+        
+        // Clear the temporary canvas
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+    }
+    
+    // Only save the drawing if a drawing tool was active
+    if (currentTool !== null) {
+        window.saveDrawingData(currentPageId);
+        // pushHistoryState(); // <-- Placeholder for Undo/Redo
+    }
+}
+
+
+// ====================================================================
+// III. CORE DRAWING CONTROLS (GLOBAL FUNCTIONS)
+// ====================================================================
+
+/**
+ * Initializes canvas objects and attaches listeners. Called inside loadPageData.
+ */
+window.initDrawingControls = function() {
+    // 1. Get Elements and Contexts
+    drawingCanvas = document.getElementById('drawingCanvas');
+    if (!drawingCanvas) return;
+    
+    ctx = drawingCanvas.getContext('2d');
+    
+    fillColorInput = document.getElementById('fillColor'); 
+    penColorInput = document.getElementById('penColor');
+    lineWidthInput = document.getElementById('lineWidth');
+
+    // 2. Attach ALL drawing listeners
+    drawingCanvas.addEventListener('mousedown', startDraw); 
+    drawingCanvas.addEventListener('mousemove', draw);
+    drawingCanvas.addEventListener('mouseup', stopDraw); 
+    drawingCanvas.addEventListener('mouseleave', stopDraw);
+    
+    drawingCanvas.addEventListener('touchstart', startDraw, {passive: false}); 
+    drawingCanvas.addEventListener('touchmove', draw, {passive: false});
+    drawingCanvas.addEventListener('touchend', stopDraw);
+    drawingCanvas.addEventListener('touchcancel', stopDraw);
+
+    // 3. Toolbar listeners (for setting properties)
+    if(penColorInput) penColorInput.addEventListener('change', (e) => ctx.strokeStyle = e.target.value);
+    if(lineWidthInput) lineWidthInput.addEventListener('input', (e) => ctx.lineWidth = e.target.value);
+    
+    // 4. Run initial setup (size and load data)
+    resizeCanvas();
+    window.loadDrawingData(currentPageId);
+    
+    // Set initial tool state (e.g., selection mode)
+    window.setDrawingTool(null);
+const canvasElement = document.getElementById('drawingCanvas');
+
+canvasElement.style.position = 'absolute';
+canvasElement.style.top = '0';
+canvasElement.style.left = '0';
+canvasElement.style.width = '100%'; 
+canvasElement.style.height = '100%';
+canvasElement.style.backgroundColor = 'transparent'; // CRITICAL: Must be transparent
+canvasElement.style.zIndex = '15'; // Must be higher than elements (e.g., z-index 10)
+
+resizeCanvas(); // This sets drawingCanvas.width and .height to editor.offsetWidth/Height
+window.loadDrawingData(currentPageId);
+
+}
+
+/**
+ * Toggles between stroke, fill, and stroke+fill modes for shapes.
+ */
+window.toggleShapeMode = function() {
+    const shapeModeBtn = document.getElementById('shapeModeBtn');
+    if (!shapeModeBtn) return;
+    
+    if (currentDrawMode === 'stroke') {
+        currentDrawMode = 'fill';
+        shapeModeBtn.textContent = 'Fill';
+        shapeModeBtn.classList.remove('bg-blue-500');
+        shapeModeBtn.classList.add('bg-blue-700');
+    } else if (currentDrawMode === 'fill') {
+        currentDrawMode = 'stroke-fill';
+        shapeModeBtn.textContent = 'Stroke + Fill';
+        shapeModeBtn.classList.remove('bg-blue-700');
+        shapeModeBtn.classList.add('bg-indigo-700');
+    } else {
+        currentDrawMode = 'stroke';
+        shapeModeBtn.textContent = 'Stroke';
+        shapeModeBtn.classList.remove('bg-indigo-700');
+        shapeModeBtn.classList.add('bg-blue-500');
+    }
+}
+
+/**
+ * Sets the active drawing tool or switches to selection mode (tool = null).
+ */
+window.setDrawingTool = function(tool) {
+    if (!drawingCanvas) {
+        console.error("Attempted to set pointer events, but drawingCanvas is not initialized.");
+        return; // Stop the function execution
+    }
+    // Logic to toggle off the current tool if clicked again
+    if (currentTool === tool && tool !== null) {
+        currentTool = null;
+    } else {
+        currentTool = tool;
+    }
+    
+    const tempCanvasElement = document.getElementById('tempCanvas');
+
+    // 1. Manage Pointer Events (CRITICAL for distinguishing drag vs. draw)
+    // If currentTool is null (Select/Move), the drawing canvas is invisible to clicks.
+     
+if (drawingCanvas) {
+    drawingCanvas.style.pointerEvents = currentTool ? 'auto' : 'none';
+} else {
+    // Optional: Log an error if the canvas isn't ready
+    console.error("Attempted to set pointer events, but drawingCanvas is not initialized.");
+}
+
+    // 2. Manage Temporary Canvas visibility (for shape preview)
+    if (currentTool && !tempCanvasElement && currentTool !== 'pen' && currentTool !== 'eraser') {
+        // Add tempCanvas if starting shape drawing
+        tempCanvas.style.cssText = 'position: absolute; top: 0; left: 0; z-index: 16; pointer-events: none;';
+        editor.appendChild(tempCanvas);
+        resizeCanvas();
+    } else if (!currentTool && tempCanvasElement) {
+        // Remove tempCanvas if switching back to Select/Move
+        tempCanvasElement.remove();
+    }
+    
+    // 3. UI Class Updates (Tailwind classes for visual feedback)
+    document.querySelectorAll('[onclick^="window.setDrawingTool"]').forEach(btn => {
+        // Reset all buttons to default appearance
+        btn.classList.remove('bg-purple-600', 'bg-red-600', 'bg-gray-700', 'bg-purple-500', 'bg-red-500', 'bg-gray-600');
+        if (btn.id === 'selectMoveBtn') {
+            btn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+        } else {
+            btn.classList.add('bg-purple-500', 'hover:bg-purple-600');
+        }
+    });
+    
+    // Highlight the active tool
+    if (!currentTool) {
+        document.getElementById('selectMoveBtn').classList.remove('bg-gray-600', 'hover:bg-gray-700');
+        document.getElementById('selectMoveBtn').classList.add('bg-gray-700');
+    } else {
+        const activeBtn = document.querySelector(`[onclick^="window.setDrawingTool('${currentTool}')"]`);
+        if(activeBtn) {
+            activeBtn.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+            activeBtn.classList.add(currentTool === 'eraser' ? 'bg-red-600' : 'bg-purple-600');
+        }
+    }
+    
+    if (currentTool === 'eraser') {
+        window.showModal('Eraser Selected', 'Info');
+        // Eraser setup (will be set in startDraw, but good to ensure context is ready)
+        if (ctx) ctx.globalCompositeOperation = 'destination-out';
+    } else if (currentTool === null) {
+        window.showModal('Select/Move Mode Active', 'Info');
+    } else if (currentTool) {
+         // CRITICAL RESET for ALL other tools (pen, shapes, or null/selection)
+        if (ctx) ctx.globalCompositeOperation = 'source-over';
+        window.showModal(`${currentTool.toUpperCase()} Tool Selected`, 'Info');
+    }
+}
+
+/**
+ * Clears the drawing canvas and removes the data from the page object.
+ */
+window.clearCanvas = function() { 
+    if (!ctx) return;
+    
+    const confirmation = confirm("Are you sure you want to clear the entire drawing for this page?");
+    if (confirmation) {
+        ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+        
+        // Remove data from the page object
+        const page = projectData.find(p => p.id === currentPageId);
+        if (page) {
+            page.drawingData = null;
+            window.saveProject(); // Save the change
+        }
+        window.showModal('Drawing cleared.', 'Success');
+    }
+}
+
+/**
+ * Saves the current drawing canvas content (as a Data URL) into the page object.
+ */
+window.saveDrawingData = function(pageId) {
+    if (!drawingCanvas || !ctx) return;
+    
+    // Check if anything has been drawn before saving a large data string
+    const canvasIsEmpty = !ctx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height).data.some(channel => channel !== 0);
+    
+    const pageIndex = projectData.findIndex(p => p.id === pageId);
+
+    if (pageIndex !== -1) {
+        if (!canvasIsEmpty) {
+            // Store the base64 string
+            projectData[pageIndex].drawingData = drawingCanvas.toDataURL('image/png');
+        } else {
+            // Clear data if the canvas is empty
+            projectData[pageIndex].drawingData = null; 
+        }
+        
+        window.saveProject();
+        console.log(`Drawing data saved for page: ${pageId}`);
+    }
+};
+
+/**
+ * Loads and restores the drawing data for the specified page onto the canvas.
+ */
+window.loadDrawingData = function(pageId) {
+    if (!drawingCanvas || !ctx) return;
+
+    ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+
+    const page = projectData.find(p => p.id === pageId);
+
+    if (page && page.drawingData) {
+        const img = new Image();
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0);
+            console.log(`Drawing loaded for page: ${pageId}`);
+        };
+        img.src = page.drawingData;
+    }
+};
+
+
+// (Include all other editor functions like handleStart, handleMove, initElement, etc., here)
+
+// ====================================================================
+// IV. APPLICATION ENTRY POINT (DOCUMENT READY)
+// ====================================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+      // 1. Load project data and render page list
+            loadProject();
+            renderPageList();
+            if(currentPageId) {
+                loadPageData(currentPageId);
+            }
+       // 2. Initialize canvas
+            resizeCanvas();
+            ctx.strokeStyle = document.getElementById('penColor').value;
+            ctx.lineWidth = document.getElementById('lineWidth').value;
+            //drawingCanvas.style.pointerEvents = 'none';
+            // 初始狀態為 Select/Move 模式
+            setDrawingTool(null);
+       // 3. Attach ALL event listeners
+            // Element drag, drop, and resize listeners
+            editor.addEventListener('mousedown', handleStart); editor.addEventListener('mousemove', handleMove);
+            editor.addEventListener('mouseup', handleEnd); editor.addEventListener('mouseleave', handleEnd);
+            editor.addEventListener('touchstart', handleStart, {passive: false}); editor.addEventListener('touchmove', handleMove, {passive: false});
+            editor.addEventListener('touchend', handleEnd); editor.addEventListener('touchcancel', handleEnd);
+
+
+            // NEW: 滑動手勢的觸發點
+            editor.addEventListener('mousedown', handleGestureStart);
+            editor.addEventListener('mousemove', handleGestureMove);
+            editor.addEventListener('mouseup', handleGestureEnd);
+            editor.addEventListener('mouseleave', handleGestureEnd);
+
+            // NEW: 滑動手勢的觸控事件
+            editor.addEventListener('touchstart', handleGestureStart, {passive: false});
+            editor.addEventListener('touchmove', handleGestureMove, {passive: false});
+            editor.addEventListener('touchend', handleGestureEnd);
+            editor.addEventListener('touchcancel', handleGestureEnd);
+
+            // Drawing listeners
+            drawingCanvas.addEventListener('mousedown', startDraw); drawingCanvas.addEventListener('mousemove', draw);
+            drawingCanvas.addEventListener('mouseup', stopDraw); drawingCanvas.addEventListener('mouseleave', stopDraw);
+            drawingCanvas.addEventListener('touchstart', startDraw, {passive: false}); drawingCanvas.addEventListener('touchmove', draw, {passive: false});
+            drawingCanvas.addEventListener('touchend', stopDraw);
+
+            // Toolbar listeners
+            penColorInput.addEventListener('change', (e) => ctx.strokeStyle = e.target.value);
+            lineWidthInput.addEventListener('input', (e) => ctx.lineWidth = e.target.value);
+            
+            //toggleDrawingBtn.addEventListener('click', toggleDrawing);
+            //document.getElementById('penColor').addEventListener('change', (e) => ctx.strokeStyle = e.target.value);
+            //document.getElementById('lineWidth').addEventListener('input', (e) => ctx.lineWidth = e.target.value);
+
+            window.addEventListener('resize', resizeCanvas);
+
+            // Auto-save project every 5 seconds
+            setInterval(saveCurrentPageData, 5000);
+            window.addEventListener('beforeunload', () => {
+                saveCurrentPageData();
+                saveProject();
+            });
+
+    
+    // 5. Finalize tool state
+    window.setDrawingTool(null); // Initialize in selection mode
+});
+
+
+
         // --- 6. INITIALIZATION ---
         
         document.addEventListener('DOMContentLoaded', () => {
-loadProjectFromLocalStorage();
-            startRealtimeProjectListener();
+           window.loadProjectFromLocalStorage();
+            window.startRealtimeProjectListener();
             window.updateTimerDisplay(GAME_DURATION_SECONDS);
         });
 
