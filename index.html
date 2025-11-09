@@ -1,0 +1,2812 @@
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore Multi-Project Content Editor</title>
+       <script src="https://cdn.tailwindcss.com"></script> 
+    <script src="./Canvas_files/saved_resource"></script>
+    
+    <style>
+        /* General Setup */
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: #f0f4f8; color: #1f2937; }
+        
+        /* Editor Area */
+        #editor-wrapper { display: flex; flex-grow: 1; }
+        #editor { height: 100%; width: 100%; border: 2px solid #e5e7eb; background-color: #ffffff; position: relative; overflow: hidden; touch-action: none; cursor: default; }
+        
+        /* Drawing Canvas */
+        #drawingCanvas { position: absolute; top: 0; left: 0; z-index: 15; pointer-events: none; }
+        
+        /* Draggable Elements (CSS from your original code) */
+ 
+        .draggable-image, .floating-div {
+            cursor: move;
+           position: absolute;
+            padding: 5px;
+            box-sizing: border-box;
+            z-index: 10; /* Draggable elements base layer */
+            /*min-width: 10px;
+            min-height: 10px;*?
+            /*box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);*/
+            transition: border-radius 0.1s;
+             transition: all 0.3s ease-out;
+        }
+
+        /* Selected State */
+        .draggable-image.selected, .floating-div.selected {
+            outline: 2px dashed #3b82f6;
+             /*transition: all 0.7s ease-out;*/
+        }
+        
+
+
+
+        .zzzdraggable-image, .floating-div { cursor: move; position: absolute; padding: 5px;outline: 0px dashed #3b82f6;  box-sizing: border-box; z-index: 10; transition: all 0.3s ease-out; }
+        .zzzdraggable-image.selected, .floating-div.selected { outline: 1px dashed #3b82f6; }
+        .floating-div.editing { outline: 2px solid #10b981; cursor: text; }
+        .draggable-image.locked, .floating-div.locked { cursor: not-allowed; }
+        .resizer { position: absolute; width: 12px; height: 12px; border-radius: 50%; bottom: -6px; right: -6px; cursor: nwse-resize; z-index: 10; }
+        .resizer:hover { background: #3b82f6; border: 2px solid #ffffff; }
+
+        /* Main Layout */
+        #main-container { display: flex; height: calc(100vh - 50px); } 
+
+        /* Page Management Sidebar */
+        #page-manager { width: 250px; background-color: #ffffff; padding: 16px; border-right: 1px solid #e5e7eb; box-shadow: 2px 0 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        #page-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
+        #page-list li { padding: 10px; cursor: pointer; border-radius: 6px; margin-bottom: 5px; border: 1px solid transparent; display: flex; justify-content: space-between; align-items: center; }
+        #page-list li.active { background-color: #dbeafe; color: #1e40af; font-weight: bold; border-color: #93c5fd; }
+        
+        /* Typography */
+        h1 { color: coral; text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black; }
+        h2 { color: #333; text-shadow: 0 0 3px cyan, 0 0 5px cyan; }
+        h3 { color: coral; text-shadow: 2px 2px 4px #000000; }
+        .fly-in-animated { transition: all 1.8s ease-out; }
+   
+        body { font-family: 'cwTeXYen', sans-serif !important; }
+
+        /* Toolbar */
+        #main-toolbar { padding: 10px; background-color: #eef; border-bottom: 1px solid #ccc; display: flex; gap: 10px; align-items: center; }
+        #currentProjectDisplay { font-weight: bold; padding: 0 10px; background: #fff; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div id="main-toolbar">
+        <button onclick="window.saveProject()">💾 Save to Cloud</button>
+        <button onclick="window.renderAllProjectsList()">📂 Switch/Create Project</button>
+        <span id="currentProjectDisplay">classroom_master_file</span> 
+        
+        <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
+            <button onclick="window.createNewPage()">+ Add Page</button>
+            <button onclick="window.toggleEditMode();window.toggleEditable();">Toggle Edit</button>
+            <button onclick="document.execCommand('bold', false, null)">B</button>
+            <button onclick="window.applyForeColor('#0000ff')">Blue Text</button>
+        </div>
+        
+        <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
+            <button id="toggleGameModeBtn" onclick="window.toggleGameMode()">▶️ 🎮 Game Mode</button>
+            <span id="gameTimerDisplay">1:00</span>
+            <span id="speechResult" style="margin-left: 20px;"></span>
+        </div>
+    </div>
+
+    <div id="main-container">
+        
+        <div id="page-manager">
+            <h3>Pages</h3>
+            <ul id="page-list">
+                </ul>
+        </div>
+        
+        <div id="editor-wrapper">
+            <div id="editor" contenteditable="true">
+                Loading project data from Firestore...
+            </div>
+            <canvas id="drawingCanvas"></canvas>
+        </div>
+    </div>
+    
+    <div id="project-list-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="background: white; width: 400px; margin: 50px auto; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <h3 style="margin-top: 0;">Select Project</h3>
+            
+            <input type="text" id="new-project-id-input" placeholder="Enter new project ID or select below" style="width: 100%; padding: 10px; margin-bottom: 15px; box-sizing: border-box;">
+            <button onclick="window.switchProjectAndCloseList(document.getElementById('new-project-id-input').value)" style="padding: 8px 15px; margin-right: 10px;">Load/Create New</button>
+            <button onclick="document.getElementById('project-list-modal').style.display = 'none'">Cancel</button>
+
+            <hr style="margin: 15px 0;">
+            <div id="all-projects-list" style="max-height: 400px; overflow-y: auto;">
+                </div>
+        </div>
+    </div>
+
+    <div style="display:none;">
+        <input type="text" id="fname" value="default_file.json">
+        <div id="pagelist"></div>
+        <div id="Navi"></div>
+        <input type="text" id="temp" value="" >
+        <img id="coverpic" src="placeholder.png">
+         
+    </div>
+
+
+
+
+
+
+
+
+
+
+  <div id="toolbar" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- Teacher Backstage Editing-->
+
+
+    
+            <button  title="切換編輯工具列" onclick="document.getElementById('styleControls').style.display=(document.getElementById('styleControls').style.display=='none')?'inline':'none';document.getElementById('MyTittle').style.display='';DesignMode=!DesignMode;this.innerText=(DesignMode)?'📝設計模式':'✔️白板模式';"   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
+
+
+
+
+           <!-- Drawing Controls -->
+ 
+
+
+<span  id="pentool" onclick="dropmenu();" style="position:relative;width:40px;font-size:20px" class="mx-2 text-gray-400 rounded-lg hover:bg-purple-600  shadow-md">✒️
+            <span  id="pentool_menu" style="display:none;position:absolute;top:-60px;left:-0px;z-index:30;width:900px;background:white;border-radius:16px;border:2px solid gray;padding:4px"         class="mx-2 text-gray-400" > 
+            <button onclick="setDrawingTool(null);document.getElementById('pentool_menu').style.display='none';"  title="選取移動-Select/Move" class="px-4 py-2  text-white font-semibold rounded-lg hover:bg-gray-700 transition duration-150 shadow-md" id="selectMoveBtn">🖱️</button>
+            
+            <button onclick="setDrawingTool('pen')" title="畫筆-Pen" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">🖌️</button>
+            <button onclick="setDrawingTool('eraser')"  title="擦布-Eraser" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-150 shadow-md">🧽</button>
+            <button onclick="setDrawingTool('line')"  title="畫線-Line" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md"><b>/</b></button>
+<button onclick="setDrawingTool('arrow')" title="箭頭線-Arrow"  class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md"><b>↗</b></button>
+            <button onclick="setDrawingTool('rect')"  title="方塊-Rectangle" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">🔲</button>
+            <button onclick="setDrawingTool('circle')"  title="圓圈-Circle" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md"><b>⭕</b></button>
+
+            
+ 框線 <input type="color" id="penColor" value="#000000" title="框線顏色-Stroke Color" class="h-7 w-10 border-none rounded-lg p-0">  
+ 填充 <input type="color" id="fillColor" value="#ff0000" title="填充顏色-Fill Color" class="h-7 w-10 border-none rounded-lg p-0"> 
+            
+            <button onclick="toggleShapeMode()" class="px-4 py-2 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition duration-150 shadow-md" id="shapeModeBtn" title="Toggle between Stroke and Fill">空心/填滿</button>
+
+            <label for="lineWidth" class="text-sm text-gray-600 ml-2">筆寬:</label>
+            <input type="range" id="lineWidth" min="1" max="20" value="3" title="粗細-Line Width" class="w-20">
+            <button onclick="clearCanvas()"  title="清除-Clear" class="px-4 py-2 bg-gray-300 text-gray-800 font-xlargebold rounded-lg hover:bg-gray-400 transition duration-150 shadow-md">🗑</button>
+          </span ><!--pentool_menu-->
+</span>  <!--pentool-->
+
+
+
+
+
+
+            <!-- Style Controls - Border Radius -->
+            <div id="styleControls" style="display:none;" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+
+
+<span style="display:inline">
+            <select id="addElementType" onchange="window.addNewTextElement(this.value)"  class="px-1 py-1 bg-blue-500 text-white font-xssemibold rounded-lg hover:bg-blue-600 transition duration-150 shadow-md cursor-pointer">
+                <option value="" disabled selected class="bg-gray-700 text-white">插入文字</option>
+                <option value="P" class="bg-white text-gray-800">一般文字</option>
+                <option value="H1" class="bg-white text-gray-800">黑框字</option>
+                <option value="H2" class="bg-white text-gray-800">光暈字</option>
+                <option value="H3" class="bg-white text-gray-800">陰影字</option>
+                <option value="Animateout" class="bg-white text-gray-800">動畫字</option>
+                <option value="Hinter" class="bg-white text-gray-800">答案選項</option>
+                <option value="DropMenu" class="bg-white text-gray-800">隱藏內文</option>
+                <option value="Poke" class="bg-white text-gray-800">撲克牌</option>
+                <option value="TTS" class="bg-white text-gray-800">報讀文字</option>
+                <option value="VRS" class="bg-white text-gray-800">聽讀文字</option>
+            </select></span>
+
+
+
+
+
+<button id="textStyle" onclick="document.getElementById('textStyle_menu').style.display=(document.getElementById('textStyle_menu').style.display=='none')?'inline':'none';" style="border:2px solid black;width:30px;font-size:18px" > T </button> 
+
+
+
+
+<div id="textStyle_menu" style="display:none;position:absolute;top:80vh;left:40px;padding:10px;background:white;border:2px solid gray;border-radius:16px;z-index:31;width:800px;height:60px;" >
+<span  title="關閉" onclick="document.getElementById('textStyle_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;" >🗷</span>
+
+ <button id="editToggleBtn"  title="啟用/停用-編輯文字區塊" onclick="window.toggleContentEditable();" disabled class="px-2 py-1 bg-teal-500 text-white font-semibold rounded-lg hover:bg-yellow-500 transition duration-150 shadow-md">編輯文字區塊</button>
+                <button onclick="runTextCommand('bold')" title="粗體" class="px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">B</button>
+                <button onclick="runTextCommand('italic')" title="斜體" class="px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">I</button>
+                <button onclick="runTextCommand('underline')" title="底線" class="px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">U</button>
+                
+                <!-- formatBlock dropdown removed -->
+                
+                <input type="color" id="fontColor" onchange="setFontColor()"  onblur="setFontColor()" title="文字色彩" value="#1f2937" class="h-5 w-10 border-none">
+                
+                <!-- Font Size Dropdown (functional) -->
+                <select id="fontSize" onchange="setFontSize()" title="字體大小(1-7)"  style="border:1px solid lightgray;padding:2px;border-radius:6px">
+                    <option value="1">Size 1</option>
+                    <option value="2">Size 2</option>
+                    <option value="3" selected>Size 3</option>
+                    <option value="4">Size 4</option>
+                    <option value="5">Size 5</option>
+                    <option value="6">Size 6</option>
+                    <option value="7">Size 7</option>
+                </select>
+                
+		<select id="fontSelector" onchange="changeFont()" style="border:1px solid lightgray;padding:2px;border-radius:6px">
+		  <option value="Arial">Arial</option>
+		  <option value="Verdana">Verdana</option>
+		  <option value="Times New Roman">Times New Roman</option>
+		  <option value="Courier New">Courier New</option>
+		  <option value="Comic Sans MS">Comic Sans MS</option>
+		  <option value="Pacifico">Pacifico</option>
+		  <option value="Microsoft JhengHei">微軟正黑體</option>
+		  <option value="DFKai-SB">標楷體</option>
+		  <option value="PMingLiU">新細明體</option>
+		  <option value="cwTeXYen (Chinese Traditional)">圓體字體</option>
+
+		</select>
+
+
+
+
+
+                <button  title="插入超連結" onclick="window.insertLink()" title="Insert Link" class="px-2 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">🔗</button>
+                <button  title="移除超連結" onclick="window.removeLink()" title="Remove Link" class="px-2 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">🚫</button>
+
+</div>
+
+
+  <!-- Text Formatting Controls (only for inline styles now) --> 
+
+
+
+
+     
+<!-- add dropmenu -->
+            <button  title="插入" onclick="document.getElementById('add_menu').style.display=(document.getElementById('add_menu').style.display=='none')?'inline':'none';"   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">➕🖼️</button>		
+
+
+<!-- add menu -->
+<div id="add_menu" style="display:none;position:absolute;top:70vh;left:40px;width:90vw;z-index:30" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4 ">
+
+<span  title="關閉" onclick="document.getElementById('add_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;z-index:30" >🗷</span>
+
+
+<button  title="用網址貼上浮動圖片" onclick="window.addDivWithImageBackgroundElement()" class="px-2 py-1 bg-teal-100 text-white font-semibold rounded-lg hover:bg-teal-200 transition duration-150 shadow-md" style="background:darkblue;">用網址貼上(浮動圖片)</button>
+<span style="display:inline" >網址:<input type="text" id="Xurl" value="" size="20" onchange="" style="border:dashed 1px lightgray"></span>
+<span onclick="document.getElementById('Xurl').value='';" alt="套用網址套用網址"  style="display:inline;cursor:hand">❎</span>
+<span onclick="window.updateBackground()"    class="hover:bg-teal-600 cursor-hand">✔️更新</span>
+
+
+<button  title="用網址貼上浮動圖片" onclick="window.insertCode('iframe')" class="px-2 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-teal-200 transition duration-150 shadow-md"  >用網址貼上YouTube</button>
+
+<button  title="用網址貼上浮動圖片" onclick="window.insertCode('img');" class="px-2 py-1 bg-green-500 text-white font-semibold rounded-lg hover:bg-teal-200 transition duration-150 shadow-md"  >用網址貼上(固定圖片)</button>           
+ 
+    <button  title="從圖庫插入" onclick="addDivWithImageBackgroundElement();document.all.picker.style.display='';"  style="background:cyan;border-radius:25%" >圖庫</button>
+            <!-- NEW: Add Text Element Dropdown -->
+
+
+<!-- add menu -->
+</div>
+
+
+
+<button id="layerControl" onclick="document.getElementById('layerControl_menu').style.display=(document.getElementById('layerControl_menu').style.display=='none')?'':'none';" style="position:" >💳圖層樣式</button>
+
+<div id="layerControl_menu" style="display:none;position:absolute;z-index:30;top:80vh;left:20px;padding:10px;width:100%px;background:lightgray;border:2px solid gray;border-radius:16px;color:black;font-size:12px;vertical-align:center;opacity:50" >
+
+<span  title="關閉" onclick="document.getElementById('layerControl_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;" >🗷</span>
+		背景:
+<img src="" id="bgicon" alt="Background Preview" width="40" height="40" style="border:2px solid gray;display:inline" onclick="document.getElementById('add_menu').style.display=(document.getElementById('add_menu').style.display=='none')?'inline':'none';">
+                底色:<input type="color" id="backgroundColor" onchange="window.setBackgroundColor()" title="底色" value="#ffffaa" class="h-5 w-10 border-none">
+<span  title="透明" onclick="window.setBackgroundColor('t')"  style="color:red;cursor:hand;font-size:20px;" >🗷</span>
+                
+                圓角:
+                <input type="range" id="borderRadius" oninput="window.setBorderRadius()" min="0" max="50" value="0" title="Border Radius" class="w-20">
+
+                透明度:
+                <input type="range" id="elementOpacity" min="0" max="100" value="100" title="Element Opacity" oninput="window.setElementOpacity(this.value)"  class="w-20">
+           
+    <button onclick="window.rotateElement(-15)" title="Turn Left 15 Degrees" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">↺ 15°</button>
+    <button onclick="window.rotateElement(15)" title="Turn Right 15 Degrees" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">↻ 15°</button>
+
+</span>
+
+
+    <label for="borderColor">框色:</label>
+
+<input type="color" id="borderColor" onchange="window.applyBorderChanges()" title="框色" value="#ffffaa" class="h-5 w-10 border-none">
+    <label for="borderWidth">粗細:</label>
+    <select id="borderWidth" onchange="window.applyBorderChanges()">
+        <option value="1px">1px</option>
+        <option value="2px">2px</option>
+        <option value="5px">5px</option>
+        <option value="10px">10px</option>
+    </select>
+
+    <label for="borderStyle">樣式:</label>
+    <select id="borderStyle" onchange="window.applyBorderChanges()">
+        <option value="solid">____</option>
+        <option value="dashed">------</option>
+        <option value="dotted">..........</option>
+        <option value="double">=====</option>
+    </select>
+| <button  title="頁面背景" onclick="window.dobg();" >設為頁面底色</button>| <button  title="頁面背景" onclick="window.dobg('bk');" >更換頁面底圖</button>
+</div>
+
+
+
+
+
+<span   id="idop"  onclick="window.dropmenu();"   class="flex flex-wrap text-s items-center hover:bg-yellow-100 cursor-hand  rounded-lg border border-gray-200 " style="position:relative;width:80px;height:40px;display:inline" >
+		🗃️圖卡設定
+            <span id="idop_menu" style="display:none;position:absolute;left:10px;top:-120px;width:640px;height:120px;font-size:18px;background:white;border:2px solid gray;z-index:30;padding:10px;border-radius:15px">
+<span  title="關閉" onclick="document.getElementById('idop_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;" >🗷</span>
+<span style="display:inline;font-color:blue;" >英文名稱:
+<span onclick="window.applyMyInfo();"    class="hover:bg-teal-600 cursor-hand" style="cursor:hand;border:2px solid black;background:yellow" >✔️套用</span>
+<input type="text" id="MyID" value="" size="16" color="blue" style=";border:dashed 1px lightgray;padding-left:2px"></span>
+<span onclick="document.getElementById('MyID').value=document.getElementById('MyID').value+'-a';applyMyID();"   onmouseover="dropmenu('hintx')" style="position:relative" >❔<font id="hintx" style="display:none;position:absolute;top:-80px;left:0px;width:550px;height:100px;background:lightyellow;border:2px dashed brown" >會在「圖片閃示卡」功能中顯示輸入的名稱，例如:cat<BR>，如果和別的圖同名稱綴加"-a"的話，例如:cat-a，彼此接觸時會有配對反應</font></span>
+
+
+<HR>
+<span style="display:inline" >輸入說明:
+<span onclick="window.applyMyInfo();"    class="hover:bg-teal-600 cursor-hand"  style="cursor:hand;border:2px solid black;background:yellow" >
+✔️套用</span>
+
+<textarea id="MyInfo"   cols="40"  style="border:dashed 1px lightgray;padding-left:2px"></textarea>
+</span>
+
+           </span></span>
+
+
+
+
+
+
+            <span class="mx-2 text-gray-400">|</span>
+<button onclick="window.undo()" class="px-4 py-2 bg-gray-100 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-150 shadow-md" id="undoBtn" disabled title="復原上一步Undo (Ctrl+Z)">↩️</button>
+            <button onclick="window.redo()" class="px-4 py-2 bg-gray-100 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-150 shadow-md" id="redoBtn" disabled title="重作上一步Redo (Ctrl+Y)">↪️</button>
+            
+<span class="mx-2 text-gray-400">|</span>
+<button onclick="window.duplicateActiveItem()" >再製</button>|<button onclick="window.pasteClone();" >貼上物件</button>
+ 
+
+
+
+
+<select id="addElementType" onchange="window.toggleAnimate(this.value)"  class="px-1 py-1 bg-blue-500 text-white font-xssemibold rounded-lg hover:bg-blue-600 transition duration-150 shadow-md cursor-pointer" style="display:inline;width:">
+                <option value="" disabled selected class="bg-gray-700 text-white">動畫</option>
+
+                <option value="animate-spin"  class="bg-gray-700 text-white">旋轉</option>
+                <option value="animate-bounce"  class="bg-gray-700 text-white">彈跳</option>
+
+                <option value="animate-ping"  class="bg-gray-700 text-white">放大</option>
+                <option value="animate-pulse"  class="bg-gray-700 text-white">閃爍</option>
+                <option value="animate-none"  class="bg-gray-700 text-white">無</option>
+                <option value="translate-y-full  transition-all duration-700 ease-out "  class="bg-gray-700 text-white">沖天</option>
+      <!-- 		//####-translate-x-full  translate-x-0 -translate-y-80 ,'-translate-y-80'
+		//###animate-none .animate-ping animate-pulse animate-spin  animate-bounce animate-spin .animate-bounce
+       -->
+</select>
+
+
+
+
+
+
+ <!-- 文字編輯區 -->
+              </div>
+
+
+
+
+
+            <!-- Layer, Lock, Delete Controls -->       
+
+            <button onclick="window.bringForward()" title="上移圖層" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">⇧</button>
+            <button onclick="window.sendBackward()" title="下移圖層" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">⇩</button>
+<!-- Page Navigator -->
+            <button id="lockToggleBtn" onclick="window.toggleLock()"  title="固定或解鎖位置" class="px-2 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition duration-150 shadow-md">🔏固定/浮動🔒</button>
+
+ <div style="display:inline;color:gray;font-size:30px" onclick="window.goToPreviousPage();"  ontouchstart="window.goToPreviousPage();">⬅️</div> <div style="display:inline;color:gray;font-size:30px" onclick="window.goToNextPage();"  ontouchstart="window.goToNextPage();">➡️</div>   
+
+<div style="display:inline;width:45px;height:45px;font-size:20px;z-index:50;border:2px dotted gray;padding:0px;line-height: 80%;"  >
+  <span onclick="window.addNewTextElement('sticker','yellow');"  style="color:yellow; display:inline;margin:2px" >■</span>
+ <span onclick="window.addNewTextElement('sticker','pink');"   style="color:pink; display:inline;margin:2px; " >■</span>
+  <span onclick="window.addNewTextElement('sticker','cyan');"  style="color:cyan; display:inline;margin:2px; " >■</span>
+ <span onclick="window.addNewTextElement('sticker','lightgreen');"   style="color:lightgreen; display:inline;margin:2px; " >■</span>
+</div>  
+ <button onclick="window.deleteSelectedItem()" title="刪除選取物件" class="px-2 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-150 shadow-md">❎</button>
+
+
+
+
+  <button onclick="FullScreen()"><font size="6" title=="全螢幕">💻</font></button>
+		<button onclick="window.PicNav()">	<font size="6" title=="閃示卡" >🖼️</font></button>       <button onclick="window.textSlider()"><font size="6" title=="動畫" >📽️</font></button><button onclick="pickNumber();" style="font-size:25px" > 🙋‍♂️</button><button onclick="insertDice();" style="font-size:25px" > 🎲</button><button onclick="restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
+<button onclick="gameMode=!gameMode;window.speakText('get'+randomItem());this.textContent=(gameMode)?'🎯off':'🎯on'"  title=="遊戲模式" style="font-size:20px" >🎯on</button>
+
+
+
+
+
+<div id="voiceGameControls" class="flex flex-col items-center gap-1 p-1 font-xs bg-yellow-50 rounded-lg shadow-inner"  >
+    <button id="voiceButton" onclick="window.startRandomVoiceGame();document.getElementById('speechResult').style.display='';" 
+            title="語音辨識Start Random Voice Recognition Game" 
+            class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition duration-150 shadow-md">
+        🎙️  ▶️
+    </button>
+    <div id="speechResult" class="text-sm font-medium text-gray-500"     ontouchstart="this.style.display='none';" onclick="this.style.display='none';"   style="position:absolute;z-index:30;top:40px;left:100px;width:90%;height:80px;background:white;border-radius:16px;border:2px gray solid;padding:10px;font-size:30px;opacity:0.9;display:none">
+        Click to start recognizing words by item ID.
+    </div>
+</div>
+
+<div id="gameModeControls" class="flex flex-wrap items-center gap-2">
+<div id="timerBar" style="display:none;position:absolute;z-index:50;top:80px;left:45vw;" >
+    TIME:<span id="gameTimerDisplay" class="text-xl font-mono text-gray-700 p-2 bg-green-400 rounded-lg border border-gray-300">
+        1:00 </span>
+</div>
+    <button id="toggleGameModeBtn" onclick="window.toggleGameMode();speakText('get'+randomItem());document.getElementById('timerBar').style.display=(document.getElementById('timerBar').style.display=='none')?'':'none';" 
+            title="Start Continuous Background Animation" 
+            class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-150 shadow-md">
+        ▶️ 🎮
+    </button>
+</div>
+
+
+
+
+
+<script>
+  window.zoomout=function(zoomV){
+         let z=document.getElementById('zoom').value *10; 
+        
+   if(!zoomV){
+       //editor.style.zoom = z+"%";
+      
+      document.body.style.zoom = z+"%";
+    }else{
+     document.body.style.zoom ="100%";
+    }
+
+}
+</script>
+            <span class="mx-2 text-gray-400">|</span> 🔍<input type="range" id="zoom" min="1" max="10" value="10" title="Line Width" class="w-20" onchange="zoomout();" >
+           <button onclick="window.zoomout(10)" class="px-1 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition duration-150 shadow-md">100%</button>
+
+
+
+
+
+
+
+
+
+
+
+<span class="mx-2 text-gray-400" onclick="document.getElementById('movementControls').style.display=(document.getElementById('movementControls').style.display=='none')?'':'none';" >🕹️</span>
+
+<div id="movementControls"  style="position:absolute;z-index:30;width:90%;height:30px;top:85vh;left:10px;display:none;background:white;border-radius:16px" >
+<span  title="關閉" onclick="document.getElementById('movementControls').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:30px;" >🗷</span>
+
+
+<button onclick="window.moveSteps(-100)" title="Move backward 10 Steps" class="px-4 py-2 bg-pink-500 text-white font-semibold rounded-lg hover:bg-pink-600 transition duration-150 shadow-md">🚶‍⬅️</button>
+    <button onclick="window.moveSteps(100)" title="Move Forward 10 Steps" class="px-4 py-2 bg-pink-500 text-white font-semibold rounded-lg hover:bg-pink-600 transition duration-150 shadow-md">🕺➡️</button>    
+    <button onclick="window.turn(-15)" title="Turn Left 15 Degrees" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">↺ 15°</button>
+    <button onclick="window.turn(15)" title="Turn Right 15 Degrees" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">↻ 15°</button>
+    
+    <button onclick="window.pointInDirection(0)" title="Point Up" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">🕛</button>
+<button onclick="window.pointInDirection(90)" title="Point Right/Forward" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">🕒</button>
+
+
+<span class="mx-2 text-gray-400">|</span>
+
+
+ 
+    
+    <button onclick="window.goTo(document.getElementById('goToTarget').value);" title="Go To Custom Position" class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition duration-150 shadow-md">Go To</button>
+    <button onclick="window.goTo('center')" title="Go To Center" class="px-3 py-2 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition duration-150 shadow-md">Center</button>
+ 
+<span class="mx-2 text-gray-400">|</span>
+
+
+
+<span class="mx-2 text-gray-400">🎮</span>
+ java go to
+    <input type="text" id="goToTarget" placeholder="X,Y or Element ID" class="w-32 p-2 border border-gray-300 rounded-lg text-sm">
+    
+    <input type="number" id="goToTime" value="1" min="0.1" step="0.1" title="Time (seconds)" class="w-16 p-2 border border-gray-300 rounded-lg text-sm text-center">
+    
+    <button onclick="window.glideTo(document.getElementById('goToTarget').value, parseFloat(document.getElementById('goToTime').value))" 
+            title="Animate Go To Custom Position" 
+            class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition duration-150 shadow-md">
+        Slide To
+    </button>
+    
+    <button onclick="window.glideTo('center', parseFloat(document.getElementById('goToTime').value))" 
+            title="Animate Go To Center" 
+            class="px-3 py-2 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition duration-150 shadow-md">
+        Center
+    </button>
+ 
+<button onclick="window.animateAllRandomly(parseFloat(document.getElementById('goToTime').value))" 
+            title="Animate all items to random locations" 
+            class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">
+        🎲 Scatter All
+    </button>
+
+</div><!-- end movementControl menu-->
+
+
+            <!-- Final Action -->
+           
+
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script type="module">
+        // Import Firebase v12 SDKs. Including getDocs, collection, and deleteDoc.
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+
+        // --- 1. FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-psoCWI_u2iYoLXznb6kH_g3KTw00Qow",
+            authDomain: "myebook-183ee.firebaseapp.com",
+            projectId: "myebook-183ee",
+            storageBucket: "myebook-183ee.firebasestorage.app",
+            messagingSenderId: "531804725153",
+            appId: "1:531804725153:web:469ed0e5ded02f72fcb5e0",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // Firestore Constants
+        const PROJECTS_COLLECTION = 'editor_projects'; 
+        
+        // --- 2. GLOBAL STATE ---
+        const editor = document.getElementById('editor');
+        const storageKey = 'canvasEditorProject'; 
+        
+        // Multi-Project Variable (DEFAULT ID)
+        let currentProjectDocumentId = 'classroom_master_file'; 
+        
+        // Core Project Data
+        let projectData = []; 
+        let currentPageId = null;
+        
+        // Existing Global Variables from your code
+        let DesignMode = false;
+        let gameTarget = "";
+        let gameMode = false;
+        let score = 0;
+        let quizCount = 0;
+        let checkMode = true; 
+        let gameTimerInterval = null;
+        const GAME_DURATION_SECONDS = 60;
+        let recognition = null; 
+        let requiredWord = '';
+        let counter = 0; 
+        let activeItem = null; // CRITICAL: This needs to be set by your drag/drop handlers
+        let oldX = 0, oldY = 0; // Assuming these are used by drag/drop
+
+       // --- Globals ---
+         const editToggleBtn = document.getElementById('editToggleBtn');
+        const lockToggleBtn = document.getElementById('lockToggleBtn');
+
+
+
+
+// --- NEW: Gesture State Variables ---
+        let touchStartX = 0;
+        let touchStartY = 0;
+        //let isSwiping = false;
+        const SWIPE_THRESHOLD = 80; // 判斷為有效滑動的最小水平距離 (pixels)
+ // --- End of Gesture State Variables ---
+
+
+
+// ADD THESE CRITICAL DRAG/RESIZE VARIABLES:
+let isDragging = false; 
+let isResizing = false;
+let isSwiping = false; // Used in handleStart
+let startX = 0;
+let startY = 0;
+let startLeft = 0;
+let startTop = 0;
+let startWidth = 0;
+let startHeight = 0;
+const lastClickPos = { x: 100, y: 100 }; // Used in handleStart
+let currentTool = null; // Used in handleStart
+
+
+
+        // --- 3. FIREBASE/PROJECT DATA MANAGEMENT ---
+        
+        /** Real-time Listener: Loads initial data and keeps projectData synced. */
+        function startRealtimeProjectListener() {
+            // Update the display immediately
+            document.getElementById('currentProjectDisplay').textContent = currentProjectDocumentId;
+
+            const projectRef = doc(db, PROJECTS_COLLECTION, currentProjectDocumentId);
+            
+            const projectListenerUnsubscribe = onSnapshot(projectRef, (docSnapshot) => {
+                if (docSnapshot.exists() && docSnapshot.data().pages) {
+                    const serverData = docSnapshot.data();
+                    const newProjectData = serverData.pages;
+
+                    if (!Array.isArray(newProjectData)) return;
+
+                    projectData = newProjectData;
+                    
+                    const currentExists = projectData.some(p => p.id === currentPageId);
+                    if (!currentExists && projectData.length > 0) {
+                        currentPageId = projectData[0].id;
+                    } else if (projectData.length === 0) {
+                        initializeBlankProject(); 
+                    }
+                    
+                    loadPageData(currentPageId);
+                    renderPageList();
+                    console.log("Project data synced from Firestore.");
+
+                } else if (!docSnapshot.exists()) {
+                    console.log(`Document '${currentProjectDocumentId}' not found. Initializing blank project.`);
+                    initializeBlankProject();
+                }
+            }, (error) => {
+                console.error("Firestore listener error: ", error);
+                loadProjectFromLocalStorage(); 
+            });
+        }
+
+        /** Saves the current projectData array to Firestore. */
+        window.saveProject = async function() {
+            saveCurrentPageData();
+            
+            if (projectData.length === 0) return;
+
+            const dataToSave = {
+                pages: projectData,
+            };
+
+            try {
+                const projectRef = doc(db, PROJECTS_COLLECTION, currentProjectDocumentId);
+                await setDoc(projectRef, dataToSave);
+                console.log("Project successfully saved to Firestore!");
+                localStorage.setItem(storageKey + '-' + currentProjectDocumentId, JSON.stringify(projectData)); 
+            } catch (error) {
+                console.error("Error writing document to Firestore: ", error);
+            }
+        }
+        
+        // --- Multi-Project Listing & Management Functions ---
+
+        /** Fetches all document IDs and renders the list in the modal. */
+        window.renderAllProjectsList = async function() {
+            const listContainer = document.getElementById('all-projects-list');
+            listContainer.innerHTML = 'Loading saved projects...';
+            
+            // Pre-fill the input field with the current ID
+            document.getElementById('new-project-id-input').value = currentProjectDocumentId;
+
+            try {
+                const querySnapshot = await getDocs(collection(db, PROJECTS_COLLECTION));
+                
+                let html = '<ul style="list-style:none; padding:0;">';
+                
+                if (querySnapshot.empty) {
+                    html += '<li style="padding: 10px; color: gray;">No saved projects found.</li>';
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        const projectId = doc.id;
+                        const isActive = projectId === currentProjectDocumentId;
+                        const status = isActive ? ' (ACTIVE)' : '';
+                        
+                        html += `<li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 5px; border: 1px solid #ddd; border-radius: 4px; background: ${isActive ? '#e6f3ff' : '#fff'};">
+                                    <span 
+                                        onclick="window.switchProjectAndCloseList('${projectId}')" 
+                                        style="cursor:pointer; flex-grow: 1; color: ${isActive ? '#007bff' : '#333'}; font-weight: ${isActive ? 'bold' : 'normal'};"
+                                    >
+                                        ${projectId}${status}
+                                    </span>
+                                    
+                                    <button 
+                                        onclick="window.deleteProject('${projectId}')" 
+                                        style="margin-left: 10px; background: #f87171; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer;"
+                                        title="Permanently delete this project"
+                                    >
+                                        🗑️ Delete
+                                    </button>
+                                </li>`;
+                    });
+                }
+                html += '</ul>';
+                
+                listContainer.innerHTML = html;
+                
+                // Show the modal
+                document.getElementById('project-list-modal').style.display = 'block';
+
+            } catch (error) {
+                listContainer.innerHTML = 'Error loading projects: Check console for details.';
+                console.error("Error fetching project list:", error);
+            }
+        }
+
+        /** Executes the project switch and closes the list modal. */
+        window.switchProjectAndCloseList = function(rawNewProjectId) {
+            const newProjectId = rawNewProjectId ? rawNewProjectId.trim().replace(/[^a-zA-Z0-9_-]/g, '_') : null;
+
+            if (newProjectId && newProjectId !== currentProjectDocumentId) {
+                window.switchProject(newProjectId);
+            } else if (newProjectId === currentProjectDocumentId) {
+                // If the user clicked the active project, just close the modal.
+            }
+            document.getElementById('project-list-modal').style.display = 'none';
+        }
+
+        /** Switches the project, saves old data, and loads new data. */
+        window.switchProject = function(newProjectId) {
+            if (!newProjectId) return;
+            
+            // 1. Save the project we are leaving
+            window.saveProject(); 
+
+            // 2. Change the global ID
+            currentProjectDocumentId = newProjectId;
+            
+            // 3. Reset internal state and re-load
+            projectData = []; 
+            currentPageId = null; 
+            renderPageList(); 
+            startRealtimeProjectListener(); 
+            
+            console.log(`Switched to project: ${newProjectId}`);
+        }
+        
+        /** Deletes a specific project document from Firestore. (NEW) */
+        window.deleteProject = async function(projectIdToDelete) {
+            if (!projectIdToDelete) return;
+
+            const confirmation = confirm(`Are you absolutely sure you want to delete the project: "${projectIdToDelete}"? This action cannot be undone and will permanently free up storage space.`);
+
+            if (confirmation) {
+                try {
+                    const projectRef = doc(db, PROJECTS_COLLECTION, projectIdToDelete);
+                    await deleteDoc(projectRef);
+                    
+                    console.log(`Project "${projectIdToDelete}" successfully deleted from Firestore.`);
+                    
+                    // 1. If the active project was deleted, switch to the default project
+                    if (projectIdToDelete === currentProjectDocumentId) {
+                        // Switch to a known default to prevent errors
+                        window.switchProject('classroom_master_file'); 
+                    }
+                    
+                    // 2. Refresh the project list in the modal
+                    window.renderAllProjectsList(); 
+
+                } catch (error) {
+                    alert("Error deleting project. See console for details.");
+                    console.error("Error deleting document: ", error);
+                }
+            }
+        }
+        
+        // --- Page Management Functions (Existing) ---
+
+        function loadProjectFromLocalStorage() {
+             const savedProject = localStorage.getItem(storageKey + '-' + currentProjectDocumentId);
+             if (savedProject) {
+                 projectData = JSON.parse(savedProject);
+                 currentPageId = projectData[0].id;
+                 loadPageData(currentPageId);
+                 renderPageList();
+             } else {
+                 initializeBlankProject();
+             }
+        }
+
+        function initializeBlankProject() {
+             projectData = [{
+                 id: 'page-1',
+                 name: 'Home Page',
+                 html: `<div style="text-align: center; padding: 20px;" class="floating-div"><h2>TOPIC  ${currentProjectDocumentId}!</h2><p>Let's learn.</p></div>`,
+                 drawingData: null
+             }];
+             currentPageId = 'page-1';
+             loadPageData(currentPageId);
+             renderPageList();
+              window.saveProject(); 
+        }
+
+// 💡 NEW Recommended approach: Save the blank project only if the document truly didn't exist
+// This should be done only once:
+async function ensureProjectExists() {
+    const projectRef = doc(db, PROJECTS_COLLECTION, currentProjectDocumentId);
+    const docSnapshot = await getDoc(projectRef); // You need to import getDoc for this
+
+    if (!docSnapshot.exists()) {
+        initializeBlankProject();
+        // Now, save it immediately once:
+        window.saveProject(); 
+    }
+    // Now start the listener AFTER you've ensured the doc exists
+    startRealtimeProjectListener(); 
+}
+
+        function getCurrentPage() {
+            return projectData.find(p => p.id === currentPageId);
+        }
+
+        window.switchPage = function(pageId) {
+            if (pageId === currentPageId) return;
+
+            saveCurrentPageData(); 
+            currentPageId = pageId;
+            loadPageData(pageId);
+            renderPageList();
+        }
+
+        window.createNewPage = function() {
+            const pageName = prompt("Enter new page name:", "New Page");
+            if (!pageName) return;
+
+            const newPageId = `page-${Date.now()}`;
+            const newPage = {
+                id: newPageId,
+                name: pageName,
+                html: `<div style="text-align: center; padding: 20px;" class="floating-div"><h1>${pageName}</h1><p>Let's learn!</p></div><div id="draggable-image" style="width:200px;height:200px;background-image(url('https://classroomclipart.com/image/content7/60315/thumb.gif');background-size:contain;z-index:10" ></div> `,
+                drawingData: null
+            };
+
+            saveCurrentPageData(); 
+            projectData.push(newPage); 
+            
+            switchPage(newPageId); 
+            window.saveProject(); 
+        }
+
+        function saveCurrentPageData() {
+            const page = getCurrentPage();
+            if (!page) return;
+            page.html = editor.innerHTML;
+        }
+
+        function loadPageData(pageId) {
+            const page = projectData.find(p => p.id === pageId);
+            if (!page) return;
+            editor.innerHTML = page.html || '';
+	window.initElements();
+        }
+
+
+function renderPageList() {
+    // CRITICAL: Use the module's existing projectData variable
+    const pages = projectData; 
+    const pageListElement = document.getElementById('page-list'); 
+    
+    // Check for element existence and data integrity
+    if (!pageListElement || !Array.isArray(pages) || pages.length === 0) {
+        if(pageListElement) pageListElement.innerHTML = ''; // Clear if the element exists
+        return;
+    }
+
+    pageListElement.innerHTML = ''; // Clear the existing list
+
+    pages.forEach((page, index) => {
+        const listItem = document.createElement('li');
+        listItem.id = `list-item-${page.id}`;
+        // Use an active class for styling
+        if (page.id === currentPageId) {
+            listItem.classList.add('active');
+        }
+        
+        // --- Page Name Span ---
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = page.name;
+        nameSpan.style.cssText = 'cursor: pointer; flex-grow: 1;';
+        nameSpan.onclick = () => window.switchPage(page.id);
+        
+        // --- Control Container ---
+        const controlContainer = document.createElement('div');
+        controlContainer.style.cssText = 'display: flex; gap: 5px;';
+
+        // Up Button
+        const upButton = document.createElement('button');
+        upButton.textContent = '⬆️';
+        upButton.title = 'Move Up';
+        upButton.onclick = (e) => { e.stopPropagation(); window.movePage(page.id, -1); };
+        if (index === 0) upButton.disabled = true;
+
+        // Down Button
+        const downButton = document.createElement('button');
+        downButton.textContent = '⬇️';
+        downButton.title = 'Move Down';
+        downButton.onclick = (e) => { e.stopPropagation(); window.movePage(page.id, 1); };
+        if (index === pages.length - 1) downButton.disabled = true;
+        
+        // Delete Button
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = '🗑️';
+        deleteButton.title = 'Delete Page';
+        deleteButton.style.color = 'red';
+        deleteButton.onclick = (e) => { e.stopPropagation(); window.deletePage(page.id); };
+
+
+        // Rename Button
+        const RnButton = document.createElement('button');
+        RnButton.textContent = 'R';
+        RnButton.title = 'Rename Page';
+        RnButton.style.color = 'red';
+        //RnButton.onclick = (e) => { e.stopPropagation(); window.renamePage(page.id,prompt('輸入新名稱', page.name)); };
+RnButton.onclick = (e) => { 
+    e.stopPropagation(); 
+    // Execute the prompt when the button is clicked!
+    const newName = prompt('輸入新名稱', page.name); 
+    if (newName !== null) { // Check if the user didn't cancel
+        window.renamePage(page.id, newName); 
+    }
+};
+
+
+        // --- Assemble and Append ---
+        //controlContainer.append(upButton, downButton, deleteButton);
+        controlContainer.append(upButton, downButton, deleteButton, RnButton);
+        listItem.append(nameSpan, controlContainer);
+        
+        listItem.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 5px;';
+        
+            pageListElement.appendChild(listItem);
+    });
+}
+ 
+
+
+
+
+
+
+        
+
+ 
+window.renamePage = function(pageId, newName) {
+    // CRITICAL FIX: Use projectData
+    const pageToRename = projectData.find(p => p.id === pageId);
+
+    if (pageToRename) {
+        pageToRename.name = newName.trim() || `Page ${pageId.split('-')[1]}`;
+        renderPageList();
+        window.saveProject(); 
+    }
+}
+
+ 
+window.deletePage = function(pageId) {
+    if (!confirm("Are you sure you want to delete this page?")) {
+        return; 
+    }
+    
+    // CRITICAL FIX: Use projectData instead of the undefined 'pages'
+    projectData = projectData.filter(p => p.id !== pageId);
+
+    // 2. Handle current page selection
+    if (projectData.length === 0) {
+        // Since all pages are gone, re-initialize a blank project
+        initializeBlankProject(); 
+    } else if (currentPageId === pageId) {
+        // If current page was deleted, switch to the first remaining page
+        window.switchPage(projectData[0].id);
+    }
+    
+    // 3. Re-render and save
+    renderPageList();
+    window.saveProject(); // Ensure data is persisted
+}
+
+ 
+window.movePage = function(pageId, direction) {
+    // CRITICAL FIX: Use projectData
+    const oldIndex = projectData.findIndex(p => p.id === pageId);
+
+    if (oldIndex === -1) return;
+    const newIndex = oldIndex + direction;
+    if (newIndex < 0 || newIndex >= projectData.length) return;
+
+    // 1. Remove and get the page
+    const [pageToMove] = projectData.splice(oldIndex, 1);
+    
+    // 2. Insert at the new position
+    projectData.splice(newIndex, 0, pageToMove);
+
+    // 3. Re-render and save
+    renderPageList();
+    window.saveProject(); 
+}
+
+ 
+
+        window.toggleEditMode = function() {
+            DesignMode = !DesignMode; 
+            const isEditable = editor.getAttribute('contenteditable') === 'true';
+            editor.setAttribute('contenteditable', !isEditable);
+        }
+
+
+        window.applyForeColor = function(color) {
+             document.execCommand('styleWithCSS', false, true); 
+             document.execCommand('foreColor', false, color); 
+             document.execCommand('styleWithCSS', false, false);
+        }
+        window.rgbToHex=function(rgb) {
+            // 從 'rgb(r, g, b)' 或 'rgba(r, g, b, a)' 字串中提取 r, g, b
+            const parts = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d*\.?\d*))?\)$/);
+            if (!parts) return '#ffffff'; // 如果格式不符，返回白色
+            
+            const r = parseInt(parts[1]);
+            const g = parseInt(parts[2]);
+            const b = parseInt(parts[3]);
+            
+            // 將 RGB 轉換為十六進制
+            const toHex = (c) => {
+                const hex = c.toString(16);
+                return hex.length === 1 ? "0" + hex : hex;
+            };
+
+            return "#" + toHex(r) + toHex(g) + toHex(b);
+        }
+
+
+              //############################ INSERT ELEMENT      Dynamic Element ####################
+
+        // --- Dynamic Element Creation ---
+
+
+
+window.addDivWithImageBackgroundElement = function() {
+     const imageUrl = document.getElementById('Xurl').value;
+ 
+     if (!imageUrl) return;
+
+    const imgDiv = document.createElement('div');
+    
+    // 1. Assign a unique ID (Required for saving and selection)
+    imgDiv.id = `img-${Date.now()}`; 
+    
+    imgDiv.className = 'draggable-image';
+    
+    // Set positioning explicitly (CRITICAL for draggable)
+    imgDiv.style.position = 'absolute'; 
+    imgDiv.style.left = `${lastClickPos.x}px`;
+    imgDiv.style.top = `${lastClickPos.y}px`;
+    
+    imgDiv.style.width = '150px';
+    imgDiv.style.height = '150px';
+    imgDiv.style.backgroundImage = `url('${imageUrl}')`;
+    imgDiv.style.backgroundSize = 'cover';
+    imgDiv.style.backgroundPosition = 'center';
+    imgDiv.style.backgroundRepeat = 'no-repeat';
+    imgDiv.style.borderRadius = '0px'; 
+    
+    editor.appendChild(imgDiv);
+    
+    // 2. Initialize ALL necessary properties and handlers
+    window.initElement(imgDiv); // Adds resizer, z-index
+    window.initElementForMovement(imgDiv); // Adds data-degree for rotation
+    
+    window.saveProject();
+    window.showModal('Image element added.', 'Success');
+}
+
+
+
+
+ window.insertCode=function(htmlString) {
+
+  
+  const selection = window.getSelection();  
+             const url = prompt("Enter the URL for the link (e.g., https://www.google.com):"); 
+	     const myH= Number(activeItem.style.height.replace('px',''))*0.8;
+    
+    if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+
+            //const htmlString="<a href=\""+url+"\" target=\"_blank\" >"+range+"</a>";
+	    
+        // Create a temporary div to parse the HTML string into DOM nodes
+        const tempDiv = document.createElement('span');
+ 
+        if(htmlString=='iframe'){
+
+	   tempDiv.innerHTML=`<iframe src="${url}" style="height:${myH}px;width:100%" ></iframe>`;
+	}else if(htmlString=='img'){
+
+	   tempDiv.innerHTML=`<image src="${url}" style="height:auto;width:200px;display:inline" ondblclick="window.dealme(this);" alt="按兩下調整尺寸" ></image>`;
+        }else{
+        tempDiv.innerHTML = htmlString;
+        }
+
+        const fragment = document.createDocumentFragment();
+        while (tempDiv.firstChild) {
+            fragment.appendChild(tempDiv.firstChild);
+        }
+
+        range.deleteContents(); // Optional: remove selected text
+        range.insertNode(fragment);
+
+        // Optionally, collapse the selection after insertion
+        selection.collapseToEnd();
+     
+  } else {
+    // If no selection, append to the end
+    contentEditableElement.appendChild(document.createTextNode(htmlString));
+  }
+}
+
+         window.addNewTextElement=function(type,mycolor) {
+            if (!type) return;
+	 
+            let defaultContent = "";
+            let tagName = type.toLowerCase();
+		let randomNumber = Math.random();
+		randomNumber =Math.floor(randomNumber*1000);            
+            // Reset the dropdown after selection  
+            document.getElementById('addElementType').value = ""; 
+
+            if (type === 'P') {
+                defaultContent = "<p>按兩下後在此打字</p>";
+            } else if (type === 'H1') {
+                defaultContent = "<h1>按兩下後在此打字</h1>";
+            } else if (type === 'H2') {
+                defaultContent = "<h2>按兩下後在此打字</h2>";
+            } else if (type === 'H3') {
+                defaultContent = "<h3>按兩下後在此打字</h3>";
+            } else if (type === 'sticker') {
+                defaultContent = `<div id="hinder${randomNumber}" class="floating-div"   style="background-color:${mycolor};background-size:contain;padding-left:40px;color:blue;font-size:30px;display:inline;box-shadow:2px 2px gray ">memo<div class="resize" ></div></div>`;
+
+            } else if (type === 'Animateout') {
+
+                defaultContent = "<h3>按兩下後在此打字</h3>";
+		window.addTextElementAnimated();
+                return;
+            } else if (type === 'Hinter') {
+               defaultContent = `<div id="hinder${randomNumber}"   ontouchstart="dropmenu('hinder${randomNumber}_menu')"  onclick="dropmenu('hinder${randomNumber}_menu')" style="position:relative;background-size:contain;padding-left:40px;color:blue;font-size:30px;display:inline"><b>按兩下後在此打字，白板模式中按一下顯示V或X<BR>作為答案結果(進設計模式下可刪除)</b><span id="hinder${randomNumber}_menu" style="display:none;position:absolute;top:-10px;left:-20px;background:;border:1px solid gray;border-radius:25px;padding:4px;width:100%px;height:50px;background-size:contain" ><font color="black" size="6" >✔️❌</font></span> </div>`;
+
+            } else if (type === 'DropMenu') {
+                defaultContent = `<h1 id="hinder${randomNumber}"   ontouchstart="dropmenu()"  onclick="dropmenu()" style="position:relative;background-size:contain"><b>按兩下後在此打字</b><span id="hinder${randomNumber}_menu" style="display:none;position:absolute;top:50px;left:10px;background:white;border:2px solid gray;border-radius:25px;padding:4px;width:100%;background-size:contain" ><font color="black" size="6"  ontouchstart="this.style.display='none';" >說明:</font></span></h1> `;
+            } else if (type === 'Poke') {
+                defaultContent = `<div id="hinder${randomNumber}"   ontouchstart="showCard(this)"  onclick="showCard(this)" style="border-radius:16px;background-size:contain;background-repeat:no-repeat;background-position-y: center;border:10px solid white;box-shadow:4px 4px 2px gray"> <img id="coverpic" src="https://opengameart.org/sites/default/files/styles/medium/public/card%20back%20red.png" style="display:none;"></div> `;
+
+            } else if (type === 'TTS') {
+                defaultContent = `<div  id=\"TTS"+randomNumber+"\"   class="TTS" ontouchstart="speakText(this.textContent)"  onclick="speakText(this.textContent)" style="background-size:contain" >按兩下在此打字電腦報讀語音</div>`;
+            } else if (type === 'VRS') {
+                defaultContent = `<div  id="template" class="VRS"  ontouchstart="startVoiceRecognition(this.textContent.replace('*',randomItem()))"  onclick="startVoiceRecognition(this.textContent.replace('*',randomItem()));" style="background-size:contain" >Word to say #</div>`;
+
+            } else {
+                return;
+            }
+
+            const textDiv = document.createElement('div');
+            textDiv.className = 'floating-div';  // fly-in-animated transition-all duration-700 ease-out
+            textDiv.style.left = `${lastClickPos.x}px`;
+            textDiv.style.top = `${lastClickPos.y}px`;
+            textDiv.setAttribute('contenteditable', 'false');
+            textDiv.style.backgroundSize = 'contain';
+            textDiv.style.borderRadius = '0px'; // Initialize with 0 radius
+            textDiv.style.padding = '5px';
+            textDiv.style.minWidth = '10px'; // Give headings some space
+            textDiv.style.fontSize = '50pt';  
+            textDiv.innerHTML = defaultContent;
+            
+            editor.appendChild(textDiv);
+            window.initElement(textDiv);
+        }
+
+
+
+       //插入動畫文字
+         window.addTextElementAnimated=function() {
+            const textDiv = document.createElement('div');
+            // Start text elements VISIBLE, but include the animation utility class
+            textDiv.className = 'floating-div fly-in-animated transition-all duration-700 ease-out opacity-100';
+            textDiv.style.left = `${lastClickPos.x}px`;
+            textDiv.style.top = `${lastClickPos.y}px`;
+            textDiv.setAttribute('contenteditable', 'false'); 
+            textDiv.style.backgroundColor = '#ffffaa';
+            textDiv.style.borderRadius = '12px';
+            textDiv.innerHTML = "Click the 'Toggle Animation' button to fly me in/out, then use the Gemini AI Tools!";
+            editor.appendChild(textDiv);
+            window.initElement(textDiv);
+        }
+
+
+ // --- FLY-IN ANIMATION LOGIC ---
+      window.toggleFlyIn=function(element) {
+
+            if (!element || !element.classList.contains('fly-in-animated')) {
+                //showModal('Please select a text element to animate.', 'Info');
+                return;
+            }
+            
+            if (element.classList.contains('locked')) {
+                window.showModal("Item is locked and cannot be animated.", 'Info');
+                //return;
+            }
+            if (element.classList.contains('editing')) {
+                window.showModal("Item is editing and cannot be animated.", 'Info');
+                //return;
+            }
+
+            const isHidden = element.classList.contains('opacity-0');
+        if (DesignMode==false) {
+            if (isHidden) {
+                element.classList.add('opacity-100', 'translate-x-0');
+                element.classList.remove('opacity-0', '-translate-x-full');
+		window.speakText(element.innerText);
+		flag=false;
+            } else {
+
+                 element.classList.add('opacity-0', '-translate-x-full');
+                 element.classList.remove('opacity-100', 'translate-x-0');
+            }
+		
+
+         }else{
+                
+ 		 const items = document.querySelectorAll('.fly-in-animated');
+		items.forEach(item => {
+		//showModal('item number'+items.length,'end phase');
+					item.classList.remove('opacity-0', '-translate-x-full');
+					item.style.display='';
+					item.classList.remove('opacity-100', '-translate-x-0');
+		});
+	}
+
+
+
+        }
+
+ window.textSlider=function(){
+
+ //const playlist=[];
+  const sliders = editor.querySelectorAll('.fly-in-animated');
+
+  sliders.forEach((slider,i)=>{
+ 
+   //if(sliders[i].classList.contains('fly-in-animated')){
+         //playlist.push(sliders[i]);
+         //playlist.reverse();
+   //}
+  });
+
+
+
+        window.showModal(counter,'slider number');
+
+       //playlist[i].classList.add('activeItem');
+        window.toggleFlyIn(sliders[counter]);
+	 counter +=1;
+
+        if (counter==sliders.length || counter>sliders.length){            
+		counter=0;
+	}
+}
+
+
+
+//回傳隨機圖片名稱
+   window.randomItem=function(){
+	   const seeds = editor.querySelectorAll('.draggable-image');
+	   
+	let seedx=Math.floor(Math.random()*seeds.length);
+		gameTarget=seeds[seedx].id;
+		quizCount +=1;
+		return seeds[seedx].id
+
+        }
+
+
+//-----------------------加入動畫
+     window.toggleAnimate=function(animate){
+           activeItem.classList.remove('.animate-ping', '.animate-pulse', '.animate-spin',  '.animate-bounce','.translate-y-full');
+             if(activeItem.classList.contains(animate)){
+	 activeItem.classList.remove(animate);
+           }else{
+	activeItem.classList.add(animate);
+          }
+         
+	 //####-translate-x-full  translate-x-0 -translate-y-80 ,'-translate-y-80'
+	 //###animate-none .animate-ping animate-pulse animate-spin  animate-bounce animate-spin .animate-bounce
+
+
+        }
+
+
+
+
+
+
+
+
+     //套用id名稱，隱藏資訊        到選取的圖層
+       window.applyMyInfo=function() {
+            const myID = document.getElementById('MyID').value;
+		
+                activeItem.setAttribute("id",myID);
+
+                if (activeItem.getElementsByTagName("span")){
+		       if(activeItem.getElementsByTagName("span")[0]){
+		           activeItem.getElementsByTagName("span")[0].innerText=document.getElementById('MyInfo').value;
+		       }else{
+
+		           const mytag = document.createElement('span');
+			   mytag.style.display="none";
+			   mytag.innerText=document.getElementById('MyInfo').value;
+                           activeItem.appendChild(mytag);
+
+                       }
+		 } 
+ 
+		 	
+	}
+
+ 
+ window.pasteClone=function(){
+       
+    const editor = document.getElementById('editor');
+    const tempdiv=document.createElement('div');
+    tempdiv.innerHTML=document.getElementById('temp').value;
+    editor.appendChild(tempdiv);
+
+    // 5. 重新初始化 (關鍵步驟)
+    //    新複製的元素沒有拖曳事件，需要重新綁定
+    window.initElements();
+}
+
+
+
+
+
+
+ window.expand=function(){
+ if (""!=event.srcElement.id) {	   
+
+		let ch=event.srcElement.id + "_0"; 
+        	//var target=document.all[ch] 
+
+		let target=document.getElementById(ch);
+  
+		if (null!=target){target.style.display =(target.style.display=="none" ) ? "" : "none";} 
+		
+
+ }
+           //alert(randomItem());
+
+ if (event.srcElement.getElementsByTagName("span") && event.srcElement.classList.contains('draggable-image')){
+       const imgpool=event.srcElement.querySelectorAll("img");
+	if(DesignMode){
+	activeItem.getElementsByTagName("span")[0].style.display='';
+		event.srcElement.setAttribute('contentEditable','true');
+		//showModal(imgpool.length,'');
+		
+	        if(imgpool){
+		 imgpool.forEach(sw=>{
+			sw.style.display='';
+		         });
+                }
+	}else{
+	activeItem.getElementsByTagName("span")[0].style.display='none';
+		activeItem.setAttribute('contentEditable','false');
+
+	        if(imgpool){
+		 if(imgpool.length>3){activeItem.style.transform = 'translateY(-250px)';}		
+		 imgpool.forEach(sw=>{
+			sw.style.display='none';
+		         });
+                }
+
+	
+		window.swapImg(activeItem);
+
+	}//end if design mode
+
+		
+
+      }//end if span exits
+
+		
+}
+
+
+
+
+ window.dropmenu=function(target){    
+
+
+        	 
+         if(target){
+		 
+	 const targetx=document.getElementById(target);
+                   if (null!=targetx && DesignMode==false){targetx.style.display =(targetx.style.display=="none" ) ? "" : "none";} 
+
+
+       }else{
+
+                         if (""!=event.srcElement.id) {
+                                   let ch=event.srcElement.id + "_menu"; 
+		const mytarget=document.getElementById(ch);
+
+		   if (null!=mytarget){
+			mytarget.style.display =(mytarget.style.display=="none" ) ? "" : "none";
+			
+			if(mytarget.innerText=='' && mytarget.classList.contains('floating-div')){showCard(event.srcElement,mytarget);}//==========需要再加條件
+		   }
+
+                      }
+	}
+		 
+
+
+}
+
+
+
+//撲克牌模式===🃏
+  let cardflag=false;
+ window.showCard=function(mytarget){
+   cardflag=!cardflag
+      let coverpic=document.getElementById('coverpic').src; 
+      let mybk=document.getElementById(randomItem()).style.backgroundImage;
+      let act=Math.floor(Math.random()*10);
+
+  if(cardflag==false){
+       mytarget.style.cssText=`  font-size:30px;color:blue;display: flex;align-items: center;justify-content: center;width:120px;height:160px;background-size:contain;background-repeat:no-repeat;background-position-y:center;background-color:;border:10px white solid;border-radius:15px;box-shadow:4px 4px 6px gray`;
+       mytarget.style.backgroundImage=`url('${coverpic}')`;
+       let bnr=document.createElement('span');
+        if(act>5){
+           window.showModal('Say ','Do');
+       }else{
+           window.showModal('Act ','Do');      
+       }
+  }else{
+  mytarget.style.cssText=`width:120px;height:160px;background-size:contain;background-repeat:no-repeat;background-position-y:center;background-color:;border:10px white solid;border-radius:15px;box-shadow:4px 4px 6px gray`;
+  mytarget.style.backgroundImage=document.getElementById(randomItem()).style.backgroundImage;
+   //mytarget.inneText='';
+  window.startVoiceRecognition(gameTarget);
+
+  }
+ 
+}
+
+
+
+
+window.swapImg=function(targetElement){
+
+
+		const imgpool=targetElement.querySelectorAll("img");
+		//showModal(imgpool.length,'total images');
+
+		if(imgpool.length==1){
+			const swapimg=imgpool[0].src;
+			targetElement.style.backgroundImage=`url('${swapimg}')`;
+
+		}else{
+ 	               //targetElement.style.transform ='rotate(45deg)';
+			
+
+
+ 	           setTimeout(() => {
+			
+			let x=Math.floor(Math.random()*imgpool.length);
+			const swapimg=imgpool[x].src;	
+			targetElement.style.backgroundImage=`url('${swapimg}')`;
+
+	                //activeItem.style.transform = 'translateY(-80px)';
+	                targetElement.style.transform = 'rotate(45deg)';
+
+
+ 	      setTimeout(() =>{ targetElement.style.transform = 'rotate(90deg)';}, 100);
+	            }, 100);
+			 targetElement.style.transform = 'rotate(360 deg)';
+			//activeItem.style.transform = 'translateY(-20px)';
+
+				
+		}		
+			//const bg=`background-image:url('${swapimg}'); background-size: cover;`;
+}
+
+
+//---paste as file without uploading免上傳的本機圖片貼上 
+   window.handlePaste=function(event) {
+        //if (!isEditing) return; 
+
+
+        const items = event.clipboardData.items;
+        let imagePasted = false;
+
+        for (let i = 0; i < items.length; i++) {
+            // Look for an image item (kind === 'file' is crucial for image data)
+            if (items[i].type.indexOf('image') !== -1 && items[i].kind === 'file') {
+                event.preventDefault(); // Stop the default paste action
+                imagePasted = true;
+                const file = items[i].getAsFile();
+
+                if (file) {
+ 
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const base64Image = e.target.result;
+
+           const imgDiv = document.createElement('div');
+            imgDiv.className = 'draggable-image';
+            imgDiv.style.left =  `${lastClickPos.x}px`;;
+            imgDiv.style.top =  `${lastClickPos.y}px`;;
+            imgDiv.style.maxWidth = '100%';
+            imgDiv.style.width = '150px';
+            imgDiv.style.height = '150px';
+            imgDiv.style.backgroundImage = `url('${base64Image}')`;
+            imgDiv.style.backgroundSize = 'cover';
+            imgDiv.style.backgroundPosition = 'center';
+            imgDiv.style.backgroundRepeat = 'no-repeat';
+            imgDiv.style.borderRadius = '0px'; // Initialize with 0 radius
+            editor.appendChild(imgDiv);
+            window.initElement(imgDiv); 
+
+                        // Create an IMG element
+                        const img = document.createElement('img');
+                         img.src = base64Image;
+                         
+                        // Add the draggable class and initial positioning
+                        //img.className = 'draggable-content'; 
+
+                        //editor.insertNode(img); // Insert into the editor~~~~Not working
+
+  //--selection pasting
+  const selection = window.getSelection();
+
+    if (selection.rangeCount > 0 && activeItem.classList.contains('editing')) {
+        const range = selection.getRangeAt(0);
+             const htmlString=`<img src='${base64Image}' style="display:inline;width:150px;height:auto" alt="按兩下調整尺寸" ondblclick="dealme(this);" >`;	    
+        // Create a temporary div to parse the HTML string into DOM nodes
+        const tempDiv = document.createElement('span');
+        tempDiv.innerHTML = htmlString;
+        const fragment = document.createDocumentFragment();
+        while (tempDiv.firstChild) {
+            fragment.appendChild(tempDiv.firstChild);
+        }
+
+        range.deleteContents(); // Optional: remove selected text
+        range.insertNode(fragment);
+
+        // Optionally, collapse the selection after insertion
+        selection.collapseToEnd();
+     
+  } else {
+    // If no selection, append to the end
+    contentEditableElement.appendChild(document.createTextNode(htmlString));
+  }
+//--selection pasting
+
+
+
+                    };
+                    reader.readAsDataURL(file);
+                    break; 
+                }
+            }
+        }
+    }
+
+
+
+
+ window.insertDice=function(){
+
+	 const dicecode=`<div class="draggable-image " style="background-image: url('https://www.emojiall.com/images/120/samsung/2685.png'); background-size: cover; z-index: 10; left: 439px; top: 161px; width: 76px; height: 72px; border-radius: 8px;padding:0px;margin:0px;box-shadow:2px 2px  gray" id="" contenteditable="true" data-listener-added_4520328c="true"><span style="" contenteditable="true">AAAA<img src="https://www.emojiall.com/images/120/samsung/2681.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2682.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2683.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2684.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2685.png" style="height: auto; width: 200px;" ondblclick="dealme(this);" alt="按兩下調整尺寸"></span><img src="https://www.emojiall.com/images/120/samsung/2680.png" style="width: 200px;" alt="按兩下調整尺寸"><div class="resizer"></div></div>`;
+
+	document.getElementById('temp').value=dicecode;
+	window.pasteClone();
+
+}
+
+ window.dealme=function(ele){
+ 	const p = prompt("輸入尺寸如60(\%)");
+ 
+ 	const w=ele.style.width.substring(0,ele.style.width.length-2);
+ 
+
+	ele.style.width=p*(w/100)+'px';
+ 
+}
+
+
+
+
+        // #########################  Styling Functions (Scoped to activeItem) ################################3
+
+        /**
+         * Generic runner for simple text formatting commands (bold, italic, underline).
+         */
+      window.runTextCommand=function(command) {
+            // Check if active item is a text div AND is editable
+            if (!activeItem || activeItem.getAttribute('contenteditable') !== 'true' || !activeItem.classList.contains('floating-div')) {
+                console.error(`Cannot run command '${command}': Select a text item and click 'Edit Text' first.`);
+                return;
+            }
+            activeItem.focus();
+            document.execCommand(command, false, null);
+        }
+
+        // formatBlock function removed as the feature is now handled by the addNewTextElement dropdown
+
+       window.setFontColor=function() {
+             if (!activeItem || activeItem.getAttribute('contenteditable') !== 'true' || !activeItem.classList.contains('floating-div')) return;
+            activeItem.focus(); 
+            document.execCommand('foreColor', false, document.getElementById('fontColor').value);
+        }
+
+     window.setFontSize=function() {
+            // Font size command works with index values 1-7
+            if (!activeItem || activeItem.getAttribute('contenteditable') !== 'true' || !activeItem.classList.contains('floating-div')) return;
+            const sizeValue = document.getElementById('fontSize').value;
+            activeItem.focus(); 
+            document.execCommand('fontSize', false, sizeValue);
+        }
+
+   window.changeFont=function() {
+    const fontName = document.getElementById('fontSelector').value;
+    document.execCommand('fontName', false, fontName);
+  }
+
+      window.setBackgroundColor=function(cmd) {
+            // Background color can be applied to both text and image elements
+
+            if (!activeItem || (!activeItem.classList.contains('floating-div') && !activeItem.classList.contains('draggable-image'))) return;
+	if(cmd=='t'){activeItem.style.backgroundColor ='';}else{
+            const color = document.getElementById('backgroundColor').value;
+            activeItem.style.backgroundColor = color;}
+
+        }
+
+     window.dobg=function(url) {
+            const color = document.getElementById('backgroundColor').value;
+	
+           if(document.getElementById('main')){
+                document.getElementById('main').style.backgroundColor = color;
+	let urlx=document.getElementById('main').style.backgroundImage;
+                if(url){ document.getElementById('main').style.backgroundImage='url('+prompt('貼上底圖網址',urlx)+')';}
+           }else{
+ 
+                const bg=document.createElement('div');
+                bg.style.cssText=`width:100%;height:100%;background-size: contain;backgroundColo:${color}`;
+	let urlx='';
+                if(url){ document.getElementById('main').style.backgroundImage='url('+prompt('貼上底圖網址')+')';}
+                //if(url !==null){ document.getElementById('main').style.backgroundImage=`url('${urlx}')`;}
+                bg.id='main';
+	editor.appendChild(bg);
+ 
+           }
+        }
+
+
+
+         window.applyBorderChanges=function() {
+
+           //const borderColor = document.getElementById('backgroundColor').value;
+           const borderColor = document.getElementById('borderColor').value;
+           const borderWidth = document.getElementById('borderWidth').value;
+            const borderStyle = document.getElementById('borderStyle').value;
+
+            activeItem.style.borderColor = borderColor;
+            activeItem.style.borderWidth = borderWidth;
+           activeItem.style.borderStyle = borderStyle;
+        }
+
+        // Apply initial changes on page load
+       // document.addEventListener('DOMContentLoaded', applyBorderChanges);
+
+
+
+
+        // --- MODIFIED: Opacity Control Function ---
+        window.setElementOpacity= function(value) {
+            if (!activeItem) return;
+            
+            // 1. 執行 Opacity 變更
+            const opacityValue = value / 100;
+            activeItem.style.opacity = opacityValue;
+            
+            // 2. 清除前一個計時器
+            if (opacityTimer) {
+                clearTimeout(opacityTimer);
+            }
+            
+            // 3. 設定一個新的計時器，在 500ms 後儲存歷史狀態
+            // 這稱為 "Debounce"，能防止連續滑動時產生過多的歷史紀錄
+            opacityTimer = setTimeout(() => {
+                pushHistoryState();
+            }, 500);
+        }
+
+        
+
+        /**
+         * Sets the border radius of the active item (for both text and image divs).
+         */
+        window.setBorderRadius= function() {
+            if (!activeItem) return;
+
+            // Check if the item is a text element OR a draggable image
+            const isStylable = activeItem.classList.contains('floating-div') || activeItem.classList.contains('draggable-image');
+            
+            if (isStylable) {
+                const radius = document.getElementById('borderRadius').value;
+                activeItem.style.borderRadius = `${radius}px`;
+            }
+        }
+
+
+
+ window.insertLink=function() {
+  const selection = window.getSelection();  
+
+    
+    if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+            const url = prompt("Enter the URL for the link (e.g., https://www.google.com):"); 
+            const htmlString="<a href=\""+url+"\" target=\"_blank\" ><b>"+range+"</b></a>";
+	    
+        // Create a temporary div to parse the HTML string into DOM nodes
+        const tempDiv = document.createElement('span');
+        tempDiv.innerHTML = htmlString;
+        const fragment = document.createDocumentFragment();
+        while (tempDiv.firstChild) {
+            fragment.appendChild(tempDiv.firstChild);
+        }
+
+        range.deleteContents(); // Optional: remove selected text
+        range.insertNode(fragment);
+
+        // Optionally, collapse the selection after insertion
+        selection.collapseToEnd();
+     
+  } else {
+    // If no selection, append to the end
+    contentEditableElement.appendChild(document.createTextNode(htmlString));
+  }
+}
+
+
+
+
+
+         window.removeLink=function() {
+            if (!activeItem || activeItem.getAttribute('contenteditable') !== 'true' || !activeItem.classList.contains('floating-div')) {
+                console.error("Please select a text item and click 'Edit Text' first.");
+                return;
+            }
+            activeItem.focus();
+            document.execCommand('unlink', false, null);
+        }
+
+
+
+        // --- 5. YOUR EXISTING MODULE CODE (INTEGRATED PLACEHOLDERS) ---
+        // ------------------------------------------------------------------
+        // *** CRITICAL STEP: REPLACE THESE PLACEHOLDERS WITH YOUR FULL CODE ***
+        // ------------------------------------------------------------------
+
+// Add these empty definitions near your other window.functions
+
+ window.updateLockButtonState=function() {
+             if (activeItem && activeItem.classList.contains('locked')) {
+                lockToggleBtn.textContent = '🔒off';
+            } else {
+                lockToggleBtn.textContent = '🔏on';
+            }
+ }
+window.updateEditButtonState=function() { 
+
+           if (!editToggleBtn) return;
+
+            const isTextElement = activeItem && activeItem.classList.contains('floating-div');
+            const isEditing = activeItem && activeItem.getAttribute('contenteditable') === 'true';
+
+            if (isTextElement) {
+                editToggleBtn.disabled = activeItem.classList.contains('locked');
+                editToggleBtn.textContent = isEditing ? '停止編輯' : '編輯文字';
+            } else {
+                editToggleBtn.disabled = true;
+                editToggleBtn.textContent = '編輯文字';
+            }
+
+ }
+
+window.selectItem = function(item) {
+    if (activeItem && activeItem !== item) {
+        activeItem.classList.remove('selected');
+        // IMPORTANT: Also disable contenteditable on the previously selected item
+        if (activeItem.getAttribute('contenteditable') === 'true') {
+            activeItem.setAttribute('contenteditable', 'false');
+            activeItem.classList.remove('editing');
+        }
+    }
+    activeItem = item;
+    activeItem.classList.add('selected');
+    window.updateLockButtonState();
+    window.updateEditButtonState();
+}
+
+
+        // ########################## Element Controls #########################
+        window.bringForward= function() {
+            if (!activeItem || activeItem.id === 'editor') return;
+            // Max z-index for normal elements is 14 (canvas is 15)
+            const currentZIndex = parseInt(activeItem.style.zIndex) || 10;
+            activeItem.style.zIndex = Math.min(14, currentZIndex + 1);
+        }
+
+      window.sendBackward= function() {
+            if (!activeItem || activeItem.id === 'editor') return;
+            const currentZIndex = parseInt(activeItem.style.zIndex) || 10;
+            activeItem.style.zIndex = Math.max(10, currentZIndex - 1);
+        }
+
+     window.deleteSelectedItem= function() {
+            if (activeItem) {
+                activeItem.remove();
+                activeItem = null;
+                updateLockButtonState();
+                updateEditButtonState();
+            }
+        }
+
+
+
+
+
+
+         window.toggleContentEditable=function() {
+	//showModal(activeItem.outerHTML);
+            if (!activeItem || !activeItem.classList.contains('floating-div')) {
+                console.error("Cannot edit: No text item selected.");
+                return;
+            }
+
+            if (activeItem.classList.contains('locked')) {
+               // console.warn("Item is locked and cannot be edited.");
+                //return;
+            }
+
+            const isEditable = activeItem.getAttribute('contenteditable') === 'true';
+
+            if (isEditable) {
+                // Stop editing
+                activeItem.setAttribute('contenteditable', 'false');
+                activeItem.classList.remove('editing'); 
+                activeItem.blur();
+	        pushHistoryState(); 
+            } else {
+                // Start editing
+                activeItem.setAttribute('contenteditable', 'true');
+                activeItem.classList.add('editing');
+                activeItem.focus();
+            }
+            updateEditButtonState();
+        }
+
+window.resetSlides = function() {
+    // 1. Select all elements that use the sliding animation
+    const sliders = document.querySelectorAll('#editor .fly-in-animated'); 
+    // Using document.querySelectorAll is safer than editor.querySelectorAll 
+    // if the editor content is briefly cleared or swapped.
+    
+    if (sliders.length === 0) {
+        // Safe exit if no elements are found
+        return;
+    }
+
+    sliders.forEach(slider => {
+        // Ensure the element exists before attempting to manipulate its classes
+        if (slider && slider.classList) {
+            
+            // Remove the final, visible state classes (opacity: 100, translate-x: 0)
+            slider.classList.remove('opacity-100', 'translate-x-0');
+            
+            // Add the initial, hidden state classes (opacity: 0, translate-x: -full)
+            // This prepares the element to "fly in" when the page is viewed again.
+            slider.classList.add('opacity-0', '-translate-x-full');
+            
+            // Optional: Force a reflow/re-paint if needed to ensure the slide hides immediately
+            void slider.offsetWidth; 
+        }
+    });
+    console.log("Slide animations reset for new page load.");
+}
+
+
+
+window.handleStart=function(e){ 
+
+            isSwiping = false; // <-- 新增: 拖曳開始時取消滑動狀態
+ 	    if (currentTool !== null) return; // Prevent interaction with elements when a drawing tool is active
+            //if (isDrawingEnabled) return;
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+
+            // Calculate position relative to editor for new elements
+            const editorRect = editor.getBoundingClientRect();
+            lastClickPos.x = clientX - editorRect.left;
+            lastClickPos.y = clientY - editorRect.top;
+            
+            const targetElement = e.target.closest('.draggable-image, .floating-div, .resizer');
+
+            // Handle clearing selection if clicking on the main editor area
+            if (e.target.id === 'editor' || (e.target.tagName === 'DIV' && e.target.id !== 'drawingCanvas' && !targetElement)) {
+                if (activeItem) {
+                    activeItem.classList.remove('selected');
+                    if (activeItem.getAttribute('contenteditable') === 'true') {
+                        activeItem.setAttribute('contenteditable', 'false');
+                        activeItem.classList.remove('editing');
+                    }
+                }
+                activeItem = null;
+                updateLockButtonState();
+                updateEditButtonState();
+                return;
+            }
+
+            if (targetElement) {
+                const movableElement = targetElement.closest('.draggable-image, .floating-div');
+                
+                if (movableElement) {
+                    selectItem(movableElement); 
+                    
+                    const isLocked = movableElement.classList.contains('locked');
+                    const isEditable = movableElement.getAttribute('contenteditable') === 'true'; 
+                    
+                    // Block drag/resize if locked OR currently being edited
+                    if (isLocked || isEditable) { 
+                        return; 
+                    }
+
+                    // Allow Resizing
+                    if (e.target.classList.contains('resizer')) {
+                        isResizing = true;
+                        isDragging = false;
+                        startX = clientX;
+                        startY = clientY;
+                        startWidth = activeItem.offsetWidth;
+                        startHeight = activeItem.offsetHeight;
+                        e.preventDefault();
+                    } 
+                    // Allow Dragging
+                    else { 
+                        isDragging = true;
+                        isResizing = false;
+                        startX = clientX;
+                        startY = clientY;
+                        startLeft = activeItem.offsetLeft;
+                        startTop = activeItem.offsetTop;
+                        e.preventDefault();
+
+                    }
+                }
+                e.stopPropagation();
+            }
+        }
+window.handleMove=function(e){ 
+ 
+            if (!activeItem || activeItem.classList.contains('locked') || activeItem.getAttribute('contenteditable') === 'true' || (!isDragging && !isResizing)) return;
+
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+
+            if (isResizing) {
+                const newWidth = startWidth + (clientX - startX);
+                const newHeight = startHeight + (clientY - startY);
+                activeItem.style.width = `${Math.max(50, newWidth)}px`;
+                activeItem.style.height = `${Math.max(50, newHeight)}px`;
+            } else if (isDragging) {
+                const newLeft = startLeft + (clientX - startX);
+                const newTop = startTop + (clientY - startY);
+                activeItem.style.left = `${newLeft}px`;
+                activeItem.style.top = `${newTop}px`;
+	  window.checkOverlap(activeItem); 
+             //======================================  一碰到就有反應 
+
+            }
+            e.preventDefault();
+        }
+
+ window.handleEnd=function() { 
+    if (isDragging || isResizing) {
+       // pushHistoryState(); // <-- 新增: 拖曳/縮放結束
+    }
+    isDragging = false; 
+    isResizing = false; 
+
+}
+
+
+
+   
+// MOUSE EVENTS: The main actions should fire globally
+window.addEventListener('mousemove', handleMove);
+window.addEventListener('mouseup', handleEnd);
+
+// TOUCH EVENTS: The main actions should fire globally
+window.addEventListener('touchmove', handleMove);
+window.addEventListener('touchend', handleEnd);
+window.addEventListener('touchcancel', handleEnd);
+
+// The start events MUST remain on the editor/document to detect the start of a drag/resize
+editor.addEventListener('mousedown', handleStart);
+editor.addEventListener('touchstart', handleStart);
+
+ editor.addEventListener('dblclick',toggleContentEditable);
+
+
+
+
+
+ 
+
+
+/**
+ * Toggles the 'locked' class on the active element and updates the UI button.
+ */
+window.toggleLock = function() {
+    if (!activeItem) {
+        window.showModal('No item selected to lock/unlock.', 'Error');
+        return;
+    }
+           if(activeItem.classList.contains('locked')){
+                    activeItem.classList.remove('opacity-50', 'animate-bounce');
+          }
+    // Toggle the 'locked' class
+    activeItem.classList.toggle('locked');
+
+    // Update the button and save the project state
+    window.updateLockButtonState();
+    window.saveProject();
+    
+    window.showModal(
+        activeItem.classList.contains('locked') ? 'Element Locked 🔒' : 'Element Unlocked 🔏', 
+        'Success'
+    );
+}
+
+// Ensure the button state function is working correctly (you had this as a placeholder)
+window.updateLockButtonState = function() {
+    if (!lockToggleBtn) return;
+    
+    if (activeItem && activeItem.classList.contains('locked')) {
+        lockToggleBtn.textContent = '🔒 Locked';
+        // Disable editing/resizing features if needed
+    } else {
+        lockToggleBtn.textContent = '🔓 Unlocked';
+        // Enable editing/resizing features
+    }
+}
+
+
+/**
+ * Rotates the active element by the given degree value.
+ * @param {number} degrees - The amount to rotate by (e.g., 90 for a quarter turn).
+ */
+window.rotateElement = function(degrees) {
+    if (!activeItem) {
+        window.showModal('No item selected to rotate.', 'Error');
+        return;
+    }
+    
+    // 1. Read current degree value from the data attribute (initElementForMovement sets this)
+    let currentDegree = parseInt(activeItem.getAttribute('data-degree') || 0);
+
+    // 2. Calculate the new degree
+    let newDegree = currentDegree + degrees;
+    
+    // Normalize rotation (optional, but keeps numbers manageable)
+    newDegree = newDegree % 360; 
+    if (newDegree < 0) newDegree += 360;
+
+    // 3. Apply the rotation style and update the data attribute
+    activeItem.style.transform = `rotate(${newDegree}deg)`;
+    activeItem.setAttribute('data-degree', newDegree);
+    
+    // 4. Save the project
+    window.saveProject();
+    
+    window.showModal(`Rotated to ${newDegree}°`, 'Info');
+}
+
+
+
+/**
+ * Helper function to select an item and update the UI controls.
+ */
+ window.selectItem=function(element) {
+    // ... (Existing code for selecting, deselecting, and setting activeItem) ...
+
+    activeItem = element;
+    activeItem.classList.add('selected');
+    window.updateLockButtonState(); 
+    window.updateEditButtonState();
+
+    // --- PROPERTY SYNC START ---
+
+
+    // 1. 同步 Border Radius
+    // Use getComputedStyle for robustness, but activeItem.style is faster if set inline.
+    document.getElementById('borderRadius').value = parseInt(activeItem.style.borderRadius) || 0; 
+    document.getElementById('borderWidth').value = parseInt(activeItem.style.borderWidth) || 0; 
+    document.getElementById('borderColor').value = activeItem.style.borderColor;
+    document.getElementById('borderStyle').value = activeItem.style.borderStyle;
+    // 2. 同步 Opacity 滑桿的值
+    // Check both inline style and computed style for better accuracy
+    const currentOpacity = parseFloat(activeItem.style.opacity || getComputedStyle(activeItem).opacity) || 1.0;
+    // UI slider usually goes from 0-100, so multiply by 100
+    document.getElementById('elementOpacity').value = Math.round(currentOpacity * 100);
+
+    // 3. 同步 Background Color
+    // Use getComputedStyle to retrieve the computed color (often RGB)
+    let bgColor = activeItem.style.backgroundColor || getComputedStyle(activeItem).backgroundColor;
+    document.getElementById('backgroundColor').value = bgColor ? 
+        window.rgbToHex(bgColor) : '#ffffff';
+
+
+    // 4. NEW/REVISED: 同步 Background Image URL
+    let fullUrl = activeItem.style.backgroundImage || getComputedStyle(activeItem).backgroundImage;
+    let imageUrl = '';
+    
+    // Check if a background image URL exists and extract it safely
+    if (fullUrl && fullUrl !== 'none') {
+        // Regex to extract the URL from 'url("...")' or 'url(...)'
+        // The URL is typically captured in the second group ($2)
+        const match = fullUrl.match(/url\(['"]?(.*?)['"]?\)/);
+        
+        if (match && match[1]) {
+            imageUrl = match[1];
+        }
+    }
+
+    const xurlInput = document.getElementById('Xurl');
+    const bgiconImg = document.getElementById('bgicon');
+    
+    // Set the input field value
+    xurlInput.value = imageUrl;
+
+    // Set the preview icon
+    if (imageUrl) {
+        bgiconImg.src = imageUrl;
+    } else {
+        // If no background image, set the preview icon to your default SVG placeholder
+        bgiconImg.src = 'data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M287%2069.9%20146.2%20205.9%205.4%2069.9c-2.3-2.3-5.3-3.5-8.5-3.5h-10.7c-3.2%200-6.2%201.2-8.5%203.5-4.7%204.7-4.7%2012.3%200%2017l148.6%20148.6c4.7%204.7%2012.3%204.7%2017%200l148.6-148.6c4.7-4.7%204.7-12.3%200-17z%22%2F%3E%3C%2Fsvg%3E';
+    }
+    
+             //@@@@@@@@@@@@取得 ID名稱或內文
+	    document.getElementById('MyID').value=activeItem.id;
+                if (activeItem.getElementsByTagName("span")){
+		    if(activeItem.getElementsByTagName("span")[0]){
+		     document.getElementById('MyInfo').value=activeItem.getElementsByTagName("span")[0].innerText;
+		    }else{document.getElementById('MyInfo').value='';}
+		 } 
+		      
+
+		if(gameMode==true){
+                   if(activeItem.id==gameTarget){
+		           window.speakText("correct");
+		          score +=1;
+                          if(document.getElementById('gameInfo')){
+			    let mytext=	document.getElementById('gameInfo').innerText;
+				myinfo=mytext.split('*');
+				document.getElementById('gameInfo').innerHTML=myinfo[0]+'*<b>'+randomItem()+'</b>*'+myinfo[2];
+                                window.speakText(document.getElementById('gameInfo').innerText);				
+			  }else{
+                           window.speakText('find '+randomItem());
+			  }
+
+                       }else{
+			 window.speakText("No,it's "+gameTarget); score -=1;
+                       }
+		}
+}
+
+
+
+
+
+
+
+
+// --- NEW: Page Navigation Functions ---
+
+
+
+         window.switchPage=function(pageId) {
+            if (pageId === currentPageId) return; // Don't reload if it's the same page
+
+            // 1. Save current page's state
+             saveCurrentPageData();
+
+            // 2. Set new current page
+            currentPageId = pageId;
+
+            // 3. Load new page's content
+            loadPageData(pageId);
+            
+            // 4. Update UI
+            renderPageList();
+		tempHTML=editor.innerHTML;
+                //alert(tempHTML);=============換頁後產生暫存頁以供復原
+        }
+
+
+ window.goToPreviousPage = function() {
+     window.resetSlides();
+    // Get the index of the current page object
+    const currentIndex = projectData.findIndex(p => p.id === currentPageId); 
+    
+    if (currentIndex > 0) {
+        window.switchPage(projectData[currentIndex - 1].id);
+    } else {
+        window.showModal('已是第一頁', '頁數');
+    }
+}
+
+window.goToNextPage = function() {
+     window.resetSlides();
+    // Get the index of the current page object
+    const currentIndex = projectData.findIndex(p => p.id === currentPageId);
+    
+    if (currentIndex !== -1 && currentIndex < projectData.length - 1) {
+        window.switchPage(projectData[currentIndex + 1].id);
+    } else {
+        window.showModal('已是最後一頁', '頁數');
+    }
+}
+        // --- End of Page Navigation Functions ---
+
+
+
+window.pushHistoryState=function() {
+    // For now, we will save the project to persist the change immediately.
+    // In a full implementation, this would push the current editor.innerHTML
+    // onto an undo stack.
+    window.saveProject();
+    console.log("Element position/size saved to history (and Firestore).");
+}
+
+
+
+
+
+        window.initElements= function() {
+            const elements = editor.querySelectorAll('.draggable-image, .floating-div');
+            elements.forEach(el => initElement(el));
+             editor.querySelectorAll('.draggable-image, .floating-div').forEach(initElementForMovement);
+        }
+
+
+
+/**
+ * Displays a self-removing floating notification without Tailwind CSS.
+ * @param {string} message - The message content.
+ * @param {string} type - The type ('Info', 'Success', 'Error') to determine color.
+ */
+window.showModal = function(message, type = 'Info',target) {
+    const modal = document.createElement('div');
+    
+    // 1. Determine background color based on type
+    let bgColor;
+    if (type === 'Error') {
+        bgColor = '#dc2626'; // Red-600 equivalent
+    } else if (type === 'Success') {
+        bgColor = '#16a34a'; // Green-600 equivalent
+    } else {
+        bgColor = '#3b82f6'; // Blue-500 equivalent (Info)
+    }
+
+    // 2. Apply fixed positioning, styling, and color
+    modal.style.cssText = `
+        position: fixed;
+        top: 40px; /* Adjusted to 40px for better placement */
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        background-color: ${bgColor};
+        opacity: 1; /* Start visible */
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        transform: translateY(0);
+        font-family: sans-serif;
+    `;
+    
+    modal.textContent = `${type}: ${message}`;
+    document.body.appendChild(modal);
+
+    // 3. Set timeout to start fade-out transition after 3 seconds
+    setTimeout(() => {
+        // Start the transition (fade out and move up)
+        modal.style.opacity = '0';
+        modal.style.transform = 'translateY(-20px)';
+        
+        // 4. Remove the element from the DOM after the transition is complete (0.5s)
+        setTimeout(() => modal.remove(), 500);
+    }, 3000); // Wait 3 seconds before starting the fade-out
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Checks if the active item is overlapping with the target item (gameTarget).
+ * This is where the game scoring logic usually lives.
+ * NOTE: The full game logic is inside selectItem, but this is the movement check.
+ */
+ window.checkOverlap=function(movedElement) {
+    // If you are not in game mode, exit immediately
+    if (gameMode !== true) return; 
+
+    // Find the target element (assuming it has the ID stored in gameTarget)
+    const targetElement = document.getElementById(gameTarget);
+    if (!targetElement) return;
+
+    // A simple bounding box check (replace with your detailed logic later)
+    const movedRect = movedElement.getBoundingClientRect();
+    const targetRect = targetElement.getBoundingClientRect();
+
+    if (
+        movedRect.left < targetRect.right &&
+        movedRect.right > targetRect.left &&
+        movedRect.top < targetRect.bottom &&
+        movedRect.bottom > targetRect.top
+    ) {
+        // You might add a visual feedback here, e.g., targetElement.classList.add('highlight-overlap');
+        // The actual scoring should probably only happen on click/drop, but a visual check is helpful.
+        console.log(`Overlap detected with ${gameTarget}!`);
+                        if(!otherItem.classList.contains('locked') && checkMode==true){
+                            window.handleOverlap(otherItem);//--------------------------------------
+		 targetElement.classList.add('highlight-overlap');	
+	     }
+
+
+    } else {
+         targetElement.classList.remove('highlight-overlap');
+    }
+}
+
+
+
+
+
+
+// --- NEW: Element Direction and Movement Functions ---
+
+/**
+ * Extends the existing initElement function to ensure a degree attribute exists.
+ * @param {HTMLElement} el The element to initialize.
+ */
+window.initElementForMovement =function(el) {
+    // Call your existing initialization logic first
+    // For example: initElement(el); 
+
+    if (!el.hasAttribute('data-degree')) {
+        el.setAttribute('data-degree', '0'); // Start facing 0 degrees (Up/North by default)
+    }
+    // Apply initial rotation based on the attribute
+    el.style.transform = `rotate(${el.getAttribute('data-degree')}deg)`;
+}
+
+
+
+
+
+
+
+
+
+        window.initElement = function(element) {
+            let resizer = element.querySelector('.resizer');
+            if (!resizer) {
+                resizer = document.createElement('div');
+                resizer.className = 'resizer';
+                element.appendChild(resizer);
+            }
+            
+            if (!element.style.zIndex || parseInt(element.style.zIndex) < 10) {
+                element.style.zIndex = '10'; 
+            }
+
+            if (element.classList.contains('floating-div') && element.getAttribute('contenteditable') !== 'true') {
+                element.setAttribute('contenteditable', 'false');
+            }
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        window.pageNav = function() {
+            // *** PASTE YOUR FULL window.pageNav FUNCTION BODY HERE ***
+            const div1 = document.getElementById("pagelist");
+            const pagex = div1.getElementsByTagName("a");
+            const num = pagex.length;
+            const Currentpage=document.getElementById("fname").value;
+            const cpn=Currentpage.substr(0,Currentpage.lastIndexOf('.'));
+            let x=0;
+            let navbar ="";
+            for (i=0;i<num;i++){
+                if (cpn==pagex[i].innerText){
+                    x=i;
+                    navbar ="<div id=\"pager\" style=\"display:inline;position:relative;border:1px solid blue;background:white;width:40px;height:25px;padding:10px;cursor:hand\" onclick=\"document.getElementById('pagelist').style.display=(document.getElementById('pagelist').style.display=='none')?'':'none';\" >P"+i+"頁</div>";
+                }
+            }
+            if(x>0){
+                navbar ="<button onclick=\"window.location.href='"+pagex[x-1].href+"';\"><font size=6 >⬅️</font></button>"+navbar;
+            }
+            if(x<pagex.length-1){
+                navbar += "<button onclick=\"window.location.href='"+pagex[x+1].href+"';\"><font size=6 >➡️</font></button>";
+            }
+            document.getElementById("Navi").innerHTML=navbar;
+        }
+
+        window.PicNav = function() {
+            // *** PASTE YOUR FULL window.PicNav FUNCTION BODY HERE ***
+            const items = document.querySelectorAll('.draggable-image');
+            const titles = document.querySelectorAll('.floating-div, locked');
+            titles.forEach( title  =>{title.classList.toggle('hidden');});
+
+            if(null==document.getElementById('Flashcards')){
+                
+                let piclist='<img id=\"previewx\" src=\"'+items[0].style.backgroundImage.substring(5,items[0].style.backgroundImage.length-2)+'\" style=\"width:auto;height:400px\" ><div id=\"picTitle\" style=\"display: none\" >'+items[0].id+'</div><BR>';
+
+                items.forEach((item, i) => {
+                    piclist +='<img id=\"p_'+i+'\" style=\"display:none\" src=\"'+items[i].style.backgroundImage.substring(5,items[i].style.backgroundImage.length-2)+'\" width=\"400px\" height=\"auto\" >';
+                    item.style.display=(item.style.display=='none')?'':'none';
+                });
+                
+                const buttonx='<button onclick=\"window.showPic(\'Previous\')\" style=\"width:100px;font-size:50px\" >⬅️ </button><div id=\"picCount\" style=\"display:inline;border:2px solid black;minWidth:120px;font-size:40px\" >01</div><button  onclick=\"window.showPic(\'Next\')\"  style=\"width:100px;font-size:50px\">➡️</button><button onclick=\"window.showPic(\'random\')\" title=\"隨機\"  > 🎲</button><HR><button onclick=\"window.SlidePic(\'Next\')\" title=\"自動播放\"  > ▶️</button><button onclick=\"window.SlidePic(\'stop\')\" title=\"停止播放\"  > ⏹️</button><button onclick=\"window.SlidePic(\'random\')\" title=\"隨機播放\"  > 🔀</button><button onclick=\"window.exitFlash();\" title=\"離開\"  > ❎</button>';
+                const tts=`<BR><button onclick="window.speakText(document.getElementById('picTitle').innerText)" title="唸讀" style="width:200px;font-size:50px;background:yellow;border:4px solid black" > 🔊</button> <HR><button style="width:100px;font-size:20px;background: ;border:2px dotted black;padding:4px"><input id="mute" type="checkbox"     ><BR>靜音</button> <button style="width:100px;font-size:20px;background: ;border:2px dotted black;padding:4px"><input id="picInfomation" type="checkbox"    checked><BR>中文</button>`;
+                
+                const textDiv = document.createElement('div');
+                textDiv.className = 'p-4 bg-white shadow-lg rounded-xl'; 
+                textDiv.style.position = 'absolute';
+                textDiv.style.left = '50px';
+                textDiv.style.top = '20px';
+                textDiv.style.width = '95%'; 
+                textDiv.style.height = '95%'; 
+                textDiv.id='Flashcards';
+                textDiv.style.display='';
+                textDiv.style.backgroundColor = 'white';
+                textDiv.style.border ='solid gray 4px'; 
+                textDiv.style.padding = '10px';
+                textDiv.style.minWidth = '500px'; 
+                textDiv.style.fontSize = '30pt'; 
+                
+                textDiv.innerHTML ='<div id=\"picZone\" style=\"width:70%;height:90%;border:2px dashed gray;float:left;display: grid ;place-content: center\" ><span id=\"picTitle\" style=\"display:none;align-item:center;font-size:120px\" >====</span>'+piclist+'</div><div style=\"width:30%;height:90%;border:2px dashed gray;padding:10px;float:right\" >'+buttonx+tts+'</div>';               
+                document.getElementById('editor').appendChild(textDiv);
+            }else{
+                document.getElementById('Flashcards').style.display='none'; 
+                items.forEach((item, i) => {
+                    item.style.display='';
+                });
+                document.getElementById('Flashcards').remove();
+            }
+            window.showPic('Previous');
+        }
+
+        let flag=true;
+        window.showPic = function(way){
+            // *** PASTE YOUR FULL window.showPic FUNCTION BODY HERE ***
+            const items = document.querySelectorAll('.draggable-image');
+            let num=items.length;
+            flag=!flag;
+        
+            if(flag==true && counter< num ){
+                document.getElementById('previewx').style.display='';
+                if(way=='Next' && counter<(items.length-1)){
+                    counter +=1;	
+                }
+                if(way=='Previous' && counter>0){
+                    counter -=1;
+                }
+                if(way=='random'){
+                    counter = Math.floor( Math.random() * num );
+                }
+                if(items[counter].classList.contains('locked')){counter+=1;flag=true;}
+                document.getElementById('previewx').src=items[counter].style.backgroundImage.substring(5,items[counter].style.backgroundImage.length-2);
+                document.getElementById('picCount').innerText=counter;
+                document.getElementById('picTitle').style.display='none';
+                document.getElementById('picTitle').innerText=items[counter].id;
+                document.getElementById('previewx').style.display='';
+            }
+            
+            if(flag==false && counter< num ){
+                let banner=document.getElementById('picTitle');
+                let picInfo='';
+                if(items[counter].id && document.getElementById('picInfomation').checked==true){
+                    picInfo= items[counter].innerText;	    	   
+                }
+                if(items[counter].id){
+                    banner.innerHTML=items[counter].id+'<br><font style=\"font-size:50px;line-height:20%;\" >'+picInfo.replace(/(?:\r\n|\r|\n)/g, '<br>')+'</font>';
+                }else{
+                    banner.innerText='請幫圖片輸入ID名稱';
+                }
+                banner.style.display='';
+                document.getElementById('previewx').style.display='none';
+            }
+            if(items[counter].id && document.getElementById('mute').checked==false){ 
+                window.speakText(items[counter].id); 
+            }
+        }
+
+        window.exitFlash = function(){
+            // *** PASTE YOUR FULL window.exitFlash FUNCTION BODY HERE ***
+            document.getElementById('Flashcards').style.display='none';
+            window.PicNav(); 
+        }
+
+        window.SlidePic = function(action){
+            // *** PASTE YOUR FULL window.SlidePic FUNCTION BODY HERE ***
+            if(action=='stop'){	
+                clearInterval(myinterval);
+                window.clearInterval(myinterval);
+            }else{
+                counter=0;
+                var myinterval =setInterval(() => {
+                    window.showPic(action); 
+                }, 3000);
+            }
+        }
+
+        window.speakText = function(textToSpeak) {
+            // *** PASTE YOUR FULL window.speakText FUNCTION BODY HERE ***
+            let seed=Math.floor(Math.random()*2);
+            let lan;
+            if (textToSpeak.charCodeAt() > 255) {
+                lan=seed;
+            }else{
+                if(textToSpeak.substring(0,1)=='*'){lan=5}else{lan=4;}
+            }
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                utterance.lang = 'en-US';
+                utterance.pitch = 1;
+                utterance.rate = 0.8;
+                utterance.volume = 1;
+                const voices = speechSynthesis.getVoices();
+                utterance.voice = voices[lan]; 
+                speechSynthesis.speak(utterance);
+            } else {
+                alert("Your browser does not support Web Speech API.");
+            }
+        }
+
+        window.randomItem = function(){
+            // *** PASTE YOUR FULL window.randomItem FUNCTION BODY HERE ***
+            const seeds = editor.querySelectorAll('.draggable-image');
+            let seedx=Math.floor(Math.random()*seeds.length);
+            gameTarget=seeds[seedx].id;
+            quizCount +=1;
+            return seeds[seedx].id
+        }
+  window.pickNumber= function(){
+      const drawNumber=Math.floor(Math.random()*30);
+      speakText('抽到'+drawNumber+'號，請上台');
+      showModal(drawNumber,'抽中的是');
+ }
+        window.toggleGameMode = function() {
+            // *** PASTE YOUR FULL window.toggleGameMode FUNCTION BODY HERE ***
+            gameMode = !gameMode;
+            
+            const btn = document.getElementById('toggleGameModeBtn');
+            
+            if (gameMode) {
+                btn.textContent = '🛑 🎮';
+                btn.className = 'px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150 shadow-md';
+                
+                window.startGameTimer(GAME_DURATION_SECONDS);
+                window.startContinuousAnimation();
+                console.log("Game Mode ON");
+
+            } else {
+                if (gameTimerInterval !== null) {
+                    clearInterval(gameTimerInterval);
+                    gameTimerInterval = null;
+                }
+                
+                btn.textContent = '▶️ 🎮';
+                btn.className = 'px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-150 shadow-md';
+                
+                window.updateTimerDisplay(GAME_DURATION_SECONDS);
+                console.log("Game Mode OFF");
+            }
+        }
+        
+        // --- Game Helper Functions (Existing) ---
+
+        window.updateTimerDisplay = function(totalSeconds) {
+             const minutes = Math.floor(totalSeconds / 60);
+             const seconds = totalSeconds % 60;
+             const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+             document.getElementById('gameTimerDisplay').textContent = timeString;
+        }
+
+        window.startGameTimer = function(durationSeconds) {
+             let timeLeft = durationSeconds;
+             window.updateTimerDisplay(timeLeft);
+             score=0;
+             quizCount=0;
+             if (gameTimerInterval !== null) {
+                 clearInterval(gameTimerInterval);
+             }
+
+             gameTimerInterval = setInterval(() => {
+                 timeLeft--;
+                 window.updateTimerDisplay(timeLeft);
+
+                 if (timeLeft <= 0) {
+                     clearInterval(gameTimerInterval);
+                     gameTimerInterval = null;
+                     window.updateTimerDisplay(0);
+                     
+                     if (gameMode) {
+                         window.toggleGameMode();
+                         document.getElementById('speechResult').style.display='';
+                         document.getElementById('speechResult').innerHTML="<font color=red >Time's up!</font> <BR><BR> sore:"+Math.floor((score/quizCount)*100)+'--------------'+score+'/'+quizCount;
+                     }
+                 }
+             }, 1000); 
+        }
+
+        window.animateAllRandomly = function(durationSeconds) {
+            // *** PASTE YOUR FULL window.animateAllRandomly FUNCTION BODY HERE ***
+             const targets = editor.querySelectorAll('.draggable-image');
+             if (targets.length === 0) {
+                 return Promise.resolve(); 
+             }
+             return new Promise(resolve => {
+                let itemsToComplete = targets.length;
+                targets.forEach(item => {
+                    // Logic to set targetX, targetY, step function, and resolve...
+                    itemsToComplete--; 
+                    if (itemsToComplete === 0) resolve();
+                });
+             });
+        }
+        
+        let isAnimationRunning = false; 
+        window.startContinuousAnimation = async function() {
+            // *** PASTE YOUR FULL window.startContinuousAnimation FUNCTION BODY HERE ***
+             if (isAnimationRunning) return; 
+             isAnimationRunning = true;
+             const DURATION = 2; 
+
+             while (gameMode) {
+                 await window.animateAllRandomly(DURATION);
+                 await new Promise(r => setTimeout(r, 200));
+             }
+             isAnimationRunning = false;
+        }
+
+
+        // --- Final Utility Functions (Existing) ---
+
+        window.checkOverlap = function(item) {
+            // *** PASTE YOUR FULL window.checkOverlap FUNCTION BODY HERE ***
+            const itemRect = item.getBoundingClientRect();
+            const items = document.querySelectorAll('.draggable-image, .floating-div');
+            
+            items.forEach(otherItem => {
+                if (otherItem !== item) {
+                    const otherRect = otherItem.getBoundingClientRect();
+                    if (!(itemRect.right < otherRect.left || itemRect.left > otherRect.right || 
+                          itemRect.bottom < otherRect.top || itemRect.top > otherRect.bottom)) {
+                        console.log('Overlap detected!');
+                        if(!otherItem.classList.contains('locked') && checkMode==true){
+                            window.handleOverlap(otherItem);
+                        }
+                    }
+                }
+            });
+        }
+
+        window.handleOverlap = function(otherItem) {
+            // *** PASTE YOUR FULL window.handleOverlap FUNCTION BODY HERE ***
+            let ch=activeItem.id+"-a";
+            if(otherItem.id==ch){
+                otherItem.classList.add('opacity-50', 'animate-bounce');
+                otherItem.classList.toggle('locked');
+                if(otherItem.classList.contains('draggable-image')){
+                    //otherItem.innerHTML="<span style=\"text-align:center;verticle-align:center;color:red\" >答對了~</div>";
+                }
+            }
+        }
+
+        window.updateBackground = function() {
+            // *** PASTE YOUR FULL window.updateBackground FUNCTION BODY HERE ***
+            const imageUrl = document.getElementById('Xurl').value;
+            if (activeItem) {
+                activeItem.style.backgroundImage = `url('${imageUrl}')`;
+            }
+        }
+
+
+        
+        // --- 6. INITIALIZATION ---
+        
+        document.addEventListener('DOMContentLoaded', () => {
+loadProjectFromLocalStorage();
+            startRealtimeProjectListener();
+            window.updateTimerDisplay(GAME_DURATION_SECONDS);
+        });
+
+
+
+
+    </script>
+</body>
+</html>
