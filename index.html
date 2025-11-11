@@ -2,7 +2,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firestore Multi-Project Content Editor</title>
+    <title>💡MyEbook</title>
        <script src="https://cdn.tailwindcss.com"></script> 
     <script src="./Canvas_files/saved_resource"></script>
     
@@ -76,20 +76,40 @@
 
 
     <div id="main-toolbar">
-        <button onclick="window.saveProject()">💾 Save to Cloud</button>
-        <button onclick="window.renderAllProjectsList()">📂 Switch/Create Project</button>
-        <button onclick="importProject()"  >import</button>
-             
-         <button onclick="exportProject()"  >export</button>
-            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleFileImport(event)">
 
+        <button onclick="document.getElementById('page-manager').style.display=(document.getElementById('page-manager').style.display=='none')?'':'none';document.getElementById('project-manager').style.display=(document.getElementById('project-manager').style.display=='none')?'':'none';">≡</button>
+       <div id="project-manager" style="display:" >
         <span id="currentProjectDisplay">classroom_master_file</span> 
+        <button onclick="window.saveProject()" title="Save to Cloud" >💾</button>
+        <button onclick="window.renderAllProjectsList()" title=" Switch/Create Project" >📂</button>
+        <button onclick="importProject()"  title="import" >📥</button>
+              <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleFileImport(event)">           
+         <button onclick="exportProject()" title="export"  >📤</button>
+       </div>
+
         
         <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
-            <button onclick="window.createNewPage()">+ Add Page</button>
+<script>
+  window.zoomout=function(zoomV){
+         let z=document.getElementById('zoom').value *10; 
+        
+   if(!zoomV){
+       //editor.style.zoom = z+"%";
+      
+      document.body.style.zoom = z+"%";
+    }else{
+     document.body.style.zoom ="100%";
+    }
+
+}
+</script>
+           🔍<input type="range" id="zoom" min="1" max="20" value="10" title="Line Width" class="w-20" onchange="zoomout();" >
+           <button onclick="window.zoomout(10)" class="px-1 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition duration-150 shadow-md">100%</button>
+<!--
             <button onclick="window.toggleEditMode();window.toggleEditable();">Toggle Edit</button>
             <button onclick="document.execCommand('bold', false, null)">B</button>
             <button onclick="window.applyForeColor('#0000ff')">Blue Text</button>
+-->
         </div>
         
         <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
@@ -103,8 +123,8 @@
 
     <div id="main-container">
         
-        <div id="page-manager">
-            <h3>Pages</h3>
+        <div id="page-manager" style="display:" >
+         <button onclick="window.createNewPage()"class="px-1 py-1 bg-blue-500 text-white font-xssemibold rounded-lg hover:bg-blue-600 transition duration-150 shadow-md">新增頁面</button>
             <ul id="page-list">
                 </ul>
         </div>
@@ -491,22 +511,6 @@
 
 
 
-<script>
-  window.zoomout=function(zoomV){
-         let z=document.getElementById('zoom').value *10; 
-        
-   if(!zoomV){
-       //editor.style.zoom = z+"%";
-      
-      document.body.style.zoom = z+"%";
-    }else{
-     document.body.style.zoom ="100%";
-    }
-
-}
-</script>
-            <span class="mx-2 text-gray-400">|</span> 🔍<input type="range" id="zoom" min="1" max="10" value="10" title="Line Width" class="w-20" onchange="zoomout();" >
-           <button onclick="window.zoomout(10)" class="px-1 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition duration-150 shadow-md">100%</button>
 
 
 
