@@ -93,8 +93,10 @@
         </div>
         
         <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
-            <button id="toggleGameModeBtn" onclick="window.toggleGameMode()">▶️ 🎮 Game Mode</button>
-            <span id="gameTimerDisplay">1:00</span>
+            <button id="toggleGameModeBtn" onclick="window.toggleGameMode();">▶️ 🎮 Game Mode</button>
+<div id="tmBar" style="display:none ;position:absolute;z-index:50;top:80px;left:45vw;" onclick="this.style.display='none';" >
+    TIME:<span id="gameTimerDisplay" class="text-xl font-mono text-gray-700 p-2 bg-green-400 rounded-lg border border-gray-300">1:00 </span>
+</div>
             <span id="speechResult" style="margin-left: 20px;"></span>
         </div>
     </div>
@@ -454,7 +456,7 @@
 		<button onclick="window.PicNav()">	<font size="6" title=="閃示卡" >🖼️</font></button>       <button onclick="window.textSlider()"><font size="6" title=="動畫" >📽️</font></button>
 <button onclick="window.pickNumber();" style="font-size:25px" > 🙋‍♂️</button><button onclick="window.insertDice();" style="font-size:25px" > 🎲</button>
 <button onclick="alert('wtf');alert(document.getElementById('htmlPageCode').value);window.restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
-<button onclick="window.speakText('get'+window.randomItem());gameMode=!gameMode;this.textContent=(gameMode)?'🎯off':'🎯on';"  title=="遊戲模式" style="font-size:20px" >🎯on</button>
+<button onclick="window.dartMode();"  id="dartModeBtn" title="遊戲模式" style="font-size:20px" >🎯on</button>
 
 
 
@@ -472,14 +474,16 @@
 </div>
 
 <div id="gameModeControls" class="flex flex-wrap items-center gap-2">
-<div id="timerBar" style="display:none;position:absolute;z-index:50;top:80px;left:45vw;" >
-    TIME:<span id="gameTimerDisplay" class="text-xl font-mono text-gray-700 p-2 bg-green-400 rounded-lg border border-gray-300">
-        1:00 </span>
-</div>
-    <button id="toggleGameModeBtn" onclick="window.toggleGameMode();speakText('get'+window.randomItem());document.getElementById('timerBar').style.display=(document.getElementById('timerBar').style.display=='none')?'':'none';" 
+
+    <button id="toggleGameModeBtn" onclick="window.toggleGameMode();speakText('get'+window.randomItem());" 
             title="Start Continuous Background Animation" 
             class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-150 shadow-md">
         ▶️ 🎮
+    </button>
+<button onclick="window.animateAllRandomly(parseFloat(document.getElementById('goToTime').value))" 
+            title="Animate all items to random locations" 
+            class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">
+       💢散開
     </button>
 </div>
 
@@ -559,11 +563,7 @@
         Center
     </button>
  
-<button onclick="window.animateAllRandomly(parseFloat(document.getElementById('goToTime').value))" 
-            title="Animate all items to random locations" 
-            class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">
-        🎲 Scatter All
-    </button>
+
 
 </div><!-- end movementControl menu-->
 
@@ -3331,6 +3331,19 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
       speakText('抽到'+drawNumber+'號，請上台');
       showModal(drawNumber,'抽中的是');
  }
+
+   window.dartMode = function() {
+            gameMode = !gameMode;
+          const ebtn = document.getElementById('dartModeBtn');
+
+            if (gameMode) {
+                ebtn.textContent = 'stop🎯';
+	window.speakText('get'+window.randomItem());
+            }else{
+                ebtn.textContent = ' 🎯';	
+          }
+     }
+
         window.toggleGameMode = function() {
             // *** PASTE YOUR FULL window.toggleGameMode FUNCTION BODY HERE ***
             gameMode = !gameMode;
@@ -3344,11 +3357,12 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
                 window.startGameTimer(GAME_DURATION_SECONDS);
                 window.startContinuousAnimation();
                 console.log("Game Mode ON");
-
+document.getElementById('tmBar').style.display='';
             } else {
                 if (gameTimerInterval !== null) {
                     clearInterval(gameTimerInterval);
                     gameTimerInterval = null;
+
                 }
                 
                 btn.textContent = '▶️ 🎮';
@@ -3356,6 +3370,7 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
                 
                 window.updateTimerDisplay(GAME_DURATION_SECONDS);
                 console.log("Game Mode OFF");
+document.getElementById('tmBar').style.display='none';
             }
         }
         
