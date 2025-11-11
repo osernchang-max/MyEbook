@@ -70,11 +70,19 @@
         #currentProjectDisplay { font-weight: bold; padding: 0 10px; background: #fff; border-radius: 4px; }
     </style>
 </head>
-<body>
+<body onclick="window.dropmenu();window.expand();" >
+
+     <div id="screen" class="p-4 bg-white shadow-lg rounded-xl" style="border:2px double gray "><!-- 全螢幕範圍開始 -->
+
 
     <div id="main-toolbar">
         <button onclick="window.saveProject()">💾 Save to Cloud</button>
         <button onclick="window.renderAllProjectsList()">📂 Switch/Create Project</button>
+        <button onclick="importProject()"  >import</button>
+             
+         <button onclick="exportProject()"  >export</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+
         <span id="currentProjectDisplay">classroom_master_file</span> 
         
         <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
@@ -99,10 +107,10 @@
                 </ul>
         </div>
         
-        <div id="editor-wrapper">
-            <div id="editor" contenteditable="true"><canvas id="drawingCanvas"></canvas>
+        <div id="editor-wrapper"> 
+            <div id="editor"  contenteditable="true"><canvas id="drawingCanvas"></canvas>
                 Loading project data from Firestore...            
-            </div>
+            </div> 
 
         </div>
     </div>
@@ -121,12 +129,13 @@
         </div>
     </div>
 
-    <div style="display:none;">
+    <div   id="codeArea" style="display:none;">
         <input type="text" id="fname" value="default_file.json">
         <div id="pagelist"></div>
         <div id="Navi"></div>
+      <textarea id="htmlPageCode" cols="150" rows="10" style="display:;" > </textarea>
         <textarea  id="temp"   ></textarea>
-        <img id="coverpic" src="placeholder.png">
+        <img id="coverpic" src="">
          
     </div>
 
@@ -174,7 +183,7 @@
 
 
 <span  id="pentool" onclick="dropmenu();" style="position:relative;width:40px;font-size:20px" class="mx-2 text-gray-400 rounded-lg hover:bg-purple-600  shadow-md">✒️
-            <span  id="pentool_menu" style="display:;position:absolute;top:-60px;left:-0px;z-index:30;width:900px;background:white;border-radius:16px;border:2px solid gray;padding:4px"         class="mx-2 text-gray-400" > 
+            <span  id="pentool_menu" style="display:none;position:absolute;top:-60px;left:-0px;z-index:30;width:900px;background:white;border-radius:16px;border:2px solid gray;padding:4px"         class="mx-2 text-gray-400" > 
             <button onclick="window.setDrawingTool(null);document.getElementById('pentool_menu').style.display='none';"  title="選取移動-Select/Move" class="px-4 py-2  text-white font-semibold rounded-lg hover:bg-gray-700 transition duration-150 shadow-md" id="selectMoveBtn">🖱️</button>
             
             <button onclick="window.setDrawingTool('pen')" title="畫筆-Pen" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">🖌️</button>
@@ -224,7 +233,7 @@
 
 
 
-<button id="textStyle" onclick="document.getElementById('textStyle_menu').style.display=(document.getElementById('textStyle_menu').style.display=='none')?'inline':'none';" style="border:2px solid black;width:30px;font-size:18px" > T </button> 
+<button id="textStyle" onclick="" style="border:2px solid black;width:30px;font-size:18px" > T </button> 
 
 
 
@@ -283,7 +292,7 @@
 
      
 <!-- add dropmenu -->
-            <button  title="插入" onclick="document.getElementById('add_menu').style.display=(document.getElementById('add_menu').style.display=='none')?'inline':'none';"   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">➕🖼️</button>		
+            <button  title="插入" onclick=""   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">➕🖼️</button>		
 
 
 <!-- add menu -->
@@ -311,7 +320,7 @@
 
 
 
-<button id="layerControl" onclick="document.getElementById('layerControl_menu').style.display=(document.getElementById('layerControl_menu').style.display=='none')?'':'none';" style="position:" >💳圖層樣式</button>
+<button id="layerControl" onclick="" style="position:" >💳圖層樣式</button>
 
 <div id="layerControl_menu" style="display:none;position:absolute;z-index:30;top:80vh;left:20px;padding:10px;width:100%px;background:lightgray;border:2px solid gray;border-radius:16px;color:black;font-size:12px;vertical-align:center;opacity:50" >
 
@@ -358,7 +367,7 @@
 
 
 
-<span   id="idop"  onclick="window.dropmenu();"   class="flex flex-wrap text-s items-center hover:bg-yellow-100 cursor-hand  rounded-lg border border-gray-200 " style="position:relative;width:80px;height:40px;display:inline" >
+<span   id="idop"  onclick=""   class="flex flex-wrap text-s items-center hover:bg-yellow-100 cursor-hand  rounded-lg border border-gray-200 " style="position:relative;width:80px;height:40px;display:inline" >
 		🗃️圖卡設定
             <span id="idop_menu" style="display:none;position:absolute;left:10px;top:-120px;width:640px;height:120px;font-size:18px;background:white;border:2px solid gray;z-index:30;padding:10px;border-radius:15px">
 <span  title="關閉" onclick="document.getElementById('idop_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;" >🗷</span>
@@ -394,7 +403,7 @@
 
 
 
-<select id="addElementType" onchange="window.toggleAnimate(this.value)"  class="px-1 py-1 bg-blue-500 text-white font-xssemibold rounded-lg hover:bg-blue-600 transition duration-150 shadow-md cursor-pointer" style="display:inline;width:">
+<select id="addAnimateType" onchange="window.toggleAnimate(this.value)"  class="px-1 py-1 bg-blue-500 text-white font-xssemibold rounded-lg hover:bg-blue-600 transition duration-150 shadow-md cursor-pointer" style="display:inline;width:">
                 <option value="" disabled selected class="bg-gray-700 text-white">動畫</option>
 
                 <option value="animate-spin"  class="bg-gray-700 text-white">旋轉</option>
@@ -442,8 +451,10 @@
 
 
   <button onclick="FullScreen()"><font size="6" title=="全螢幕">💻</font></button>
-		<button onclick="window.PicNav()">	<font size="6" title=="閃示卡" >🖼️</font></button>       <button onclick="window.textSlider()"><font size="6" title=="動畫" >📽️</font></button><button onclick="pickNumber();" style="font-size:25px" > 🙋‍♂️</button><button onclick="insertDice();" style="font-size:25px" > 🎲</button><button onclick="restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
-<button onclick="gameMode=!gameMode;this.textContent=(gameMode)?'🎯off':'🎯on';window.speakText('get'+randomItem())"  title=="遊戲模式" style="font-size:20px" >🎯on</button>
+		<button onclick="window.PicNav()">	<font size="6" title=="閃示卡" >🖼️</font></button>       <button onclick="window.textSlider()"><font size="6" title=="動畫" >📽️</font></button>
+<button onclick="window.pickNumber();" style="font-size:25px" > 🙋‍♂️</button><button onclick="window.insertDice();" style="font-size:25px" > 🎲</button>
+<button onclick="alert('wtf');alert(document.getElementById('htmlPageCode').value);window.restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
+<button onclick="window.speakText('get'+window.randomItem());gameMode=!gameMode;this.textContent=(gameMode)?'🎯off':'🎯on';"  title=="遊戲模式" style="font-size:20px" >🎯on</button>
 
 
 
@@ -455,7 +466,7 @@
             class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition duration-150 shadow-md">
         🎙️  ▶️
     </button>
-    <div id="speechResult" class="text-sm font-medium text-gray-500"     ontouchstart="this.style.display='none';" onclick="this.style.display='none';"   style="position:absolute;z-index:30;top:40px;left:100px;width:90%;height:80px;background:white;border-radius:16px;border:2px gray solid;padding:10px;font-size:30px;opacity:0.9;display:none">
+    <div id="OLDspeechResult" class="text-sm font-medium text-gray-500"     ontouchstart="this.style.display='none';" onclick="this.style.display='none';"   style="position:absolute;z-index:50;top:40px;left:100px;width:90%;height:80px;background:white;border-radius:16px;border:2px gray solid;padding:10px;font-size:30px;opacity:0.9;display:none">
         Click to start recognizing words by item ID.
     </div>
 </div>
@@ -622,7 +633,7 @@
         let counter = 0; 
         let activeItem = null; // CRITICAL: This needs to be set by your drag/drop handlers
         let oldX = 0, oldY = 0; // Assuming these are used by drag/drop
-
+ 
        // --- Globals ---
          const editToggleBtn = document.getElementById('editToggleBtn');
         const lockToggleBtn = document.getElementById('lockToggleBtn');
@@ -680,7 +691,8 @@ tempCanvas.id = 'tempCanvas';
         
         /** Real-time Listener: Loads initial data and keeps projectData synced. */
  // Ensure this variable is defined outside the function, at the module scope
-// let isInitialLoad = true; 
+ 
+ isInitialLoad = true; // Define this globally or in the module scope
 
 function startRealtimeProjectListener() {
     document.getElementById('currentProjectDisplay').textContent = currentProjectDocumentId;
@@ -753,74 +765,61 @@ function startRealtimeProjectListener() {
 
 
 
-       function zzzzzzzzzzzzzzzzzzzstartRealtimeProjectListener() {
-            // Update the display immediately
-            document.getElementById('currentProjectDisplay').textContent = currentProjectDocumentId;
 
-            const projectRef = doc(db, PROJECTS_COLLECTION, currentProjectDocumentId);
-            
-            const projectListenerUnsubscribe = onSnapshot(projectRef, (docSnapshot) => {
-                if (docSnapshot.exists() && docSnapshot.data().pages) {
-                    const serverData = docSnapshot.data();
-                    const newProjectData = serverData.pages;
 
-                    if (!Array.isArray(newProjectData)) return;
 
-                    projectData = newProjectData;
-                    
-                    const currentExists = projectData.some(p => p.id === currentPageId);
-                    if (!currentExists && projectData.length > 0) {
-                        currentPageId = projectData[0].id;
-                    } else if (projectData.length === 0) {
-                        initializeBlankProject(); 
+
+
+
+
+
+
+         window.exportProject=function() {
+            saveCurrentPageData(); // Ensure the current page is saved before export
+            const jsonContent = JSON.stringify(projectData, null, 2);
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            //a.download = 'editor-project.json';
+            a.download = document.getElementById('fname').value;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        window.importProject=function() {
+            document.getElementById('importFile').click();
+        }
+
+       window.handleFileImport=function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (typeof importedData !== 'object' || importedData === null) {
+                        throw new Error("Invalid format");
                     }
-                    
-                    loadPageData(currentPageId);
+                    projectData = importedData;
+                    currentPageId = Object.keys(projectData)[0] || null;
+                    saveProject(); // Save the newly imported project to localStorage
                     renderPageList();
-                    console.log("Project data synced from Firestore.");
-
-                } else if (!docSnapshot.exists()) {
-                    console.log(`Document '${currentProjectDocumentId}' not found. Initializing blank project.`);
-                    initializeBlankProject();
+                    if (currentPageId) {
+                        loadPageData(currentPageId);
+                    }
+                } catch (error) {
+                    alert("Error: Could not import file. Please ensure it's a valid project JSON.");
+                    console.error("Import failed:", error);
                 }
-            }, (error) => {
-                console.error("Firestore listener error: ", error);
-                loadProjectFromLocalStorage(); 
-            });
+            };
+            
+            reader.readAsText(file);
+            event.target.value = ''; // Reset file input
         }
 
 
-
-
-
-
-
-
- isInitialLoad = true; // Define this globally or in the module scope
-
-function zzzstartRealtimeProjectListener() {
-    const docRef = doc(db, PROJECTS_COLLECTION, currentProjectDocumentId);
-
-    onSnapshot(docRef, (docSnapshot) => {
-        if (docSnapshot.exists()) {
-            // Document found: Load data
-const data = docSnapshot.data();
-            projectData = docSnapshot.data().pages;
-            loadPageData(currentPageId);
-            isInitialLoad = false; // Data successfully loaded once
-        } else {
-            // Document NOT found
-            if (isInitialLoad) {
-                // Only run this initialization/clear logic once on the very first load.
-                initializeBlankProject();
-            } else {
-                // 💡 CRITICAL: Do nothing if the document disappears after the initial load.
-                // This prevents idle timeouts or brief connection hiccups from clearing the page.
-                console.warn("Project document momentarily missing after initial load. Ignoring action.");
-            }
-        }
-    });
-}
 
 
 
@@ -1376,7 +1375,8 @@ window.addDivWithImageBackgroundElement = function() {
             } else if (type === 'TTS') {
                 defaultContent = `<div  id=\"TTS"+randomNumber+"\"   class="TTS" ontouchstart="speakText(this.textContent)"  onclick="speakText(this.textContent)" style="background-size:contain" >按兩下在此打字電腦報讀語音</div>`;
             } else if (type === 'VRS') {
-                defaultContent = `<div  id="template" class="VRS"  ontouchstart="startVoiceRecognition(this.textContent.replace('*',window.randomItem()))"  onclick="startVoiceRecognition(this.textContent.replace('*',window.randomItem()));" style="background-size:contain" >Word to say #</div>`;
+	 
+                defaultContent = `<div  id="template" class="VRS" onclick="javascripot:window.randomItem();this.textContent=this.textContent.substring(0,this.textContent.lastIndexOf('(')) +'(' + document.getElementById('temp').value+ ')' + this.textContent.substring(this.textContent.lastIndexOf(')')+1,this.textContent.length);startVoiceRecognition(this.textContent);"     style="background-size:contain" > ( ) is my favorite.</div>`;
 
             } else {
                 return;
@@ -1492,14 +1492,16 @@ window.addDivWithImageBackgroundElement = function() {
 
 //回傳隨機圖片名稱
    window.randomItem=function(){
-	//alert('wtf');
-	   const seeds = editor.querySelectorAll('.draggable-image');
+	 //alert('wtf');
+	  let seeds = document.getElementById('editor').querySelectorAll('.draggable-image');
 	   
 	let seedx=Math.floor(Math.random()*seeds.length);
 		gameTarget=seeds[seedx].id;
+		document.getElementById('temp').value=gameTarget;
 		quizCount +=1;
-		return seeds[seedx].id
-                          showModal(seeds[seedx].id,'get')
+                           window.showModal(gameTarget,'get')
+		return gameTarget
+
         }
 
 
@@ -1663,16 +1665,11 @@ window.addDivWithImageBackgroundElement = function() {
 
 
 
- window.dropmenu=function(target){    
-
-
+ window.dropmenu=function(target){
         	 
-         if(target){
-		 
+         if(target){		 
 	 const targetx=document.getElementById(target);
-                   if (null!=targetx && DesignMode==false){targetx.style.display =(targetx.style.display=="none" ) ? "" : "none";} 
-
-
+                   if (null!=targetx && DesignMode==false){targetx.style.display =(targetx.style.display=="none" ) ? "" : "none";}
        }else{
 
                          if (""!=event.srcElement.id) {
@@ -2482,7 +2479,8 @@ window.rotateElement = function(degrees) {
             
             // 4. Update UI
             renderPageList();
-		tempHTML=editor.innerHTML;
+		//tempHTML=====htmlPageCode
+		document.getElementById('htmlPageCode').value=document.getElementById('editor').innerHTML;
                 //alert(tempHTML);=============換頁後產生暫存頁以供復原
         }
 
@@ -2529,7 +2527,7 @@ window.pushHistoryState=function() {
         window.initElements= function() {
             const elements = editor.querySelectorAll('.draggable-image, .floating-div');
             elements.forEach(el => initElement(el));
-             editor.querySelectorAll('.draggable-image, .floating-div').forEach(initElementForMovement);
+             editor.querySelectorAll('.draggable-image, .floating-div').forEach(window.initElementForMovement);
         }
 
 
@@ -2584,7 +2582,32 @@ window.showModal = function(message, type = 'Info',target) {
 };
 
 
+       //=====================================復原HTML檔案
 
+        window.restore=function(command) {
+
+	   if(command){
+	    const mypages=document.getElementById('htmlPageCode').value;
+
+	    tempHTML=mypages;
+		window.showModal('temp HTML loades','Info');
+           		 const pageName = document.getElementById('fname').value;
+	   }
+
+             const canvasElement = document.getElementById('drawingCanvas');
+ 	  
+            document.getElementById('editor').innerHTML = document.getElementById('htmlPageCode').value;
+	
+	  
+            editor.prepend(canvasElement);
+
+             clearCanvas();
+   
+            window.initElements();
+            window.updateEditButtonState();
+            window.updateLockButtonState();
+
+	 }
 
 
 
@@ -2647,7 +2670,7 @@ window.showModal = function(message, type = 'Info',target) {
  * Extends the existing initElement function to ensure a degree attribute exists.
  * @param {HTMLElement} el The element to initialize.
  */
-window.initElementForMovement =function(el) {
+window.zzzzzzzzzzinitElementForMovement =function(el) {
     // Call your existing initialization logic first
     // For example: initElement(el); 
 
@@ -2658,9 +2681,447 @@ window.initElementForMovement =function(el) {
     el.style.transform = `rotate(${el.getAttribute('data-degree')}deg)`;
 }
 
+//------##################        Game MoveMent   ###################################################----------
+
+/**
+ * Sets the direction (movement axis) of the active item without changing its visual rotation.
+ * @param {number} degrees The absolute degree to face (e.g., 90 for East, 180 for South).
+ */
+ window.pointInDirection=function(degrees) {
+    if (!activeItem) return;
+
+    // Normalize degrees and update the movement axis attribute only.
+    const normalizedDegrees = degrees % 360; 
+    activeItem.setAttribute('data-degree', normalizedDegrees);
+    
+    // NO CSS rotation is applied here.
+}
+
+/**
+ * Changes the direction (rotation) of the active item by a relative amount.
+ * This function now explicitly handles the VISUAL rotation.
+ * @param {number} changeDegrees The amount to turn.
+ */
+ window.turn=function(changeDegrees) {
+    if (!activeItem) return;
+
+    // A. Update the MOVEMENT axis (data-degree)
+    let currentMovementDegree = parseInt(activeItem.getAttribute('data-degree')) || 0;
+    let newMovementDegree = currentMovementDegree + changeDegrees;
+    // Set the new axis for 'move forward'
+    activeItem.setAttribute('data-degree', newMovementDegree); 
+    
+    // B. Update the VISUAL rotation (data-visual-degree)
+    let currentVisualDegree = parseInt(activeItem.getAttribute('data-visual-degree')) || 0;
+    let newVisualDegree = currentVisualDegree + changeDegrees;
+    
+    // Store the new visual rotation
+    activeItem.setAttribute('data-visual-degree', newVisualDegree); 
+    
+    // Apply the visual rotation
+    activeItem.style.transform = `rotate(${newVisualDegree}deg)`;
+}
+
+ window.moveSteps=function(steps) {
+    if (!activeItem) return;
+
+    const currentX = activeItem.offsetLeft;
+    const currentY = activeItem.offsetTop;
+    
+    // CRITICAL: This uses the data-degree (the movement axis)
+    const degree = parseInt(activeItem.getAttribute('data-degree')) || 0; 
+
+    // Convert degrees to radians (90 is subtracted because 0 deg movement axis should face right/East)
+    const radians = (degree - 90) * (Math.PI / 180); 
+
+    // Calculate new position
+    const newX = currentX + (steps * Math.cos(radians));
+    const newY = currentY + (steps * Math.sin(radians));
+
+    // Update the element's position
+    activeItem.style.left = `${newX}px`;
+    activeItem.style.top = `${newY}px`;
+}
 
 
 
+
+ window.initElementForMovement=function(el) {
+    // Call your existing initialization logic first
+    // For example: initElement(el); 
+    
+    // --- 1. MOVEMENT DEGREE (Axis for 'move forward') ---
+    if (!el.hasAttribute('data-degree')) {
+        // Always default the movement axis to 90 (Right/East) for new/legacy items
+        el.setAttribute('data-degree', '90'); 
+    }
+
+    // --- 2. VISUAL DEGREE (The saved CSS rotation) ---
+    
+    // A. Check if the element already has a CSS rotation saved from the JSON/HTML
+    let visualDegreeMatch = el.style.transform.match(/rotate\(([-+]?\d+)deg\)/);
+    let initialVisualDegree = 0;
+    
+    if (visualDegreeMatch) {
+        // If rotation is found in the CSS style, use it.
+        initialVisualDegree = parseInt(visualDegreeMatch[1]);
+    } else if (el.hasAttribute('data-visual-degree')) {
+        // If no rotation in CSS but the attribute exists (a newly saved file), use the attribute.
+        initialVisualDegree = parseInt(el.getAttribute('data-visual-degree'));
+    }
+
+    // B. Check the `data-visual-degree` attribute state (for untouched legacy files)
+    if (!el.hasAttribute('data-visual-degree')) {
+        // If the element is from an OLD, UNTOUCHED file (no attributes),
+        // we set the visual degree to 0. This PREVENTS the 90-degree default rotation.
+        el.setAttribute('data-visual-degree', '0'); 
+        
+        // CRITICAL: We also need to apply the initial visual state.
+        // For old files with no rotation, the CSS transform is missing.
+        // We set it to 0 to prevent the browser from assuming a default of 90.
+        el.style.transform = `rotate(0deg)`;
+        
+    } else {
+        // For new files or files that have been rotated and saved, ensure the visual degree
+        // attribute matches the rotation applied from the saved HTML content's style.
+        el.setAttribute('data-visual-degree', initialVisualDegree); 
+        el.style.transform = `rotate(${initialVisualDegree}deg)`;
+    }
+}
+
+
+/**
+ * Moves the active item to a target position over a specified duration using an animation loop. (   animateGoToPosition)
+ * @param {string} targetValue The target: 'x,y' string or 'center' or Element ID.
+ * @param {number} durationSeconds The time (in seconds) the animation should take (e.g., 2 for 2 seconds).
+ */
+ window.glideTo=function(targetValue, durationSeconds) {
+    if (!activeItem) {
+        window.showModal('Please select an item to move first.', 'Warning');
+        return;
+    }
+
+    // --- 1. Calculate Target Position (Same as before) ---
+    let targetX, targetY;
+    
+    if (targetValue.includes(',')) {
+        // Case 1: X,Y coordinate
+        const parts = targetValue.split(',').map(n => parseInt(n.trim()));
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            targetX = parts[0];
+            targetY = parts[1];
+        } else {
+            window.showModal('Invalid coordinate format. Use "X,Y" (e.g., 100, 50).', 'Error');
+            return;
+        }
+    } else if (targetValue === 'center') {
+        // Case 2: Center
+        const editor = document.getElementById('editor');
+        targetX = (editor.offsetWidth / 2) - (activeItem.offsetWidth / 2);
+        targetY = (editor.offsetHeight / 2) - (activeItem.offsetHeight / 2);
+    } else {
+        // Case 3: Element ID
+        const targetElement = document.getElementById(targetValue);
+        if (!targetElement) {
+            window.showModal(`Target element "${targetValue}" not found.`, 'Error');
+            return;
+        }
+        targetX = targetElement.offsetLeft;
+        targetY = targetElement.offsetTop;
+    }
+
+    // --- 2. Initialize Animation Variables ---
+    const startX = activeItem.offsetLeft;
+    const startY = activeItem.offsetTop;
+    const durationMs = durationSeconds * 1000;
+    let startTime;
+    
+    // Check if movement is even necessary
+    if (startX === targetX && startY === targetY) return;
+
+    // --- 3. The Animation Loop ---
+     window.step=function(timestamp) {
+        if (!startTime) {
+            startTime = timestamp;
+        }
+
+        // Calculate time elapsed since start
+        const elapsed = timestamp - startTime;
+
+        // Calculate progress (0.0 to 1.0)
+        let progress = elapsed / durationMs;
+
+        // Clamp progress to a maximum of 1.0
+        if (progress > 1) {
+            progress = 1;
+        }
+
+        // Linear Interpolation (Lerp)
+        // new_value = start_value + (end_value - start_value) * progress
+        const currentX = startX + (targetX - startX) * progress;
+        const currentY = startY + (targetY - startY) * progress;
+
+        // Apply new position
+        activeItem.style.left = `${currentX}px`;
+        activeItem.style.top = `${currentY}px`;
+
+        // If animation is not finished, request the next frame
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        }
+    }
+
+    // Start the animation
+    window.requestAnimationFrame(step);
+}
+
+
+
+
+
+/**
+ * Moves the activeItem to a specific (X, Y) position or the position of another selected element. ( goToPositionOrElement(targetValue) )
+ * @param {string} targetValue The target: either 'x,y' string (e.g., '100,50') or the ID/index of another element.
+ */
+ window.goTo=function(targetValue) {
+    if (!activeItem) {
+        window.showModal('Please select an item to move first.', 'Warning');
+        return;
+    }
+
+    let targetX, targetY;
+
+    if (targetValue.includes(',')) {
+        // Case 1: Target is an X,Y coordinate (e.g., '100,50')
+        const parts = targetValue.split(',').map(n => parseInt(n.trim()));
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            targetX = parts[0];
+            targetY = parts[1];
+        } else {
+            window.showModal('Invalid coordinate format. Use "X,Y" (e.g., 100, 50).', 'Error');
+            return;
+        }
+    } else {
+        // Case 2: Target is another element (e.g., an item ID or the special 'center' value)
+        if (targetValue === 'center') {
+            const editor = document.getElementById('editor');
+            // Calculate the center of the editor minus half the size of the active item
+            targetX = (editor.offsetWidth / 2) - (activeItem.offsetWidth / 2);
+            targetY = (editor.offsetHeight / 2) - (activeItem.offsetHeight / 2);
+        } else {
+            // Target is another element's ID (or another unique identifier, if you use them)
+            const targetElement = document.getElementById(targetValue);
+            
+            if (!targetElement) {
+                // Try to find the element by class/name if ID wasn't set.
+                // NOTE: Using a simple querySelectorAll may not be reliable in your complex setup.
+                // A reliable way is to ensure all floating/draggable items have unique IDs.
+                window.showModal(`Target element "${targetValue}" not found.`, 'Error');
+                return;
+            }
+
+            // Get the target element's position
+            targetX = targetElement.offsetLeft;
+            targetY = targetElement.offsetTop;
+        }
+    }
+    
+    // Apply the movement
+    activeItem.style.left = `${targetX}px`;
+    activeItem.style.top = `${targetY}px`;
+}
+
+
+//-----------####################### End GameMovement#########################################-----------
+
+//---------########################      Speech Game    ###################################------------------
+
+/**
+ * Starts the speech recognition process for the given word.
+ * @param {string} word The word the user is expected to say.
+ */
+// Global variable to store the currently spoken word the user is aiming for
+
+
+// NOTE: Assuming these variables are declared in the global or outer scope:
+// let recognition = null;
+// let requiredWord = '';
+
+ window.startVoiceRecognition=function(word) {
+
+    if (!('webkitSpeechRecognition' in window)) {
+        window.showModal('Your browser does not support Web Speech Recognition.', 'Error');
+        return;
+    }
+
+    // 1. CRITICAL SCOPE FIX: Declare the flag locally so the nested event handlers can use it.
+    let resultProcessed = false; 
+
+    // 2. Setup the recognition object
+    recognition = new webkitSpeechRecognition();
+    recognition.lang = 'en-US'; 
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    
+    // --- COMPARISON & DISPLAY LOGIC ---
+    
+    // 3. Display Word: Store the original word (e.g., "RED-APPLE") for the user prompt.
+    const displayWord = word; 
+
+    // 4. Comparison Data: Clean and store the final comparison string in the shared 'requiredWord' variable.
+    // This removes punctuation and sets it to lowercase for the robust check.
+    const tempRequiredWord = word.toLowerCase(); 
+    requiredWord = tempRequiredWord
+        .trim()
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") 
+        .replace(/\s{2,}/g, " "); 
+    // requiredWord is now ready for comparison.
+
+    // Update UI to show what's required and listening state
+    document.getElementById('speechResult').textContent = `Say: "${displayWord}"`;
+    document.getElementById('speechResult').className = 'text-lg font-bold text-blue-600';
+    document.getElementById('speechResult').style.display = '';
+    document.getElementById('voiceButton').textContent = '🗣️ Listening... Say it now!';
+    document.getElementById('voiceButton').disabled = true;
+
+    // --- ON RESULT HANDLER ---
+    recognition.onresult = function(event) {
+         resultProcessed = true; // Flag indicates a result was received
+        
+        const rawTranscript = event.results[0][0].transcript;
+        
+        // Clean the SPOKEN transcript for comparison
+        const cleanedTranscript = rawTranscript
+            .toLowerCase()
+            .trim()
+            .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "")
+            .replace(/\s{2,}/g, " ");
+        
+        // Compare the aggressively cleaned strings
+        // NOTE: The comparison uses the global/shared 'requiredWord'
+        let isCorrect = (cleanedTranscript === requiredWord); 
+        
+        // Display result
+       // document.getElementById('speechResult').textContent = `You said: "${cleanedTranscript}" `;
+        
+        if (isCorrect) {
+            document.getElementById('speechResult').className = 'text-lg font-bold text-green-600';
+      document.getElementById('speechResult').textContent = `✅ Correct!You said: "${cleanedTranscript}" `;
+            window.showModal(`✅ Correct! You said: ${cleanedTranscript}`, 'Success');
+	window.speakText(` Correct! You said: ${cleanedTranscript}`);
+        } else {
+            document.getElementById('speechResult').className = 'text-lg font-bold text-red-600';
+      document.getElementById('speechResult').textContent = `❌ Incorrect. You said: "${cleanedTranscript}" `;
+            //showModal(`❌ Incorrect. You said: ${cleanedTranscript}. Try again.`, 'Error');
+                 window.speakText(` Incorrect. You said: ${cleanedTranscript}. Try again.`);
+        }
+    };
+
+    // --- ON END HANDLER (Crucial for state reset) ---
+    recognition.onend = function() {
+        // Reset button state
+        document.getElementById('voiceButton').textContent = '🎙️ ▶️ ';
+        document.getElementById('voiceButton').disabled = false;
+        
+        // Check the flag: If resultProcessed is false, no speech was successfully captured.
+        if (!resultProcessed) {
+             document.getElementById('speechResult').textContent = '...No speech detected or mic timed out. Try again.';
+             document.getElementById('speechResult').className = 'text-lg font-bold text-gray-500';
+        }
+    };
+
+     recognition.start();
+}
+
+
+ 
+/**
+ * Asynchronously requests microphone access to force device selection.
+ * This should be called before starting the Web Speech Recognition.
+ * @returns {Promise<boolean>} True if access was granted and a stream opened.
+ */
+ window.ensureMicrophoneControl=async function() {
+    try {
+        // 1. Request access to the audio device only.
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // 2. Access granted! Stop the stream immediately to release the device, 
+        // but the browser/OS has now settled on the correct microphone.
+        stream.getTracks().forEach(track => track.stop());
+        
+        return true;
+    } catch (error) {
+        // If the user denies permission, or no mic is found/working.
+        console.error("Microphone access failed:", error);
+        if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+            window.showModal("Microphone permission was denied. Please check your browser's site settings.", 'Error');
+        } else {
+            window.showModal("Could not access a microphone device. Please check your connections.", 'Error');
+        }
+        return false;
+    }
+}
+
+
+/**
+ * Finds all draggable images and starts the random recognition game.
+ */
+ window.startRandomVoiceGame= async function() {
+
+// 💥 STEP 1: Ensure microphone access is secured 💥
+    const micReady = await window.ensureMicrophoneControl();
+    if (!micReady) {
+        // Stop the function if access failed
+       window.showModal('Mic is not ready','error');
+        return; 
+    }
+
+
+
+    // 1. Find all potential target elements (draggable images and floating divs)
+   // const possibleTargets = Array.from(document.getElementById('editor').querySelectorAll('.draggable-image, .floating-div'));
+    const possibleTargets = Array.from(document.getElementById('editor').querySelectorAll('.draggable-image'));
+    // 2. Filter elements that have a proper ID (which we'll use as the word)
+    const candidates = possibleTargets.filter(el => el.id && el.id.trim() !== '');
+
+    if (candidates.length === 0) {
+        window.showModal('Please ensure your items have unique IDs (e.g., id="APPLE") to be part of the game.', 'Warning');
+        document.getElementById('speechResult').textContent = 'No labeled items found.';
+        return;
+    }
+
+    // 3. Select one candidate randomly
+    const randomIndex = Math.floor(Math.random() * candidates.length);
+    const selectedElement = candidates[randomIndex];
+    
+    // Use the ID as the word to be spoken
+    const wordToSay = selectedElement.id;
+
+    // Optional: Visually highlight the element that was chosen
+    highlightElement(selectedElement);
+
+    // 4. Start recognition for that word
+    window.startVoiceRecognition(wordToSay);
+}
+
+/**
+ * Simple function to highlight the target element.
+ */
+ window.highlightElement=function(el) {
+    // Remove previous highlights
+    document.getElementById('editor').querySelectorAll('.highlight-target').forEach(item => {
+        item.classList.remove('highlight-target');
+        item.style.border = 'none'; // Clear inline style if necessary
+    });
+
+    // Apply new highlight
+    el.classList.add('highlight-target');
+    el.style.border = '5px solid orange'; // Visible border highlight
+    setTimeout(() => {
+        el.style.border = 'none'; // Remove highlight after a moment
+    }, 2000); 
+}
+//---------------##########################   End Speech Game     ###################################################3
 
 
 
@@ -2832,36 +3293,38 @@ window.initElementForMovement =function(el) {
         }
 
         window.speakText = function(textToSpeak) {
-            // *** PASTE YOUR FULL window.speakText FUNCTION BODY HERE ***
-            let seed=Math.floor(Math.random()*2);
-            let lan;
-            if (textToSpeak.charCodeAt() > 255) {
-                lan=seed;
-            }else{
-                if(textToSpeak.substring(0,1)=='*'){lan=5}else{lan=4;}
-            }
+		   let seed=Math.floor(Math.random()*2);
+		   let lan=4;
+		if (textToSpeak.charCodeAt() > 255) {
+
+		   //showModal('Chinese',seed);
+
+		   lan=seed;
+		}else{
+		  if(textToSpeak.substring(0,1)=='*'){lan=5}else{lan=4;}
+		  //lan=4;
+		}
             if ('speechSynthesis' in window) {
+                //const textToSpeak = document.getElementById('textInput').value;
                 const utterance = new SpeechSynthesisUtterance(textToSpeak);
+
+                // Optional: Customize properties   5:en-US   female    6:UK-GB Female 7 :en-UK-GB-Male   1國女~2國男:zh-TW
                 utterance.lang = 'en-US';
                 utterance.pitch = 1;
                 utterance.rate = 0.8;
                 utterance.volume = 1;
-                const voices = speechSynthesis.getVoices();
-                utterance.voice = voices[lan]; 
+		// To select a specific voice:
+		  const voices = speechSynthesis.getVoices();
+ 		 utterance.voice = voices[lan]; // Choose a voice from the available list   4:en-US   female 5:en-GB  male 5:en-GB   1~3:zh-TW
                 speechSynthesis.speak(utterance);
             } else {
                 alert("Your browser does not support Web Speech API.");
             }
+	//Text to speech-----------https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/getVoices
         }
 
-        window.zzzzzzzzzzzzzzrandomItem = function(){
-            // *** PASTE YOUR FULL window.randomItem FUNCTION BODY HERE ***
-            const seeds = editor.querySelectorAll('.draggable-image');
-            let seedx=Math.floor(Math.random()*seeds.length);
-            gameTarget=seeds[seedx].id;
-            quizCount +=1;
-            return seeds[seedx].id
-        }
+
+
   window.pickNumber= function(){
       const drawNumber=Math.floor(Math.random()*30);
       speakText('抽到'+drawNumber+'號，請上台');
@@ -2932,39 +3395,111 @@ window.initElementForMovement =function(el) {
         }
 
         window.animateAllRandomly = function(durationSeconds) {
-            // *** PASTE YOUR FULL window.animateAllRandomly FUNCTION BODY HERE ***
-             const targets = editor.querySelectorAll('.draggable-image');
-             if (targets.length === 0) {
-                 return Promise.resolve(); 
-             }
-             return new Promise(resolve => {
-                let itemsToComplete = targets.length;
-                targets.forEach(item => {
-                    // Logic to set targetX, targetY, step function, and resolve...
-                    itemsToComplete--; 
-                    if (itemsToComplete === 0) resolve();
-                });
-             });
+     const editor = document.getElementById('editor');
+    const targets = editor.querySelectorAll('.draggable-image');
+   //const targets = editor.querySelectorAll('.draggable-image, .floating-div');
+
+    if (targets.length === 0) {
+        return Promise.resolve(); // Nothing to animate, resolve immediately
+    }
+
+    const editorWidth = editor.offsetWidth;
+    const editorHeight = editor.offsetHeight;
+    const durationMs = durationSeconds * 1000;
+
+    let itemsToComplete = targets.length;
+    
+    // Create a new Promise that will resolve when all items are done moving
+    return new Promise(resolve => {
+        targets.forEach(item => {
+            // --- Generate Random Target Coordinates (same as before) ---
+            const maxRandX = Math.max(0, editorWidth - item.offsetWidth);
+            const maxRandY = Math.max(0, editorHeight - item.offsetHeight);
+
+            const targetX = Math.floor(Math.random() * maxRandX);
+            const targetY = Math.floor(Math.random() * maxRandY);
+
+            // --- Animation Variables ---
+            const startX = item.offsetLeft;
+            const startY = item.offsetTop;
+            let startTime;
+
+            // Define a completion callback
+            const onComplete = () => {
+                itemsToComplete--;
+                if (itemsToComplete === 0) {
+                    resolve(); // All items have finished this cycle
+                }
+            };
+
+            // If item is already at target, resolve its cycle immediately
+            if (startX === targetX && startY === targetY) {
+                onComplete();
+                return;
+            }
+
+            // --- The Animation Loop (step function) ---
+            function step(timestamp) {
+                if (!startTime) {
+                    startTime = timestamp;
+                }
+
+                const elapsed = timestamp - startTime;
+                let progress = elapsed / durationMs;
+
+
+                if (progress >= 1) {
+                    progress = 1;
+                    // Ensure the item lands exactly on the target coordinates
+                    item.style.left = `${targetX}px`;
+                    item.style.top = `${targetY}px`;
+                    onComplete(); // Mark this item as complete
+                    return;
+                }
+
+                // Linear Interpolation
+                const currentX = startX + (targetX - startX) * progress;
+                const currentY = startY + (targetY - startY) * progress;
+
+                item.style.left = `${currentX}px`;
+                item.style.top = `${currentY}px`;
+
+                // Continue the animation loop
+                requestAnimationFrame(step);
+            }
+
+            requestAnimationFrame(step);
+        });
+    });
+
         }
         
         let isAnimationRunning = false; 
         window.startContinuousAnimation = async function() {
-            // *** PASTE YOUR FULL window.startContinuousAnimation FUNCTION BODY HERE ***
-             if (isAnimationRunning) return; 
-             isAnimationRunning = true;
-             const DURATION = 2; 
+    if (isAnimationRunning) return; // Already running
+    isAnimationRunning = true;
 
-             while (gameMode) {
-                 await window.animateAllRandomly(DURATION);
-                 await new Promise(r => setTimeout(r, 200));
-             }
-             isAnimationRunning = false;
+    // Use a duration between 1.5 and 2.5 seconds for a fluid, continuous motion
+    const DURATION = 2; 
+
+    // Loop continues as long as the gameMode flag is true
+    while (gameMode) {
+        // Wait for ALL items to finish their current random movement
+        await animateAllRandomly(DURATION);
+
+        // Optional: Add a brief pause between cycles for effect (e.g., 200ms)
+        await new Promise(r => setTimeout(r, 200)); 
+    }
+    
+    isAnimationRunning = false;
+    console.log("Continuous animation stopped.");
+
         }
 
 
         // --- Final Utility Functions (Existing) ---
 
-        window.checkOverlap = function(item) {
+        window.zzzzcheckOverlap = function(item) {
             // *** PASTE YOUR FULL window.checkOverlap FUNCTION BODY HERE ***
             const itemRect = item.getBoundingClientRect();
             const items = document.querySelectorAll('.draggable-image, .floating-div');
@@ -3003,16 +3538,55 @@ window.initElementForMovement =function(el) {
             }
         }
 
+
+
+
+//全螢幕切換
+let isFullScreen =false;
+
+ window.FullScreen=function(){
+   isFullScreen = !isFullScreen;
+if(isFullScreen){
+
+	let element = document.getElementById('screen'); // Or any other element
+element.requestFullscreen()
+  .then(() => {
+    console.log('Fullscreen mode entered successfully.');
+  })
+  .catch((error) => {
+    console.error('Error entering fullscreen mode:', error);
+  });
+
+  }
+  else
+  {
+	
+	document.exitFullscreen()
+  .then(() => {
+    console.log('Fullscreen mode exited successfully.');
+  })
+  .catch((error) => {
+    console.error('Error exiting fullscreen mode:', error);
+  });
+
+
+    }
+}
+
+
+
+
+
        //############################## DRAWIMG  #########################################
         
 // ====================================================================
 // I. DRAWING HELPERS (LOCAL FUNCTIONS)
 // ====================================================================
-
-function resizeCanvas() {
+window.resizeCanvas=function() {
     // Save current drawing content
+   if(drawingCanvas){
     const imageData = drawingCanvas.toDataURL();
-    
+    }
     // Resize the canvases to match the editor size
     drawingCanvas.width = editor.offsetWidth;
     drawingCanvas.height = editor.offsetHeight;
@@ -3229,7 +3803,7 @@ window.initDrawingControls = function() {
     if(lineWidthInput) lineWidthInput.addEventListener('input', (e) => ctx.lineWidth = e.target.value);
     
     // 4. Run initial setup (size and load data)
-    resizeCanvas();
+    window.resizeCanvas();
     window.loadDrawingData(currentPageId);
     
     // Set initial tool state (e.g., selection mode)
@@ -3244,7 +3818,7 @@ canvasElement.style.height = '100%';
 canvasElement.style.backgroundColor = 'transparent'; // CRITICAL: Must be transparent
 canvasElement.style.zIndex = '15'; // Must be higher than elements (e.g., z-index 10)
 
-resizeCanvas(); // This sets drawingCanvas.width and .height to editor.offsetWidth/Height
+window.resizeCanvas(); // This sets drawingCanvas.width and .height to editor.offsetWidth/Height
 window.loadDrawingData(currentPageId);
 
 }
@@ -3306,7 +3880,7 @@ if (drawingCanvas) {
         // Add tempCanvas if starting shape drawing
         tempCanvas.style.cssText = 'position: absolute; top: 0; left: 0; z-index: 16; pointer-events: none;';
         editor.appendChild(tempCanvas);
-        resizeCanvas();
+        window.resizeCanvas();
     } else if (!currentTool && tempCanvasElement) {
         // Remove tempCanvas if switching back to Select/Move
         tempCanvasElement.remove();
@@ -3422,13 +3996,13 @@ window.loadDrawingData = function(pageId) {
 
 document.addEventListener('DOMContentLoaded', () => {
       // 1. Load project data and render page list
-            loadProject();
+            //loadProject();
             renderPageList();
             if(currentPageId) {
                 loadPageData(currentPageId);
             }
        // 2. Initialize canvas
-            resizeCanvas();
+            window.resizeCanvas();
             ctx.strokeStyle = document.getElementById('penColor').value;
             ctx.lineWidth = document.getElementById('lineWidth').value;
             //drawingCanvas.style.pointerEvents = 'none';
@@ -3488,7 +4062,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.addEventListener('DOMContentLoaded', () => {
            window.loadProjectFromLocalStorage();
-            window.startRealtimeProjectListener();
+            
             window.updateTimerDisplay(GAME_DURATION_SECONDS);
         });
 
