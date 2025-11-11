@@ -72,7 +72,7 @@
 </head>
 <body onclick="window.dropmenu();window.expand();" >
 
-     <div id="screen" class="p-4 bg-white shadow-lg rounded-xl" style="border:2px double gray "><!-- 全螢幕範圍開始 -->
+     <div id="screen" class="p-0 bg-white shadow-lg rounded-xl" style="border:2px double gray "><!-- 全螢幕範圍開始 -->
 
 
     <div id="main-toolbar">
@@ -292,11 +292,11 @@
 
      
 <!-- add dropmenu -->
-            <button  title="插入" onclick=""   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">➕🖼️</button>		
+            <button id="add"  title="插入" onclick=""   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">➕🖼️</button>		
 
 
 <!-- add menu -->
-<div id="add_menu" style="display:none;position:absolute;top:70vh;left:40px;width:90vw;z-index:30" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4 ">
+<div id="add_menu" style="display:none;position:absolute;top:90vh;left:40px;width:98vw;z-index:30" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4 ">
 
 <span  title="關閉" onclick="document.getElementById('add_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;z-index:30" >🗷</span>
 
@@ -322,7 +322,7 @@
 
 <button id="layerControl" onclick="" style="position:" >💳圖層樣式</button>
 
-<div id="layerControl_menu" style="display:none;position:absolute;z-index:30;top:80vh;left:20px;padding:10px;width:100%px;background:lightgray;border:2px solid gray;border-radius:16px;color:black;font-size:12px;vertical-align:center;opacity:50" >
+<div id="layerControl_menu"  style="display:none;position:absolute;z-index:30;top:95vh;left:20px;padding:10px;width:100%px;background:lightgray;border:2px solid gray;border-radius:16px;color:black;font-size:12px;vertical-align:center;opacity:50" >
 
 <span  title="關閉" onclick="document.getElementById('layerControl_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;" >🗷</span>
 		背景:
@@ -1357,7 +1357,7 @@ window.addDivWithImageBackgroundElement = function() {
             } else if (type === 'H3') {
                 defaultContent = "<h3>按兩下後在此打字</h3>";
             } else if (type === 'sticker') {
-                defaultContent = `<div id="hinder${randomNumber}" class="floating-div"   style="background-color:${mycolor};background-size:contain;padding-left:40px;color:blue;font-size:30px;display:inline;box-shadow:2px 2px gray ">memo<div class="resize" ></div></div>`;
+                defaultContent = `<div id="hinder${randomNumber}" style="padding-left:40px;color:blue;font-size:30px">memo </div><div class="resizer"></div>`;
 
             } else if (type === 'Animateout') {
 
@@ -1388,6 +1388,7 @@ window.addDivWithImageBackgroundElement = function() {
             textDiv.style.top = `${lastClickPos.y}px`;
             textDiv.setAttribute('contenteditable', 'false');
             textDiv.style.backgroundSize = 'contain';
+            textDiv.style.backgroundColor=`${mycolor}`;
             textDiv.style.borderRadius = '0px'; // Initialize with 0 radius
             textDiv.style.padding = '5px';
             textDiv.style.minWidth = '10px'; // Give headings some space
