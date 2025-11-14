@@ -1,3 +1,4 @@
+﻿
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -16,7 +17,7 @@
         
         /* Drawing Canvas */
         #drawingCanvas { position: absolute; top: 0; left: 0; z-index: 15; pointer-events: none; }
-        
+        #myCanvas { position: absolute; top: 0; left: 0; z-index: 50; pointer-events: none; }        
         /* Draggable Elements (CSS from your original code) */
  
         .draggable-image, .floating-div {
@@ -74,7 +75,67 @@
 
      <div id="screen" class="p-0 bg-white shadow-lg rounded-xl" style="border:2px double gray "><!-- 全螢幕範圍開始 -->
 
+<!-- 分組計分 -->
+<div id="teamBoard" style="position:absolute;left:450px;top:40px;height:40px;width:1000px;z-index:50;font-size:20px;background:lightyellow;border-radius:6px; border:4px solid lightgrey" >
+<span  title="關閉" onclick="document.getElementById('teamBoard').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;" >🗷</span>
+<b>Team</b>
+<font color="dodgerblue" ><b>  1 </b></font>
+<div style="margin:4px;display:inline;background:lightcyan;border-radius:6px;width:120px; border:1px solid lightgrey" >
 
+<div style="display:inline; " onclick="document.getElementById('tem_1').value=Number(document.getElementById('tem_1').value)+1;">+</div>
+<input type="text" id="tem_1" size="2" value="0" style="height:20px;width:30px;" >
+<div style="display:inline; " onclick="document.getElementById('tem_1').value=Number(document.getElementById('tem_1').value)-1;">-</div></div>
+
+<!-- 分組計分 -->
+<font color="orange" ><b>  2 </b></font>
+<div style="margin:4px;display:inline;background:lavender;border-radius:6px;width:120px; border:1px solid lightgrey" >
+
+<div style="display:inline;color:gray" onclick="document.getElementById('tem_2').value=Number(document.getElementById('tem_2').value)+1;">+</div>
+<input type="text" id="tem_2" size="2" value="0" style="height:20px;width:30px" >
+<div style="margin:4px;display:inline;color:gray" onclick="document.getElementById('tem_2').value=Number(document.getElementById('tem_2').value)-1;">-</div></div>
+<!-- 分組計分 -->
+<font color="lime" ><b>   3 </b></font>
+<div style="margin:4px;display:inline;background:lightcyan;border-radius:6px;width:120px; border:1px solid lightgrey" >
+
+<div style="display:inline; " onclick="document.getElementById('tem_3').value=Number(document.getElementById('tem_3').value)+1;">+</div>
+<input type="text" id="tem_3" size="2" value="0" style="height:20px;width:30px" >
+<div style="display:inline; " onclick="document.getElementById('tem_3').value=Number(document.getElementById('tem_3').value)-1;">-</div></div>
+<!-- 分組計分 -->
+<font color="teal" ><b>  4 </b></font>
+<div style="margin:4px;display:inline;background:lavender;border-radius:6px;width:120px; border:1px solid lightgrey" >
+
+<div style="display:inline;color:gray" onclick="document.getElementById('tem_4').value=Number(document.getElementById('tem_4').value)+1;">+</div>
+<input type="text" id="tem_4" size="2" value="0" style="height:20px;width:30px" >
+<div style="display:inline;color:gray" onclick="document.getElementById('tem_4').value=Number(document.getElementById('tem_4').value)-1;">-</div></div>
+<!-- 分組計分 -->
+<font color="fuchsia" ><b>   5  </b></font>
+<div style="margin:4px;display:inline;background:lightcyan;border-radius:6px;width:120px; border:1px solid lightgrey" >
+
+<div style="display:inline; " onclick="document.getElementById('tem_5').value=Number(document.getElementById('tem_5').value)+1;">+</div>
+<input type="text" id="tem_5" size="2" value="0" style="height:20px;width:30px" >
+<div style="display:inline; " onclick="document.getElementById('tem_5').value=Number(document.getElementById('tem_5').value)-1;">-</div></div>
+<!-- 分組計分 -->
+<font color="red" ><b>  6 </b></font>
+<div style="margin:4px;display:inline;background:lavender;border-radius:6px;width:120px; border:1px solid lightgrey" >
+
+<div style="display:inline;color:gray" onclick="document.getElementById('tem_6').value=Number(document.getElementById('tem_6').value)+1;">+</div>
+<input type="text" id="tem_6" size="2" value="0" style="height:20px;width:30px" >
+<div style="display:inline;color:gray" onclick="document.getElementById('tem_6').value=Number(document.getElementById('tem_6').value)-1;">-</div></div>
+  
+</div>
+
+<!-- side page controllers-->
+<div style="position:absolute;top:50vh;left:98vw;width:15px;height:25px;font-size:20px;z-index:50" >
+ <div style="display:inline;color:gray" onclick="goToPreviousPage();"  ontouchstart="goToPreviousPage();">🜂</div> <div style="display:inline;color:gray" onclick="goToNextPage();"  ontouchstart="goToNextPage();">🜄</div>   
+</div>
+ 
+<div style="position:absolute;top:50vh;left:0;width:15px;height:25px;font-size:20px;z-index:50" >
+ <div style="display:inline;color:gray" onclick="goToPreviousPage();"  ontouchstart="goToPreviousPage();">🜂</div> <div style="display:inline;color:gray" onclick="goToNextPage();"  ontouchstart="goToNextPage();">🜄</div>   
+</div>
+
+
+
+<!--main toolbar area-->
     <div id="main-toolbar">
 
         <button onclick="document.getElementById('page-manager').style.display=(document.getElementById('page-manager').style.display=='none')?'':'none';document.getElementById('project-manager').style.display=(document.getElementById('project-manager').style.display=='none')?'':'none';">≡</button>
@@ -98,13 +159,14 @@
       
       document.body.style.zoom = z+"%";
     }else{
-     document.body.style.zoom ="100%";
+     document.body.style.zoom = zoomV+"%";
     }
 
 }
 </script>
-           🔍<input type="range" id="zoom" min="1" max="20" value="10" title="Line Width" class="w-20" onchange="zoomout();" >
-           <button onclick="window.zoomout(10)" class="px-1 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition duration-150 shadow-md">100%</button>
+           🔍<input type="range" id="zoom" min="1" max="20" value="10" title="Zoom Scale" class="w-20" onchange="zoomout();" >
+<button onclick="window.zoomout(90)" class="px-1 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition duration-150 shadow-md">90%</button>
+           <button onclick="window.zoomout(100)" class="px-1 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition duration-150 shadow-md">100%</button>
 <!--
             <button onclick="window.toggleEditMode();window.toggleEditable();">Toggle Edit</button>
             <button onclick="document.execCommand('bold', false, null)">B</button>
@@ -130,7 +192,10 @@
         </div>
         
         <div id="editor-wrapper"> 
-            <div id="editor"  contenteditable="true"><canvas id="drawingCanvas"></canvas>
+            <div id="editor"  contenteditable="true">
+<canvas id="drawingCanvas" style="background-color:yellow">
+
+</canvas><canvas id="myCanvas"></canvas>
                 Loading project data from Firestore...            
             </div> 
 
@@ -204,27 +269,47 @@
  
 
 
-<span  id="pentool" onclick="dropmenu();" style="position:relative;width:40px;font-size:20px" class="mx-2 text-gray-400 rounded-lg hover:bg-purple-600  shadow-md">✒️
-            <span  id="pentool_menu" style="display:none;position:absolute;top:-60px;left:-0px;z-index:30;width:900px;background:white;border-radius:16px;border:2px solid gray;padding:4px"         class="mx-2 text-gray-400" > 
-            <button onclick="window.setDrawingTool(null);document.getElementById('pentool_menu').style.display='none';"  title="選取移動-Select/Move" class="px-4 py-2  text-white font-semibold rounded-lg hover:bg-gray-700 transition duration-150 shadow-md" id="selectMoveBtn">🖱️</button>
-            
-            <button onclick="window.setDrawingTool('pen')" title="畫筆-Pen" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">🖌️</button>
-            <button onclick="window.setDrawingTool('eraser')"  title="擦布-Eraser" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-150 shadow-md">🧽</button>
-            <button onclick="window.setDrawingTool('line')"  title="畫線-Line" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md"><b>/</b></button>
-<button onclick="window.setDrawingTool('arrow')" title="箭頭線-Arrow"  class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md"><b>↗</b></button>
-            <button onclick="window.setDrawingTool('rect')"  title="方塊-Rectangle" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">🔲</button>
-            <button onclick="window.setDrawingTool('circle')"  title="圓圈-Circle" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md"><b>⭕</b></button>
+<span  id="DWpentool" onclick="" style="position:relative;width:40px;font-size:20px" class="mx-2 text-gray-400 rounded-lg hover:bg-purple-600  shadow-md">✒️
+            <span  id="DWpentool_menu" style="display:none;position:absolute;top:-60px;left:-0px;z-index:30;width:900px;background:white;border-radius:16px;border:2px solid gray;padding:4px"    > 
 
-            
- 框線 <input type="color" id="penColor" value="#000000" title="框線顏色-Stroke Color" class="h-7 w-10 border-none rounded-lg p-0">  
- 填充 <input type="color" id="fillColor" value="#ff0000" title="填充顏色-Fill Color" class="h-7 w-10 border-none rounded-lg p-0"> 
-            
-            <button onclick="toggleShapeMode()" class="px-4 py-2 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition duration-150 shadow-md" id="shapeModeBtn" title="Toggle between Stroke and Fill">空心/填滿</button>
 
-            <label for="lineWidth" class="text-sm text-gray-600 ml-2">筆寬:</label>
-            <input type="range" id="lineWidth" min="1" max="20" value="3" title="粗細-Line Width" class="w-20">
-            <button onclick="VclearCanvas()"  title="清除-Clear" class="px-4 py-2 bg-gray-300 text-gray-800 font-xlargebold rounded-lg hover:bg-gray-400 transition duration-150 shadow-md">🗑</button>
-          </span ><!--pentool_menu-->
+
+
+     <div class="flex items-center space-x-2">
+                    <button id="stopDrawingBtn" onclick="window.setDrawingMode('none');" class="p-2 rounded-full bg-gray-100 border transition hover:bg-gray-200" title="Eraser Tool">
+	        🖱️
+                    </button>
+                    <button id="pen-tool" class="p-2 rounded-full bg-gray-100 border transition hover:bg-gray-200" title="Pen Tool">
+                        <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+
+                    <button id="eraser-tool" class="p-2 rounded-full bg-gray-100 border transition hover:bg-gray-200" title="Eraser Tool">
+                        🧽
+                    </button>
+
+                    <label for="pen-color" class="flex items-center ring-2 ring-gray-300 rounded-full transition duration-200">
+                        <input type="color" id="pen-color" value="#FF0000" class="w-8 h-8 rounded-full border-none p-0 cursor-pointer">
+                    </label>
+             <span onclick="window.setPenColor('black')" style="color:black;padding:1px;font-size:30px">■</span><span onclick="window.setPenColor('blue')" style="color:blue;padding:1px;font-size:30px">■</span><span onclick="window.setPenColor('green')" style="color:green;padding:1px;font-size:30px">■</span>
+                
+                <!-- Size and Action Buttons -->
+                <div class="flex items-center space-x-3">
+                    <label for="pen-size" class="text-gray-600 font-medium whitespace-nowrap">Size: <span id="size-display" class="font-bold text-green-600">5</span>px</label>
+                    <input type="range" id="pen-size" min="1" max="50" value="5" class="w-24 md:w-32 cursor-pointer appearance-none bg-gray-200 rounded-lg h-2 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-green-600 [&::-webkit-slider-thumb]:rounded-full">
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <button id="clear-canvas-button" class="bg-red-500 hover:bg-red-600 text-black font-semibold py-2 px-3 rounded-lg text-xl transition shadow">
+                        🗑
+                    </button>
+	</div >
+</div > 
+
+
+
+
+
+         </span><!--pentool_menu-->
 </span>  <!--pentool-->
 
 
@@ -676,8 +761,11 @@ let initialX, initialY, initialWidth, initialHeight;
 let isInitialLoad = true; // CRITICAL for Firebase stability
 
 // --- Drawing & Canvas State ---
-let drawingCanvas = null;
-let ctx = null;
+//let drawingMode = null; // 'pen' or 'erase' or mouse
+//let drawingCanvas = document.getElementById('drawingCanvas');
+//let myCanvas=null;
+//let ctx = null;
+ let context = null;
 let fillColorInput = null;
 let penColorInput = null;
 let lineWidthInput = null;
@@ -690,6 +778,7 @@ let drawStartX, drawStartY;
 const tempCanvas = document.createElement('canvas');
 const  tempCtx = tempCanvas.getContext('2d');
 tempCanvas.id = 'tempCanvas';
+
 
         // --- 3. FIREBASE/PROJECT DATA MANAGEMENT ---
         
@@ -1052,32 +1141,41 @@ async function ensureProjectExists() {
             const page = getCurrentPage();
             if (!page) return;
 // 2. Add the drawingCanvas if it's missing (it should be persistent)
-    if (!document.getElementById('drawingCanvas')) {
-        const canvasElement = document.createElement('canvas');
-        canvasElement.id = 'drawingCanvas';
-        // CRITICAL: Set initial position and z-index to cover the editor
-        canvasElement.style.position = 'absolute';
-        canvasElement.style.top = '0';
-        canvasElement.style.left = '0';
-        canvasElement.style.zIndex = '15'; // Must be above elements (z-index 10)
-        editor.appendChild(canvasElement);
-    }
+
             page.html = editor.innerHTML;
         }
 
-        function loadPageData(pageId) {
-            const page = projectData.find(p => p.id === pageId);
-            if (!page) return;
-            editor.innerHTML = page.html || '';
-if (!document.getElementById('drawingCanvas')) {
+function loadPageData(pageId) {
+    const page = projectData.find(p => p.id === pageId);
+    if (!page) return;
+    
+// 1. CLEAR THE EDITOR (This is correct for resetting page content)
+    editor.innerHTML = page.html || '';
+    
+    // 2. CREATE, STYLE, APPEND, AND INITIALIZE CANVAS
+    // We KNOW the canvas is gone because we just wiped editor.innerHTML.
+    // So, we must create a new one every time.
     const canvasElement = document.createElement('canvas');
     canvasElement.id = 'drawingCanvas';
-    // Use insertBefore to ensure it's the first child, as you requested
-    editor.insertBefore(canvasElement, editor.firstChild); 
-}
 
-	window.initElements();
-        }
+    // Set all necessary CSS properties
+    canvasElement.style.position = 'absolute';
+    canvasElement.style.top = '0';
+    canvasElement.style.left = '0';
+    canvasElement.style.width = '100%'; // Ensure it fills the editor area
+    canvasElement.style.height = '100%'; 
+    canvasElement.style.zIndex = '50';
+    canvasElement.style.backgroundColor = 'transparent'; // Change to transparent after testing!
+    
+    // Add the element to the DOM
+    editor.appendChild(canvasElement);
+    
+    // 3. Initialize drawing controls immediately with the valid object
+    window.initDrawingCanvas(canvasElement);
+
+    // 4. Initialize drag/resize elements for the HTML just loaded
+    window.initElements();
+}
 
 
 function renderPageList() {
@@ -2293,10 +2391,13 @@ editor.addEventListener('touchstart', handleStart);
  editor.addEventListener('dblclick',toggleContentEditable);
 
 
+//-----OLD listener
 
-
-
- 
+        editor.addEventListener('mousedown', handleStart);
+        editor.addEventListener('mousemove', handleMove);
+        editor.addEventListener('mouseup', handleEnd);
+        editor.addEventListener('mouseleave', handleEnd);
+//-----OLD listener 
 
 
 /**
@@ -2462,7 +2563,59 @@ window.rotateElement = function(degrees) {
 
 
 
+// ---  Gesture Handling Functions ---
 
+     window.handleGestureStart=function(e) {
+            // 只有在 'Select/Move' 模式下，且沒有選中任何元素時，才啟用滑動
+            if (currentTool !== null || activeItem !== null) return;
+            
+            // 確保只處理單點觸摸或滑鼠點擊
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+
+            touchStartX = clientX;
+            touchStartY = clientY;
+            isSwiping = true;
+        }
+
+        window.handleGestureMove=function(e) {
+            if (!isSwiping) return;
+
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+
+            const diffX = clientX - touchStartX;
+            const diffY = clientY - touchStartY;
+            
+            // 優先考慮水平滑動，並防止頁面垂直滾動被鎖定
+            if (Math.abs(diffX) > 300 || Math.abs(diffY) > 300) {
+                // 如果水平移動明顯大於垂直移動，則阻止瀏覽器預設行為
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    e.preventDefault(); 
+                }
+            }
+        }
+
+      window.handleGestureEnd=function(e) {
+            if (!isSwiping) return;
+            
+            const clientX = e.clientX || e.changedTouches[0].clientX;
+            // 不需要 finalY，因為我們只關心水平移動
+            
+            const diffX = clientX - touchStartX;
+            isSwiping = false;
+
+            // 檢查是否超過滑動閾值
+            if (Math.abs(diffX) > SWIPE_THRESHOLD) {
+                if (diffX >300) {
+                    // 向右滑動 (X 增加) -> 切換到下一頁
+                    window.goToNextPage();
+                } else {
+                    // 向左滑動 (X 減少) -> 切換到上一頁
+                    window.goToPreviousPage();
+                }
+            }
+        }
 
 
 
@@ -3263,7 +3416,7 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
                 let banner=document.getElementById('picTitle');
                 let picInfo='';
                 if(items[counter].id && document.getElementById('picInfomation').checked==true){
-                    picInfo= items[counter].innerText;	    	   
+                    picInfo= items[counter].innerText;	    	   
                 }
                 if(items[counter].id){
                     banner.innerHTML=items[counter].id+'<br><font style=\"font-size:50px;line-height:20%;\" >'+picInfo.replace(/(?:\r\n|\r|\n)/g, '<br>')+'</font>';
@@ -3598,415 +3751,223 @@ element.requestFullscreen()
 
 
        //############################## DRAWIMG  #########################################
-        
-// ====================================================================
-// I. DRAWING HELPERS (LOCAL FUNCTIONS)
-// ====================================================================
-window.resizeCanvas=function() {
-    // Save current drawing content
-   if(drawingCanvas){
-    const imageData = drawingCanvas.toDataURL();
-    }
-    // Resize the canvases to match the editor size
-    drawingCanvas.width = editor.offsetWidth;
-    drawingCanvas.height = editor.offsetHeight;
-    tempCanvas.width = editor.offsetWidth;
-    tempCanvas.height = editor.offsetHeight;
+        // --- Drawing Logic (Enhanced with Eraser) ---
+         isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+         //let context = null;--- stated in global 
+         let drawingCanvas = null;
+        let penColor = '#FF0000'; // Default pen color (Red)
+        let penSize = 5;      // Default pen size
+        let drawingMode = 'none'; // 'pen' or 'erase'
 
-    // Restore the drawing content
-    const img = new Image();
-    img.onload = () => ctx.drawImage(img, 0, 0);
-    img.src = imageData;
-}
+  window.initDrawingCanvas=function(ele) {
 
-function drawArrowhead(targetCtx, x, y, angle, size) {
-    const arrowSize = size * 3; 
-    targetCtx.save();
-    targetCtx.beginPath();
-    targetCtx.translate(x, y);
-    targetCtx.rotate(angle);
-    targetCtx.moveTo(0, 0);
-    targetCtx.lineTo(-arrowSize, -arrowSize / 2);
-    targetCtx.lineTo(-arrowSize, arrowSize / 2);
-    targetCtx.closePath();
 
-    if (currentDrawMode === 'fill' || currentDrawMode === 'stroke-fill') {
-        targetCtx.fill();
-    }
-    if (currentDrawMode === 'stroke' || currentDrawMode === 'stroke-fill') {
-        targetCtx.stroke();
-    }
-    targetCtx.restore();
-}
+         drawingCanvas = document.getElementById('drawingCanvas');
 
-function drawShape(targetCtx, endX, endY) {
-    const w = endX - drawStartX;
-    const h = endY - drawStartY;
 
-    targetCtx.strokeStyle = penColorInput.value;
-    targetCtx.lineWidth = lineWidthInput.value;
-    targetCtx.fillStyle = fillColorInput.value;
-
-    targetCtx.beginPath();
-    
-    switch (currentTool) {
-        case 'line': 
-        case 'arrow':
-            targetCtx.moveTo(drawStartX, drawStartY);
-            targetCtx.lineTo(endX, endY);
-            break;
-        case 'rect':
-            targetCtx.rect(drawStartX, drawStartY, w, h);
-            break;
-        case 'circle':
-            const radiusX = Math.abs(w / 2);
-            const radiusY = Math.abs(h / 2);
-            const centerX = drawStartX + w / 2;
-            const centerY = drawStartY + h / 2;
-            targetCtx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
-            break;
-    }
-    
-    // Apply stroke and fill
-    if (currentTool !== 'arrow') {
-        if (currentDrawMode === 'fill' || currentDrawMode === 'stroke-fill') {
-            targetCtx.fill();
+        // 2. Make the check simple: if it's null, something is fundamentally wrong
+        if (!drawingCanvas) {
+             showModal('Canvas element not found in DOM after creation.', 'Error');
+            return;
         }
-        if (currentDrawMode === 'stroke' || currentDrawMode === 'stroke-fill') {
-            targetCtx.stroke();
+
+             context = drawingCanvas.getContext('2d'); 
+         
+             updateCanvasSize();
+
+   if (drawingMode=='none') {
+        // If a tool is active (currentTool is not null), the canvas receives events ('auto').
+        // If selection mode is active (currentTool is null), clicks pass through ('none').
+        drawingCanvas.style.pointerEvents = 'none';
+    }
+
+            // Event listeners for drawing (Mouse and Touch)
+
+            drawingCanvas.addEventListener('mousedown', startDrawing);
+            drawingCanvas.addEventListener('mousemove', draw);
+            drawingCanvas.addEventListener('mouseup', stopDrawing);
+            drawingCanvas.addEventListener('mouseout', stopDrawing);
+
+            drawingCanvas.addEventListener('touchstart', (e) => {
+                e.preventDefault(); 
+                startDrawing(e.touches[0]);
+            });
+            drawingCanvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                draw(e.touches[0]);
+            });
+            drawingCanvas.addEventListener('touchend', stopDrawing);
+
+            // Listeners for drawing controls
+            document.getElementById('pen-color').addEventListener('change', (e) => {
+                penColor = e.target.value;
+                setDrawingMode('pen');
+            });
+            
+            const penSizeInput = document.getElementById('pen-size');
+            const sizeDisplay = document.getElementById('size-display');
+            penSizeInput.addEventListener('input', (e) => {
+                penSize = parseInt(e.target.value, 10);
+                sizeDisplay.textContent = penSize;
+            });
+            
+            document.getElementById('pen-tool').addEventListener('click', () => setDrawingMode('pen'));
+            document.getElementById('eraser-tool').addEventListener('click', () => setDrawingMode('erase'));
+            document.getElementById('clear-canvas-button').addEventListener('click', clearCanvas);
+
+            window.addEventListener('resize', updateCanvasSize);
+            
+            // Set initial active tool state
+            window.updateToolButtons();
         }
-    } else {
-        // Arrow is always a line stroke, followed by the arrowhead fill/stroke
-        targetCtx.stroke();
-        const angle = Math.atan2(endY - drawStartY, endX - drawStartX);
-        drawArrowhead(targetCtx, endX, endY, angle, targetCtx.lineWidth);
-    }
-}
+
+         window.setDrawingMode=function(mode) {
+            drawingMode = mode;
+                        //drawingCanvas.style.pointerEvents = drawingMode ? 'auto' : 'none';
+            window.updateToolButtons();
+            // Ensure the context is set correctly for the new mode before drawing
+            if (context) {
+                 if (drawingMode === 'erase') {
+                    context.globalCompositeOperation = 'destination-out';
+                     drawingCanvas.style.pointerEvents = 'auto';
+
+                 } else if (drawingMode === 'none') {
+
+                     drawingCanvas.style.pointerEvents = 'none';
 
 
-// ====================================================================
-// II. DRAWING EVENT HANDLERS (LOCAL FUNCTIONS)
-// ====================================================================
+                } else {
+                    context.globalCompositeOperation = 'source-over';
+                    drawingCanvas.style.pointerEvents = 'auto';
 
-function startDraw(e) {
-// TEMPORARY TEST CODE:
-ctx.fillStyle = 'red';
-ctx.fillRect(10, 10, 50, 50); 
-// END TEMPORARY TEST CODE
-if (!currentTool) return;
-
-    if (!currentTool) return;
-    isDrawing = true;
-    const rect = drawingCanvas.getBoundingClientRect();
-    
-    // Get correct client coordinates for mouse or touch
-    const clientX = e.clientX || e.touches[0].clientX;
-    const clientY = e.clientY || e.touches[0].clientY;
-
-    drawStartX = clientX - rect.left;
-    drawStartY = clientY - rect.top;
-    
-    // Set initial context properties
-    ctx.strokeStyle = penColorInput.value;
-    ctx.lineWidth = lineWidthInput.value;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    if (currentTool === 'pen') {
-        ctx.beginPath();
-        ctx.moveTo(drawStartX, drawStartY);
-    } else if (currentTool === 'eraser') {
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.beginPath();
-        ctx.moveTo(drawStartX, drawStartY);
-    } else { 
-        // For shapes (line, rect, circle, arrow)
-        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-        tempCtx.strokeStyle = penColorInput.value;
-        tempCtx.lineWidth = lineWidthInput.value;
-        tempCtx.lineCap = 'round';
-        tempCtx.lineJoin = 'round';
-        tempCtx.fillStyle = fillColorInput.value;
-    }
-    e.preventDefault();
-}
-
-function draw(e) {
-    if (!isDrawing || !currentTool) return;
-    const rect = drawingCanvas.getBoundingClientRect();
-    
-    const clientX = e.clientX || e.touches[0].clientX;
-    const clientY = e.clientY || e.touches[0].clientY;
-    
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
-
-    if (currentTool === 'pen' || currentTool === 'eraser') {
-        // Continuous drawing
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x, y); // Resets path to prevent line connections on quick move
-    } else { 
-        // Shape preview (drawn on temporary canvas)
-        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-        drawShape(tempCtx, x, y);
-    }
-    e.preventDefault();
-}
-
-function stopDraw(e) {
-    if (!isDrawing) return;
-    isDrawing = false;
-
-    // Reset composite operation to normal
-    ctx.globalCompositeOperation = 'source-over';
-    
-    if (currentTool === 'pen' || currentTool === 'eraser') {
-        // Complete the line path
-        ctx.beginPath();
-    } else if (currentTool) {
-        // Finalize shape (draw from temp canvas to main canvas)
-        const rect = drawingCanvas.getBoundingClientRect();
-        let endX = e.clientX, endY = e.clientY;
-        if (e.changedTouches) {
-            endX = e.changedTouches[0].clientX;
-            endY = e.changedTouches[0].clientY;
+                }
+            }
         }
         
-        // Draw the final shape onto the permanent canvas
-        drawShape(ctx, endX - rect.left, endY - rect.top);
-        
-        // Clear the temporary canvas
-        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-    }
-    
-    // Only save the drawing if a drawing tool was active
-    if (currentTool !== null) {
-        window.saveDrawingData(currentPageId);
-        // pushHistoryState(); // <-- Placeholder for Undo/Redo
-    }
-}
-
-
-// ====================================================================
-// III. CORE DRAWING CONTROLS (GLOBAL FUNCTIONS)
-// ====================================================================
-
-/**
- * Initializes canvas objects and attaches listeners. Called inside loadPageData.
- */
-window.initDrawingControls = function() {
-    // 1. Get Elements and Contexts
-    drawingCanvas = document.getElementById('drawingCanvas');
-    if (!drawingCanvas) return;
-    
-    ctx = drawingCanvas.getContext('2d');
-    
-    fillColorInput = document.getElementById('fillColor'); 
-    penColorInput = document.getElementById('penColor');
-    lineWidthInput = document.getElementById('lineWidth');
-
-    // 2. Attach ALL drawing listeners
-    drawingCanvas.addEventListener('mousedown', startDraw); 
-    drawingCanvas.addEventListener('mousemove', draw);
-    drawingCanvas.addEventListener('mouseup', stopDraw); 
-    drawingCanvas.addEventListener('mouseleave', stopDraw);
-    
-    drawingCanvas.addEventListener('touchstart', startDraw, {passive: false}); 
-    drawingCanvas.addEventListener('touchmove', draw, {passive: false});
-    drawingCanvas.addEventListener('touchend', stopDraw);
-    drawingCanvas.addEventListener('touchcancel', stopDraw);
-
-    // 3. Toolbar listeners (for setting properties)
-    if(penColorInput) penColorInput.addEventListener('change', (e) => ctx.strokeStyle = e.target.value);
-    if(lineWidthInput) lineWidthInput.addEventListener('input', (e) => ctx.lineWidth = e.target.value);
-    
-    // 4. Run initial setup (size and load data)
-    window.resizeCanvas();
-    window.loadDrawingData(currentPageId);
-    
-    // Set initial tool state (e.g., selection mode)
-    window.setDrawingTool(null);
-const canvasElement = document.getElementById('drawingCanvas');
-
-canvasElement.style.position = 'absolute';
-canvasElement.style.top = '0';
-canvasElement.style.left = '0';
-canvasElement.style.width = '100%'; 
-canvasElement.style.height = '100%';
-canvasElement.style.backgroundColor = 'transparent'; // CRITICAL: Must be transparent
-canvasElement.style.zIndex = '15'; // Must be higher than elements (e.g., z-index 10)
-
-window.resizeCanvas(); // This sets drawingCanvas.width and .height to editor.offsetWidth/Height
-window.loadDrawingData(currentPageId);
-
-}
-
-/**
- * Toggles between stroke, fill, and stroke+fill modes for shapes.
- */
-window.toggleShapeMode = function() {
-    const shapeModeBtn = document.getElementById('shapeModeBtn');
-    if (!shapeModeBtn) return;
-    
-    if (currentDrawMode === 'stroke') {
-        currentDrawMode = 'fill';
-        shapeModeBtn.textContent = 'Fill';
-        shapeModeBtn.classList.remove('bg-blue-500');
-        shapeModeBtn.classList.add('bg-blue-700');
-    } else if (currentDrawMode === 'fill') {
-        currentDrawMode = 'stroke-fill';
-        shapeModeBtn.textContent = 'Stroke + Fill';
-        shapeModeBtn.classList.remove('bg-blue-700');
-        shapeModeBtn.classList.add('bg-indigo-700');
-    } else {
-        currentDrawMode = 'stroke';
-        shapeModeBtn.textContent = 'Stroke';
-        shapeModeBtn.classList.remove('bg-indigo-700');
-        shapeModeBtn.classList.add('bg-blue-500');
-    }
-}
-
-/**
- * Sets the active drawing tool or switches to selection mode (tool = null).
- */
-window.setDrawingTool = function(tool) {
-    if (!drawingCanvas) {
-        console.error("Attempted to set pointer events, but drawingCanvas is not initialized.");
-        return; // Stop the function execution
-    }
-    // Logic to toggle off the current tool if clicked again
-    if (currentTool === tool && tool !== null) {
-        currentTool = null;
-    } else {
-        currentTool = tool;
-    }
-    
-    const tempCanvasElement = document.getElementById('tempCanvas');
-
-    // 1. Manage Pointer Events (CRITICAL for distinguishing drag vs. draw)
-    // If currentTool is null (Select/Move), the drawing canvas is invisible to clicks.
-     
-if (drawingCanvas) {
-    drawingCanvas.style.pointerEvents = currentTool ? 'auto' : 'none';
-} else {
-    // Optional: Log an error if the canvas isn't ready
-    console.error("Attempted to set pointer events, but drawingCanvas is not initialized.");
-}
-
-    // 2. Manage Temporary Canvas visibility (for shape preview)
-    if (currentTool && !tempCanvasElement && currentTool !== 'pen' && currentTool !== 'eraser') {
-        // Add tempCanvas if starting shape drawing
-        tempCanvas.style.cssText = 'position: absolute; top: 0; left: 0; z-index: 16; pointer-events: none;';
-        editor.appendChild(tempCanvas);
-        window.resizeCanvas();
-    } else if (!currentTool && tempCanvasElement) {
-        // Remove tempCanvas if switching back to Select/Move
-        tempCanvasElement.remove();
-    }
-    
-    // 3. UI Class Updates (Tailwind classes for visual feedback)
-    document.querySelectorAll('[onclick^="window.setDrawingTool"]').forEach(btn => {
-        // Reset all buttons to default appearance
-        btn.classList.remove('bg-purple-600', 'bg-red-600', 'bg-gray-700', 'bg-purple-500', 'bg-red-500', 'bg-gray-600');
-        if (btn.id === 'selectMoveBtn') {
-            btn.classList.add('bg-gray-600', 'hover:bg-gray-700');
-        } else {
-            btn.classList.add('bg-purple-500', 'hover:bg-purple-600');
+       window.updateToolButtons=function() {
+            const penBtn = document.getElementById('pen-tool');
+            const eraseBtn = document.getElementById('eraser-tool');
+            
+            penBtn.classList.toggle('active-tool', drawingMode === 'pen');
+            eraseBtn.classList.toggle('active-tool', drawingMode === 'erase');
+            		
+            // Highlight the color picker if in pen mode
+            document.getElementById('pen-color').parentElement.classList.toggle('ring-2', drawingMode === 'pen');
+            document.getElementById('pen-color').parentElement.classList.toggle('ring-gray-300', drawingMode === 'pen');
         }
-    });
-    
-    // Highlight the active tool
-    if (!currentTool) {
-        document.getElementById('selectMoveBtn').classList.remove('bg-gray-600', 'hover:bg-gray-700');
-        document.getElementById('selectMoveBtn').classList.add('bg-gray-700');
-    } else {
-        const activeBtn = document.querySelector(`[onclick^="window.setDrawingTool('${currentTool}')"]`);
-        if(activeBtn) {
-            activeBtn.classList.remove('bg-purple-500', 'hover:bg-purple-600');
-            activeBtn.classList.add(currentTool === 'eraser' ? 'bg-red-600' : 'bg-purple-600');
-        }
-    }
-    
-    if (currentTool === 'eraser') {
-        window.showModal('Eraser Selected', 'Info');
-        // Eraser setup (will be set in startDraw, but good to ensure context is ready)
-        if (ctx) ctx.globalCompositeOperation = 'destination-out';
-    } else if (currentTool === null) {
-        window.showModal('Select/Move Mode Active', 'Info');
-    } else if (currentTool) {
-         // CRITICAL RESET for ALL other tools (pen, shapes, or null/selection)
-        if (ctx) ctx.globalCompositeOperation = 'source-over';
-        window.showModal(`${currentTool.toUpperCase()} Tool Selected`, 'Info');
-    }
-}
 
-/**
- * Clears the drawing canvas and removes the data from the page object.
- */
-window.clearCanvas = function() { 
-    if (!ctx) return;
-    
-    const confirmation = confirm("Are you sure you want to clear the entire drawing for this page?");
-    if (confirmation) {
-        ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-        
-        // Remove data from the page object
-        const page = projectData.find(p => p.id === currentPageId);
-        if (page) {
-            page.drawingData = null;
-            window.saveProject(); // Save the change
-        }
-        window.showModal('Drawing cleared.', 'Success');
-    }
-}
-
-/**
- * Saves the current drawing canvas content (as a Data URL) into the page object.
- */
-window.saveDrawingData = function(pageId) {
-    if (!drawingCanvas || !ctx) return;
-    
-    // Check if anything has been drawn before saving a large data string
-    const canvasIsEmpty = !ctx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height).data.some(channel => channel !== 0);
-    
-    const pageIndex = projectData.findIndex(p => p.id === pageId);
-
-    if (pageIndex !== -1) {
-        if (!canvasIsEmpty) {
-            // Store the base64 string
-            projectData[pageIndex].drawingData = drawingCanvas.toDataURL('image/png');
-        } else {
-            // Clear data if the canvas is empty
-            projectData[pageIndex].drawingData = null; 
+        function clearCanvas() {
+            if (!context) return;
+            // Temporarily set composite operation to clear everything
+            context.globalCompositeOperation = 'destination-out';
+            context.fillRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            
+            // Restore drawing mode setting
+            window.setDrawingMode(drawingMode);
+            
+            // Autosave the clear action (saves an empty drawing data string)
+            //saveCurrentPage();
+            //showMessageBox("Canvas cleared!", 'bg-blue-100 border-blue-400 text-blue-700');
         }
         
-        window.saveProject();
-        console.log(`Drawing data saved for page: ${pageId}`);
-    }
-};
+        function updateCanvasSize() {
+             if (!drawingCanvas) return;
+            const container = document.getElementById('editor');
+            const rect = container.getBoundingClientRect();
+ 
+            if (drawingCanvas) {
+                // Set CSS dimensions for layout
+                drawingCanvas.style.width = `${rect.width}px`;
+                drawingCanvas.style.height = `${rect.height}px`;
+                // Set canvas element dimensions for drawing resolution
+                const wasDrawing = isDrawing;
+                isDrawing = false; // Prevent drawing during resize/reload
+                
+                // IMPORTANT: Before setting new dimensions, save the current drawing data
+                const imgData = drawingCanvas.toDataURL('image/png');
+                
+                drawingCanvas.width = rect.width;
+                drawingCanvas.height = rect.height;
+ 
+                // Redraw saved image data onto the newly sized canvas
+                if (imgData) {
+                    const img = new Image();
+                    img.onload = () => {
+                        context.drawImage(img, 0, 0, drawingCanvas.width, drawingCanvas.height);
+                        // Ensure drawing mode is restored
+                        window.setDrawingMode(drawingMode);
+                        isDrawing = wasDrawing;
+                    };
+                    img.src = imgData;
+                 
+                }
+                
+                // If there's content loaded, ensure the Firestore listener handles the reload
+                //if (currentPageName && isAuthReady) {
+                    //loadPageContent(currentPageName); 
+                //}
+            }
+        }
+        
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = drawingCanvas.getBoundingClientRect();
+       //showModal(drawingMode,'drawingMode');
+            [lastX, lastY] = [e.clientX - rect.left, e.clientY - rect.top];
+            
+            if (drawingMode === 'erase') {
+                context.globalCompositeOperation = 'destination-out';
+                context.strokeStyle = 'rgba(0,0,0,1)'; // Color doesn't matter for eraser
+            } else {
+                context.globalCompositeOperation = 'source-over';
+                context.strokeStyle = penColor;
+            }
+            
+            context.lineWidth = penSize;
+            context.lineCap = 'round';
+            
+            context.beginPath();
+            context.moveTo(lastX, lastY);
+            // Draw a tiny dot for single clicks/taps
+            context.lineTo(lastX + 0.1, lastY + 0.1); 
+            context.stroke();
+            
+            [lastX, lastY] = [lastX + 0.1, lastY + 0.1]; 
+        }
 
-/**
- * Loads and restores the drawing data for the specified page onto the canvas.
- */
-window.loadDrawingData = function(pageId) {
-    if (!drawingCanvas || !ctx) return;
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            const rect = drawingCanvas.getBoundingClientRect();
+            let x = e.clientX - rect.left;
+            let y = e.clientY - rect.top;
 
-    ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            context.beginPath();
+            context.moveTo(lastX, lastY);
+            context.lineTo(x, y);
+            context.stroke();
+            
+            [lastX, lastY] = [x, y];
+        }
 
-    const page = projectData.find(p => p.id === pageId);
+        function stopDrawing() {
+	
+            isDrawing = false;
 
-    if (page && page.drawingData) {
-        const img = new Image();
-        img.onload = function() {
-            ctx.drawImage(img, 0, 0);
-            console.log(`Drawing loaded for page: ${pageId}`);
+        }
+        window.setPenColor=function(clr){
+                penColor = clr;
+                window.setDrawingMode('pen');
+       }
+        // Attach init functions to the window load event
+        window.onload = function() {
+            window.initDrawingCanvas();
+            
         };
-        img.src = page.drawingData;
-    }
-};
-
+        
+ 
 
 // (Include all other editor functions like handleStart, handleMove, initElement, etc., here)
 
@@ -4022,12 +3983,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadPageData(currentPageId);
             }
        // 2. Initialize canvas
-            window.resizeCanvas();
-            ctx.strokeStyle = document.getElementById('penColor').value;
-            ctx.lineWidth = document.getElementById('lineWidth').value;
+            //window.resizeCanvas();
+            //ctx.strokeStyle = document.getElementById('penColor').value;
+            //ctx.lineWidth = document.getElementById('lineWidth').value;
             //drawingCanvas.style.pointerEvents = 'none';
             // 初始狀態為 Select/Move 模式
-            setDrawingTool(null);
+            //setDrawingTool(null);
        // 3. Attach ALL event listeners
             // Element drag, drop, and resize listeners
             editor.addEventListener('mousedown', handleStart); editor.addEventListener('mousemove', handleMove);
@@ -4049,20 +4010,28 @@ document.addEventListener('DOMContentLoaded', () => {
             editor.addEventListener('touchcancel', handleGestureEnd);
 
             // Drawing listeners
-            drawingCanvas.addEventListener('mousedown', startDraw); drawingCanvas.addEventListener('mousemove', draw);
-            drawingCanvas.addEventListener('mouseup', stopDraw); drawingCanvas.addEventListener('mouseleave', stopDraw);
-            drawingCanvas.addEventListener('touchstart', startDraw, {passive: false}); drawingCanvas.addEventListener('touchmove', draw, {passive: false});
-            drawingCanvas.addEventListener('touchend', stopDraw);
+
+
+            // Listeners for drawing controls
+            document.getElementById('pen-color').addEventListener('change', (e) => {
+                penColor = e.target.value;
+                setDrawingMode('pen');
+            });
+
+            //drawingCanvas.addEventListener('mousedown', startDraw); drawingCanvas.addEventListener('mousemove', draw);
+            //drawingCanvas.addEventListener('mouseup', stopDraw); drawingCanvas.addEventListener('mouseleave', stopDraw);
+            //drawingCanvas.addEventListener('touchstart', startDraw, {passive: false}); drawingCanvas.addEventListener('touchmove', draw, {passive: false});
+            //drawingCanvas.addEventListener('touchend', stopDraw);
 
             // Toolbar listeners
-            penColorInput.addEventListener('change', (e) => ctx.strokeStyle = e.target.value);
-            lineWidthInput.addEventListener('input', (e) => ctx.lineWidth = e.target.value);
+           // penColorInput.addEventListener('change', (e) => ctx.strokeStyle = e.target.value);
+           // lineWidthInput.addEventListener('input', (e) => ctx.lineWidth = e.target.value);
             
             //toggleDrawingBtn.addEventListener('click', toggleDrawing);
             //document.getElementById('penColor').addEventListener('change', (e) => ctx.strokeStyle = e.target.value);
             //document.getElementById('lineWidth').addEventListener('input', (e) => ctx.lineWidth = e.target.value);
 
-            window.addEventListener('resize', resizeCanvas);
+            //window.addEventListener('resize', resizeCanvas);
 
             // Auto-save project every 5 seconds
             setInterval(saveCurrentPageData, 5000);
@@ -4073,7 +4042,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     
     // 5. Finalize tool state
-    window.setDrawingTool(null); // Initialize in selection mode
+    //window.setDrawingTool(null); // Initialize in selection mode
 });
 
 
