@@ -9,8 +9,12 @@
     
     <style>
         /* General Setup */
-        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: #f0f4f8; color: #1f2937; }
-        
+        body {  
+              font-family:  'cwTeXYen','Inter', sans-serif;
+            background-color: #f7f7f7;
+
+  
+         }
         /* Editor Area */
         #editor-wrapper { display: flex; flex-grow: 1; }
         #editor { height: 100%; width: 100%; border: 2px solid #e5e7eb; background-color: #ffffff; position: relative; overflow: hidden; touch-action: none; cursor: default; }
@@ -39,11 +43,6 @@
              /*transition: all 0.7s ease-out;*/
         }
         
-
-
-
-        .zzzdraggable-image, .floating-div { cursor: move; position: absolute; padding: 5px;outline: 0px dashed #3b82f6;  box-sizing: border-box; z-index: 10; transition: all 0.3s ease-out; }
-        .zzzdraggable-image.selected, .floating-div.selected { outline: 1px dashed #3b82f6; }
         .floating-div.editing { outline: 2px solid #10b981; cursor: text; }
         .draggable-image.locked, .floating-div.locked { cursor: not-allowed; }
         .resizer { position: absolute; width: 12px; height: 12px; border-radius: 50%; bottom: -6px; right: -6px; cursor: nwse-resize; z-index: 10; }
@@ -64,8 +63,25 @@
         h3 { color: coral; text-shadow: 2px 2px 4px #000000; }
         .fly-in-animated { transition: all 1.8s ease-out; }
    
-        body { font-family: 'cwTeXYen', sans-serif !important; }
 
+        .picker-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+	justify-content: center;align-items: center;
+        }
+        .result-display {
+            font-size: 4rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-top: 1rem;
+            min-height: 4rem;
+	justify-content: center;align-items: center;
+        }
         /* Toolbar */
         #main-toolbar { padding: 10px; background-color: #eef; border-bottom: 1px solid #ccc; display: flex; gap: 10px; align-items: center; }
         #currentProjectDisplay { font-weight: bold; padding: 0 10px; background: #fff; border-radius: 4px; }
@@ -75,9 +91,10 @@
 
      <div id="screen" class="p-0 bg-white shadow-lg rounded-xl" style="border:2px double gray "><!-- 全螢幕範圍開始 -->
 
-<!-- 分組計分 -->
-<div id="teamBoard" style="position:absolute;left:450px;top:40px;height:40px;width:1000px;z-index:50;font-size:20px;background:lightyellow;border-radius:6px; border:4px solid lightgrey" >
+<!-- 分組計分板 -->
+<div id="teamBoard" style="display:none;position:absolute;left:calc(50vw - 350px);top:40px;height:40px;width:700px;z-index:50;font-size:20px;background:lightyellow;border-radius:6px; border:4px solid lightgrey" >
 <span  title="關閉" onclick="document.getElementById('teamBoard').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;" >🗷</span>
+<!-- 分組計分 -->
 <b>Team</b>
 <font color="dodgerblue" ><b>  1 </b></font>
 <div style="margin:4px;display:inline;background:lightcyan;border-radius:6px;width:120px; border:1px solid lightgrey" >
@@ -88,35 +105,35 @@
 
 <!-- 分組計分 -->
 <font color="orange" ><b>  2 </b></font>
-<div style="margin:4px;display:inline;background:lavender;border-radius:6px;width:120px; border:1px solid lightgrey" >
+<div style="margin:4px;display:inline;background:yellow;border-radius:6px;width:120px; border:1px solid lightgrey" >
 
 <div style="display:inline;color:gray" onclick="document.getElementById('tem_2').value=Number(document.getElementById('tem_2').value)+1;">+</div>
 <input type="text" id="tem_2" size="2" value="0" style="height:20px;width:30px" >
 <div style="margin:4px;display:inline;color:gray" onclick="document.getElementById('tem_2').value=Number(document.getElementById('tem_2').value)-1;">-</div></div>
 <!-- 分組計分 -->
 <font color="lime" ><b>   3 </b></font>
-<div style="margin:4px;display:inline;background:lightcyan;border-radius:6px;width:120px; border:1px solid lightgrey" >
+<div style="margin:4px;display:inline;background:lime;border-radius:6px;width:120px; border:1px solid lightgrey" >
 
 <div style="display:inline; " onclick="document.getElementById('tem_3').value=Number(document.getElementById('tem_3').value)+1;">+</div>
 <input type="text" id="tem_3" size="2" value="0" style="height:20px;width:30px" >
 <div style="display:inline; " onclick="document.getElementById('tem_3').value=Number(document.getElementById('tem_3').value)-1;">-</div></div>
 <!-- 分組計分 -->
-<font color="teal" ><b>  4 </b></font>
-<div style="margin:4px;display:inline;background:lavender;border-radius:6px;width:120px; border:1px solid lightgrey" >
+<font color="lightseagreen" ><b>  4 </b></font>
+<div style="margin:4px;display:inline;background:lightskyblue;border-radius:6px;width:120px; border:1px solid lightgrey" >
 
 <div style="display:inline;color:gray" onclick="document.getElementById('tem_4').value=Number(document.getElementById('tem_4').value)+1;">+</div>
 <input type="text" id="tem_4" size="2" value="0" style="height:20px;width:30px" >
 <div style="display:inline;color:gray" onclick="document.getElementById('tem_4').value=Number(document.getElementById('tem_4').value)-1;">-</div></div>
 <!-- 分組計分 -->
 <font color="fuchsia" ><b>   5  </b></font>
-<div style="margin:4px;display:inline;background:lightcyan;border-radius:6px;width:120px; border:1px solid lightgrey" >
+<div style="margin:4px;display:inline;background:fuchsia;border-radius:6px;width:120px; border:1px solid lightgrey" >
 
 <div style="display:inline; " onclick="document.getElementById('tem_5').value=Number(document.getElementById('tem_5').value)+1;">+</div>
 <input type="text" id="tem_5" size="2" value="0" style="height:20px;width:30px" >
 <div style="display:inline; " onclick="document.getElementById('tem_5').value=Number(document.getElementById('tem_5').value)-1;">-</div></div>
 <!-- 分組計分 -->
 <font color="red" ><b>  6 </b></font>
-<div style="margin:4px;display:inline;background:lavender;border-radius:6px;width:120px; border:1px solid lightgrey" >
+<div style="margin:4px;display:inline;background:tomato;border-radius:6px;width:120px; border:1px solid lightgrey" >
 
 <div style="display:inline;color:gray" onclick="document.getElementById('tem_6').value=Number(document.getElementById('tem_6').value)+1;">+</div>
 <input type="text" id="tem_6" size="2" value="0" style="height:20px;width:30px" >
@@ -147,8 +164,9 @@
               <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleFileImport(event)">           
          <button onclick="exportProject()" title="export"  >📤</button>
        </div>
-
-        
+        <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
+         <button onclick="document.getElementById('teamBoard').style.display=(document.getElementById('teamBoard').style.display=='none')?'':'none';" title="showScoreBoard"  >👨‍👨‍👧‍👧</button>
+         </div>
         <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
 <script>
   window.zoomout=function(zoomV){
@@ -193,7 +211,7 @@
         
         <div id="editor-wrapper"> 
             <div id="editor"  contenteditable="true">
-<canvas id="drawingCanvas" style="background-color:yellow">
+<canvas id="drawingCanvas" >
 
 </canvas><canvas id="myCanvas"></canvas>
                 Loading project data from Firestore...            
@@ -235,10 +253,8 @@
 
 
 
-  <div id="toolbar" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+  <div id="toolbar"  style="position:absolute;z-index:50;left:20px;top:88vh;justify-content: center;align-items: center;" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4">
  
-
-
 
 
 
@@ -270,7 +286,7 @@
 
 
 <span  id="DWpentool" onclick="" style="position:relative;width:40px;font-size:20px" class="mx-2 text-gray-400 rounded-lg hover:bg-purple-600  shadow-md">✒️
-            <span  id="DWpentool_menu" style="display:none;position:absolute;top:-60px;left:-0px;z-index:30;width:900px;background:white;border-radius:16px;border:2px solid gray;padding:4px"    > 
+            <span  id="DWpentool_menu" style="display:none;position:absolute;top:-60px;left:500px;z-index:30;width:900px;background:white;border-radius:16px;border:2px solid gray;padding:4px"    > 
 
 
 
@@ -559,7 +575,7 @@
 
   <button onclick="FullScreen()"><font size="6" title=="全螢幕">💻</font></button>
 		<button onclick="window.PicNav()">	<font size="6" title=="閃示卡" >🖼️</font></button>       <button onclick="window.textSlider()"><font size="6" title=="動畫" >📽️</font></button>
-<button onclick="window.pickNumber();" style="font-size:25px" > 🙋‍♂️</button><button onclick="window.insertDice();" style="font-size:25px" > 🎲</button>
+<button onclick="window.pickNumber();" style="font-size:12px;border:2px solid gray;border-radius:12px;padding:2px"  id="pickBtn"> 🙋‍♂️</button><button onclick="window.insertDice();" style="font-size:25px" > 🎲</button>
 <button onclick="alert('wtf');alert(document.getElementById('htmlPageCode').value);window.restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
 <button onclick="window.dartMode();"  id="dartModeBtn" title="遊戲模式" style="font-size:20px" >🎯on</button>
 
@@ -594,22 +610,9 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 <span class="mx-2 text-gray-400" onclick="document.getElementById('movementControls').style.display=(document.getElementById('movementControls').style.display=='none')?'':'none';" >🕹️</span>
 
-<div id="movementControls"  style="position:absolute;z-index:30;width:90%;height:30px;top:85vh;left:10px;display:none;background:white;border-radius:16px" >
+<div id="movementControls"  style="position:absolute;z-index:30;width:90%;height:30px;top:80vh;left:10px;display:none;background:white;border-radius:16px" >
 <span  title="關閉" onclick="document.getElementById('movementControls').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:30px;" >🗷</span>
 
 
@@ -655,6 +658,191 @@
 
 
 </div><!-- end movementControl menu-->
+
+
+
+
+
+   <!-- ##########################################################抽號碼 ############################################## -->
+<div class="picker-container" >
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">班級抽號機 (1 - 30 號)</h2>
+    
+    <div id="resultDisplay" class="result-display mb-8">?</div>
+    
+    <!-- 抽號碼按鈕 -->
+    <button 
+        id="pickBtn2"
+        onclick="window.pickNumber()" 
+        class="w-full mb-4 px-6 py-3 text-lg font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition duration-150 shadow-lg shadow-blue-500/50"
+    >
+        抽號碼
+    </button>
+    
+    <!-- 重置按鈕 -->
+    <button 
+        onclick="window.resetPicker()" 
+        class="w-full px-6 py-2 text-md font-medium text-gray-700 bg-gray-200 rounded-xl hover:bg-gray-300 transition duration-150"
+    >
+        重置號碼池
+    </button>
+
+    <div class="mt-8 pt-4 border-t border-gray-200">
+        <h2 class="text-lg font-semibold mb-2">已抽出的號碼 (<span id="countDisplay">1</span> / 30)</h2>
+        <div id="pickedList" class="text-sm text-gray-600 flex flex-wrap justify-center gap-2">
+            <!-- 已抽出的號碼將顯示在這裡 -->
+        </div>
+    </div>
+</div>
+
+<!-- 彈出視窗 Modal 結構 -->
+<div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-0 hidden justify-center items-center z-50"  style="margin-left:calc(50vw - 250px);margin-top:100px">
+    <div id="modalContent" class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full text-center" style="border:4px solid gray" >
+        <h2 id="modalTitle" class="text-xl font-bold mb-4 text-gray-900"></h2>
+        <p id="modalBody" class="text-3xl font-extrabold text-blue-600 mb-6"></p>
+        <button onclick="document.getElementById('modalOverlay').classList.add('hidden')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">確認</button>
+    </div>
+</div>
+
+<script>
+    // 全域變數用於儲存號碼狀態
+    // 總號碼範圍為 0 到 29 (共 30 個)
+    const MAX_NUMBER = 31; 
+    let availableNumbers = []; // 尚未被抽出的號碼
+    let pickedNumbers = [];    // 已被抽出的號碼
+
+    // =========================================================================
+    // MODAL AND SPEECH FUNCTIONS (Used for non-alert communication)
+    // =========================================================================
+
+    /**
+     * 顯示自定義彈出視窗
+     * @param {string} content - 視窗主體內容
+     * @param {string} title - 視窗標題
+     */
+    window.showModal2 = function(content, title = '通知') {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalBody').textContent = content;
+        document.getElementById('modalOverlay').classList.remove('hidden');
+    }
+
+    /**
+     * 使用 Web Speech API 朗讀文字 (使用中文語音)
+     * @param {string} text - 要朗讀的文字
+     */
+    window.speakText = function(text) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-TW'; 
+            
+            // 嘗試找到一個清晰的中文聲音
+            const voices = speechSynthesis.getVoices();
+            const chineseVoice = voices.find(voice => voice.lang === 'zh-TW') || voices.find(voice => voice.lang.startsWith('zh'));
+            if (chineseVoice) {
+                utterance.voice = chineseVoice;
+            }
+
+            speechSynthesis.speak(utterance);
+        } else {
+            console.warn("瀏覽器不支援語音合成。");
+        }
+    }
+
+    // =========================================================================
+    // PICKER LOGIC
+    // =========================================================================
+
+    /**
+     * 初始化/重置號碼池 (從 0 到 MAX_NUMBER - 1)
+     */
+    window.initializeNumbers = function() {
+        availableNumbers = [];
+        pickedNumbers = [];
+        for (let i = 1; i < MAX_NUMBER; i++) {
+            availableNumbers.push(i);
+        }
+        updateDisplay();
+        document.getElementById('pickBtn').disabled = false;
+        document.getElementById('pickBtn').textContent = '抽號碼';
+        console.log("號碼池已重置。");
+    }
+
+    /**
+     * 更新畫面顯示 (已抽號碼列表和計數器)
+     */
+    function updateDisplay() {
+        const listElement = document.getElementById('pickedList');
+        const countElement = document.getElementById('countDisplay');
+        
+        listElement.innerHTML = pickedNumbers
+            .sort((a, b) => a - b) // 按數字大小排序顯示
+            .map(num => `<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">${num}</span>`)
+            .join('');
+
+        countElement.textContent = pickedNumbers.length;
+
+        if (pickedNumbers.length === MAX_NUMBER) {
+            document.getElementById('pickBtn').disabled = true;
+            document.getElementById('pickBtn').textContent = '號碼已抽完';
+            document.getElementById('resultDisplay').textContent = '完';
+        }
+    }
+
+    /**
+     * 執行不重複的號碼抽取
+     */
+    window.pickNumber = function() {
+        if (availableNumbers.length === 0) {
+            window.showModal2('所有號碼已抽出。請重置號碼池。', '提示');
+            window.speakText('所有號碼已抽出。');
+            return;
+        }
+
+        // 1. 隨機選擇一個索引
+        const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+        
+        // 2. 取得抽中的號碼
+        const drawNumber = availableNumbers[randomIndex];
+        
+        // 3. 將號碼從可選列表中移除 (無放回抽樣的關鍵)
+        availableNumbers.splice(randomIndex, 1);
+        
+        // 4. 將號碼加入已抽中列表
+        pickedNumbers.push(drawNumber);
+
+        // 5. 更新畫面和語音提示
+        const speechText = `抽到 ${drawNumber} 號，請上台`;
+        document.getElementById('resultDisplay').textContent = drawNumber;
+        window.speakText(speechText);
+        window.showModal2(drawNumber + ' 號', '抽中的是');
+        
+        updateDisplay();
+    }
+
+    /**
+     * 重置抽籤器
+     */
+    window.resetPicker = function() {
+        window.initializeNumbers();
+        document.getElementById('resultDisplay').textContent = '?';
+        window.showModal2('號碼池已重置，現在可以重新抽籤了！', '重置成功');
+    }
+
+    // 在頁面載入時初始化
+    document.addEventListener('DOMContentLoaded', window.initializeNumbers);
+
+    // 確保語音能被找到 (延遲執行一次獲取聲音列表)
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = () => {
+            console.log("語音列表已載入。");
+        };
+    }
+</script>
+
+   <!-- ##########################################################抽號碼 ############################################## -->
+
+
+
+
 
 
             <!-- Final Action -->
@@ -3483,7 +3671,7 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
 
 
 
-  window.pickNumber= function(){
+  window.SimplepickNumber= function(){
       const drawNumber=Math.floor(Math.random()*30);
       speakText('抽到'+drawNumber+'號，請上台');
       showModal(drawNumber,'抽中的是');
