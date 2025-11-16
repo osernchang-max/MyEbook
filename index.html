@@ -8,6 +8,7 @@
     <script src="./Canvas_files/saved_resource"></script>
     
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         /* General Setup */
         body {  
               font-family:  'cwTeXYen','Inter', sans-serif;
@@ -49,7 +50,7 @@
         .resizer:hover { background: #3b82f6; border: 2px solid #ffffff; }
 
         /* Main Layout */
-        #main-container { display: flex; height: calc(100vh - 50px); } 
+        #main-container { display: flex; height: calc(90vh - 50px); } 
 
         /* Page Management Sidebar */
         #page-manager { width: 250px; background-color: #ffffff; padding: 16px; border-right: 1px solid #e5e7eb; box-shadow: 2px 0 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
@@ -85,11 +86,173 @@
         /* Toolbar */
         #main-toolbar { padding: 10px; background-color: #eef; border-bottom: 1px solid #ccc; display: flex; gap: 10px; align-items: center; }
         #currentProjectDisplay { font-weight: bold; padding: 0 10px; background: #fff; border-radius: 4px; }
+
+
+/* QUIZ  AREA   */ 
+        #app-container {
+            position: relative;
+            width: 95vw;
+            max-width: 900px;
+            height: 90vh;
+            max-height: 800px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            flex-direction: column;
+            display: none; 
+        }
+
+        #gameCanvas {
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        /* 樣式針對 DIV ID quizData */
+        #quizData {
+            max-height: 200px;
+            min-height: 100px;
+            border: 1px solid #f97316; 
+            white-space: pre-wrap;
+            overflow-y: scroll;
+        }
+        
+        #quizData::-webkit-scrollbar {
+            width: 8px;
+        }
+        #quizData::-webkit-scrollbar-thumb {
+            background-color: #f97316;
+            border-radius: 4px;
+        }
+        #quizData::-webkit-scrollbar-track {
+            background: #4b5563;
+        }
+
+        /* 診斷訊息的預格式化文字 */
+        #diagnostic-display pre {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body onclick="window.dropmenu();window.expand();" >
 
      <div id="screen" class="p-0 bg-white shadow-lg rounded-xl" style="border:2px double gray "><!-- 全螢幕範圍開始 -->
+
+
+
+
+
+<!-- 測驗區開始 -->
+<!-- 彈出視窗 Modal 結構 (用於顯示錯誤或最終分數) -->
+<div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
+    <div id="modalContent" class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full text-center">
+        <h3 id="modalTitle" class="text-xl font-bold mb-4 text-gray-900"></h3>
+        <p id="modalBody" class="text-lg font-medium text-gray-700 mb-6"></p>
+        <button onclick="document.getElementById('modalOverlay').classList.add('hidden')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">關閉</button>
+    </div>
+</div>
+
+
+<!-- 測驗區結束 -->
+
+
+<!-- 切水果遊戲 開始-->
+    <!-- 初始啟動按鈕容器 -->
+    <div id="launch-wrapper" class="p-8 bg-gray-800 rounded-xl shadow-2xl text-center" style="display:none">
+        <h1 class="text-4xl font-extrabold text-orange-500 mb-6">測驗斬擊：自訂模式</h1>
+        <p class="text-xl text-gray-300 mb-8">載入你的 PSV 測驗資料來玩！</p>
+        <button id="main-launch-button" onclick="window.QS_launchGame()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-10 rounded-full transition duration-150 transform hover:scale-105 shadow-lg text-2xl">
+            啟動測驗斬擊遊戲
+        </button>
+    </div>
+
+    <!-- 主應用程式容器 (初始隱藏) -->
+    <div id="app-container" class="bg-gray-800 rounded-xl overflow-hidden border-4 border-orange-500" >
+        
+        <!-- 遊戲標頭/控制項 -->
+        <div class="bg-gray-700 p-3 flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
+            <div class="text-white text-center md:text-left">
+               
+                <h2 class="text-lg font-bold text-white" id="current-question">問題：未載入</h2>
+            </div>
+            <div class="flex space-x-6 text-white font-mono text-xl">
+                <!-- 這個按鈕負責切換到編輯模式 -->
+                <button onclick="QS_toggleEditMode(true)" class="bg-blue-500 hover:bg-blue-600 px-3 py-1 text-sm rounded-md transition duration-150">編輯資料</button>
+                <span>分數: <span id="game-score">0</span></span>
+                <span class="text-red-400">生命: <span id="lives">3</span></span>
+               <button onclick="document.getElementById('app-container').style.display='none';" style="display:inline;font-size:20px">☒</button>
+            </div>
+        </div>
+        
+        <!-- 畫布區域 -->
+        <div class="flex-grow bg-gray-900 relative rounded-b-xl">
+            <canvas id="gameCanvas"  ></canvas>
+            
+            <!-- 遊戲結束/開始/編輯模式訊息框 -->
+            <div id="message-box" class="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center transition-opacity duration-300">
+                <div class="bg-gray-700 p-8 rounded-xl shadow-2xl text-center max-w-lg w-11/12">
+                    
+                    <!-- 測驗編輯器模式 -->
+                    <div id="quiz-editor" class="hidden text-left space-y-4">
+                        <h2 class="text-3xl font-bold text-orange-400 mb-2">測驗資料來源（`div#quizData`）</h2>
+                        <p class="text-gray-300 text-sm">
+                            請在下方輸入或編輯你的 **PSV 格式** 資料：
+                            <code class="bg-gray-600 p-1 rounded">ID | Question | Correct Index (1-4) | Option 1 | Option 2 | Option 3 | Option 4</code>
+                        </p>
+                        
+                        <div id="errorMsg" class="hidden bg-red-800 text-white p-3 rounded-md font-medium text-sm">
+                            資料錯誤：請檢查格式。
+                        </div>
+
+                        <!-- 預設 English Quiz Data (注意：此內容僅在頁面載入時為初始值，後續由 JS 讀取 DOM) -->
+                        <textarea id="quizData"                           
+                          
+                             style="min-height: 100px; max-height: 200px; overflow-y: scroll;"  class="w-full " >1|What is the capital of France?|2|London|Paris|Berlin|Rome
+2|Which planet is known as the Red Planet?|3|Venus|Jupiter|Mars|Earth
+3|What is the main language of Brazil?|1|Portuguese|Spanish|English|French</textarea>
+
+                        <div class="flex justify-between mt-4">
+                             <!-- 診斷按鈕 -->
+                             <button onclick="window.QS_runDiagnostic();" class="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-2 px-4 rounded-full transition duration-150 text-sm">
+                                 運行資料診斷
+                             </button>
+                            <div class="flex space-x-4">
+                                <button onclick="QS_toggleEditMode(false)" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full transition duration-150">
+                                    取消
+                                </button>
+                                <!-- 這是唯一的資料載入點 -->
+                                <button onclick="window.QS_parseAndLoadQuiz();" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition duration-150">
+                                    載入測驗並開始遊戲
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 遊戲訊息/開始模式 (預設可見) -->
+                    <div id="game-start-message">
+                        <h2 id="message-text" class="text-3xl font-bold text-white mb-4">測驗斬擊準備就緒！</h2>
+                        <div id="quiz-message-detail" class="text-lg text-gray-300 mb-6">
+                            請點擊「編輯資料」以載入或輸入測驗問題。 <br/>
+                            已載入問題總數: <span id="total-questions-loaded" class="font-bold text-orange-400">0</span>
+                        </div>
+                        <button id="initial-start-button" onclick="QS_startQuiz()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-full transition duration-150 transform hover:scale-105 shadow-lg">
+                            開始測驗
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- 切水果遊戲 -->
+
+
+
+
+
+
+
+
+
 
 <!-- 分組計分板 -->
 <div id="teamBoard" style="display:none;position:absolute;left:calc(50vw - 350px);top:40px;height:40px;width:700px;z-index:50;font-size:20px;background:lightyellow;border-radius:6px; border:4px solid lightgrey" >
@@ -198,6 +361,7 @@
     TIME:<span id="gameTimerDisplay" class="text-xl font-mono text-gray-700 p-2 bg-green-400 rounded-lg border border-gray-300">1:00 </span>
 </div>
             <span id="speechResult" style="margin-left: 20px;"></span>
+
         </div>
     </div>
 
@@ -211,9 +375,7 @@
         
         <div id="editor-wrapper"> 
             <div id="editor"  contenteditable="true">
-<canvas id="drawingCanvas" >
-
-</canvas><canvas id="myCanvas"></canvas>
+<canvas id="drawingCanvas" ></canvas>
                 Loading project data from Firestore...            
             </div> 
 
@@ -253,7 +415,7 @@
 
 
 
-  <div id="toolbar"  style="position:absolute;z-index:50;left:20px;top:88vh;justify-content: center;align-items: center;" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+  <div id="toolbar"  style="position:;z-index:50;left:20px;top:88vh;justify-content: center;align-items: center;" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4">
  
 
 
@@ -276,7 +438,7 @@
 
 
     
-            <button  title="切換編輯工具列" onclick="document.getElementById('styleControls').style.display=(document.getElementById('styleControls').style.display=='none')?'inline':'none';document.getElementById('MyTittle').style.display='';DesignMode=!DesignMode;this.innerText=(DesignMode)?'📝設計模式':'✔️白板模式';"   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
+            <button  title="切換編輯工具列" onclick="document.getElementById('styleControls').style.display=(document.getElementById('styleControls').style.display=='none')?'inline':'none';document.getElementById('MyTittle').style.display='';DesignMode=!DesignMode;this.innerText=(DesignMode)?'📝設計模式':'✔️白板模式';document.getElementById('toolbar').style.position=(document.getElementById('toolbar').style.position='absolute')?'':'absolute';"   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
 
 
 
@@ -350,16 +512,17 @@
                 <option value="Poke" class="bg-white text-gray-800">撲克牌</option>
                 <option value="TTS" class="bg-white text-gray-800">報讀文字</option>
                 <option value="VRS" class="bg-white text-gray-800">聽讀文字</option>
+                <option value="Quiz" class="bg-white text-gray-800" >測驗題庫</option>
             </select></span>
 
 
 
 
 
+
+
+
 <button id="textStyle" onclick="" style="border:2px solid black;width:30px;font-size:18px" > T </button> 
-
-
-
 
 <div id="textStyle_menu" style="display:none;position:absolute;top:80vh;left:40px;padding:10px;background:white;border:2px solid gray;border-radius:16px;z-index:31;width:800px;height:60px;" >
 <span  title="關閉" onclick="document.getElementById('textStyle_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;" >🗷</span>
@@ -458,10 +621,16 @@
 
                 透明度:
                 <input type="range" id="elementOpacity" min="0" max="100" value="100" title="Element Opacity" oninput="window.setElementOpacity(this.value)"  class="w-20">
-           
-    <button onclick="window.rotateElement(-15)" title="Turn Left 15 Degrees" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">↺ 15°</button>
-    <button onclick="window.rotateElement(15)" title="Turn Right 15 Degrees" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">↻ 15°</button>
+<button onclick="window.flip();" title="flip" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">flip</button>
+    <button onclick="window.turn(-15)" title="Turn Left 15 Degrees" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">↺ 15°</button>
+ <span id="angl" ></span>
+<input type="range" id="rotateAngle" oninput="window.setRotation(this.value);document.getElementById('angl').textContent=this.value" min="0" max="359" step="1" value="0" title="旋轉" class="w-20 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+    <button onclick="window.turn(15)" title="Turn Right 15 Degrees" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">↻ 15°</button>           
 
+<!--
+    <button onclick="window.rotateElement(-5)" title="Turn Left 15 Degrees" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">↺ 15°</button>
+           <button onclick="window.rotateElement(5)" title="Turn Right 15 Degrees" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">↻ 15°</button>
+-->
 </span>
 
 
@@ -536,6 +705,8 @@
                 <option value="animate-pulse"  class="bg-gray-700 text-white">閃爍</option>
                 <option value="animate-none"  class="bg-gray-700 text-white">無</option>
                 <option value="translate-y-full  transition-all duration-700 ease-out "  class="bg-gray-700 text-white">沖天</option>
+                <option value="skewed-title"  class="bg-gray-700 text-white">立體字</option>
+ 
       <!-- 		//####-translate-x-full  translate-x-0 -translate-y-80 ,'-translate-y-80'
 		//###animate-none .animate-ping animate-pulse animate-spin  animate-bounce animate-spin .animate-bounce
        -->
@@ -554,6 +725,7 @@
 
 
             <!-- Layer, Lock, Delete Controls -->       
+<button onclick="window.deleteSelectedItem()" title="刪除選取物件" class="px-2 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-150 shadow-md">❎</button>
 
             <button onclick="window.bringForward()" title="上移圖層" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">⇧</button>
             <button onclick="window.sendBackward()" title="下移圖層" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">⇩</button>
@@ -568,8 +740,7 @@
   <span onclick="window.addNewTextElement('sticker','cyan');"  style="color:cyan; display:inline;margin:2px; " >■</span>
  <span onclick="window.addNewTextElement('sticker','lightgreen');"   style="color:lightgreen; display:inline;margin:2px; " >■</span>
 </div>  
- <button onclick="window.deleteSelectedItem()" title="刪除選取物件" class="px-2 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-150 shadow-md">❎</button>
-
+ 
 
 
 
@@ -663,8 +834,21 @@
 
 
 
+
+
+
+
+
+
+
+            <!-- Final Action -->
+           
+
+        </div>
+
+
    <!-- ##########################################################抽號碼 ############################################## -->
-<div class="picker-container" >
+<div class="picker-container" style="display:none">
     <h2 class="text-2xl font-bold mb-6 text-gray-800">班級抽號機 (1 - 30 號)</h2>
     
     <div id="resultDisplay" class="result-display mb-8">?</div>
@@ -688,7 +872,7 @@
 
     <div class="mt-8 pt-4 border-t border-gray-200">
         <h2 class="text-lg font-semibold mb-2">已抽出的號碼 (<span id="countDisplay">1</span> / 30)</h2>
-        <div id="pickedList" class="text-sm text-gray-600 flex flex-wrap justify-center gap-2">
+        <div id="pickedList2" class="text-sm text-gray-600 flex flex-wrap justify-center gap-2">
             <!-- 已抽出的號碼將顯示在這裡 -->
         </div>
     </div>
@@ -697,16 +881,27 @@
 <!-- 彈出視窗 Modal 結構 -->
 <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-0 hidden justify-center items-center z-50"  style="margin-left:calc(50vw - 250px);margin-top:100px">
     <div id="modalContent" class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full text-center" style="border:4px solid gray" >
+
         <h2 id="modalTitle" class="text-xl font-bold mb-4 text-gray-900"></h2>
         <p id="modalBody" class="text-3xl font-extrabold text-blue-600 mb-6"></p>
         <button onclick="document.getElementById('modalOverlay').classList.add('hidden')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">確認</button>
+
+    <div class="mt-8 pt-4 border-t border-gray-200">
+        <h2 class="text-lg font-semibold mb-2">已抽出的號碼 (<span id="countDisplay2">1</span> / <input type="number" onchange="MAX_NUMBER=this.value" id="quantity" name="quantity" min="0" max="30" step="1" value="30">)</h2>
+    <button  onclick="window.resetPicker()"   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"    > 重置號碼池</button>
+        <div id="pickedList" class="text-sm text-gray-600 flex flex-wrap justify-center gap-2">
+            <!-- 已抽出的號碼將顯示在這裡 -->
+        </div>
+    </div>
+
     </div>
 </div>
 
 <script>
     // 全域變數用於儲存號碼狀態
     // 總號碼範圍為 0 到 29 (共 30 個)
-    const MAX_NUMBER = 31; 
+     //const MAX_NUMBER = 31; 
+   let MAX_NUMBER = parseInt(document.getElementById('quantity').value)+1;
     let availableNumbers = []; // 尚未被抽出的號碼
     let pickedNumbers = [];    // 已被抽出的號碼
 
@@ -722,6 +917,7 @@
     window.showModal2 = function(content, title = '通知') {
         document.getElementById('modalTitle').textContent = title;
         document.getElementById('modalBody').textContent = content;
+        document.getElementById('countDisplay').textContent = MAX_NUMBER;
         document.getElementById('modalOverlay').classList.remove('hidden');
     }
 
@@ -757,6 +953,8 @@
     window.initializeNumbers = function() {
         availableNumbers = [];
         pickedNumbers = [];
+MAX_NUMBER = document.getElementById('quantity').value+1;
+ 
         for (let i = 1; i < MAX_NUMBER; i++) {
             availableNumbers.push(i);
         }
@@ -779,7 +977,8 @@
             .join('');
 
         countElement.textContent = pickedNumbers.length;
-
+        document.getElementById('countDisplay2').textContent =pickedNumbers.length;
+        //MAX_NUMBER = parseInt(document.getElementById('quantity').value)+1;
         if (pickedNumbers.length === MAX_NUMBER) {
             document.getElementById('pickBtn').disabled = true;
             document.getElementById('pickBtn').textContent = '號碼已抽完';
@@ -836,22 +1035,10 @@
             console.log("語音列表已載入。");
         };
     }
+
 </script>
 
    <!-- ##########################################################抽號碼 ############################################## -->
-
-
-
-
-
-
-            <!-- Final Action -->
-           
-
-        </div>
-
-
-
 
 
 
@@ -1667,6 +1854,10 @@ window.addDivWithImageBackgroundElement = function() {
             } else if (type === 'VRS') {
 	 
                 defaultContent = `<div  id="template" class="VRS" onclick="javascripot:window.randomItem();this.textContent=this.textContent.substring(0,this.textContent.lastIndexOf('(')) +'(' + document.getElementById('temp').value+ ')' + this.textContent.substring(this.textContent.lastIndexOf(')')+1,this.textContent.length);startVoiceRecognition(this.textContent);"     style="background-size:contain" > ( ) is my favorite.</div>`;
+           } else if (type === 'Quiz') {
+            window.createQuizFloatingDiv(mycolor);
+            return;
+ 
 
             } else {
                 return;
@@ -1682,7 +1873,7 @@ window.addDivWithImageBackgroundElement = function() {
             textDiv.style.borderRadius = '0px'; // Initialize with 0 radius
             textDiv.style.padding = '5px';
             textDiv.style.minWidth = '10px'; // Give headings some space
-            textDiv.style.fontSize = '50pt';  
+            //textDiv.style.fontSize = '30pt';  
             textDiv.innerHTML = defaultContent;
             
             editor.appendChild(textDiv);
@@ -2607,7 +2798,7 @@ window.toggleLock = function() {
     window.saveProject();
     
     window.showModal(
-        activeItem.classList.contains('locked') ? 'Element Locked 🔒' : 'Element Unlocked 🔏', 
+        activeItem.classList.contains('locked') ? 'Element Locked 🔏' : 'Element Unlocked🔒 ', 
         'Success'
     );
 }
@@ -2617,10 +2808,10 @@ window.updateLockButtonState = function() {
     if (!lockToggleBtn) return;
     
     if (activeItem && activeItem.classList.contains('locked')) {
-        lockToggleBtn.textContent = '🔒 Locked';
+        lockToggleBtn.textContent = '  🔏';
         // Disable editing/resizing features if needed
     } else {
-        lockToggleBtn.textContent = '🔓 Unlocked';
+        lockToggleBtn.textContent = ' 🔒';
         // Enable editing/resizing features
     }
 }
@@ -3007,7 +3198,29 @@ window.showModal = function(message, type = 'Info',target) {
 
 
 
+/**
+ * Sets the rotation of the active item based on an ABSOLUTE angle
+ * provided by the range slider.
+ * * @param {string|number} newAngle - The absolute angle (0 to 359).
+ */
+window.setRotation = function(newAngle) {
+    if (!activeItem) return;
+    
+    // Ensure the input is treated as an integer (from the slider)
+    const angle = parseInt(newAngle);
 
+    // If you need the rotation to only apply to the visual element, 
+    // you only need the last three lines.
+    
+    // 1. Update the MOVEMENT axis (for movement logic)
+    activeItem.setAttribute('data-degree', angle); 
+    
+    // 2. Update the VISUAL rotation
+    activeItem.setAttribute('data-visual-degree', angle); 
+    
+    // 3. Apply the visual rotation
+    activeItem.style.transform = `rotate(${angle}deg)`;
+}
 
 
 // --- NEW: Element Direction and Movement Functions ---
@@ -3467,12 +3680,1236 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
         el.style.border = 'none'; // Remove highlight after a moment
     }, 2000); 
 }
-//---------------##########################   End Speech Game     ###################################################3
+//---------------##########################   End Speech Game     ################################################ 
+//---------------##########################  測驗狀態管理     ################################################### 
+    // 測驗狀態管理
+    let quizData = [];
+    let currentQuestionIndex = 0;
+    //let score = 0;
+    let isAnswered = false;
+    let timerInterval = null; 
+    let incorrectAnswers = []; 
+ 
+    window.addNewTextElement = function(type, mycolor = '#ffffff') {
+        if (!type) return;
+
+        if (type === 'Quiz') {
+            window.createQuizFloatingDiv(mycolor);
+            return;
+        }
+        console.log(`嘗試添加非 Quiz 元素: ${type}`);
+    };
+
+    window.createQuizFloatingDiv = function(color) {
+        const textDiv = document.createElement('div');
+        textDiv.className = 'floating-div quiz-instance'; 
+        textDiv.style.left = `${lastClickPos.x}px`;
+        textDiv.style.top = `${lastClickPos.y}px`;
+        textDiv.setAttribute('contenteditable', 'false'); 
+        textDiv.style.backgroundColor = color;
+        textDiv.style.borderRadius = '16px'; 
+        textDiv.style.padding = '5px';
+        textDiv.style.minWidth = '300px'; 
+        textDiv.style.cursor = 'grab'; 
+
+        textDiv.innerHTML = window.getQuizUIHTML();
+        
+        editor.appendChild(textDiv);
+        
+        window.toggleEditMode(textDiv.querySelector('#quizArea'), true); 
+        window.initElement(textDiv); 
+    };
+
+    window.initElement = function(element) {
+        element.addEventListener('mousedown', (e) => {
+            const isInteractive = e.target.closest('#quizData') || e.target.closest('.option-button') || e.target.closest('button');
+            if (isInteractive) {
+                element.style.cursor = 'default';
+                return;
+            } else {
+                 element.style.cursor = 'grab';
+            }
+            // ... 您的拖動邏輯 ...
+        });
+    };
 
 
 
 
 
+
+
+
+
+
+
+
+
+    /**
+     * @brief 核心 UI 結構
+     */
+    window.getQuizUIHTML = function() {
+        const htmlArray = [
+            '<div id="quizArea" class="quiz-container flex flex-col items-center justify-center">',
+            
+            // --- 編輯數據模式 (Edit View) ---
+            '<div id="edit_view" class="w-full" style="display: none;">',
+            '<h2 class="text-2xl font-bold mb-4 text-gray-800">編輯測驗數據 (支援試算表貼上)</h2>',
+            // 修正：答案索引提示為 1-4
+            '<p class="text-sm text-gray-600 mb-3 text-left font-bold">每行需要 7 個欄位: 題號|問題(含圖片)|正確答案索引(1-4)|選項A|選項B|選項C|選項D</p>',
+            
+            // 新增按鈕群組
+            '<div class="flex space-x-2 mb-3">',
+            '<button onclick="window.insertImageTag(this.closest(\'#quizArea\'))" class="flex-1 px-4 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition duration-150">🖼️ 插入圖片標籤</button>',
+            '<button onclick="window.copyPsvToClipboard();document.getElementById(\'quizDataSource\').value=document.getElementById(\'quizData\').value" class="flex-1 px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-150">📋 複製測驗數據</button>',
+            '</div>',
+
+            '<div ',
+            'id="quizData" ',
+            'contenteditable="true" ',
+            'onpaste="window.handlePastedData(event)"', 
+            'class="w-full border border-gray-300 p-2 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500"',
+            'style="min-height: 200px; cursor: text; text-align: left;"',
+            '>',
+            // 預設數據使用垂直線分隔，以供參考，答案索引已改為 1 (代表選項 A)
+            "1|哪個是正確的交通號誌？<img src='https://placehold.co/200x50/DDDDDD/000000?text=Question+Image' style='max-height: 50px; display: inline-block; border-radius: 4px; vertical-align: middle;'>|1|A: 停止標誌|B: 減速標誌|C: 讓路標誌|D: 禁止通行" +
+            "<br>2|光速約為每秒多少公里？|1|300000|150000|500000|90000" +
+            "<br>3|這是 Base64 編碼的圖片嗎？<img src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1MCcgaGVpZ2h0PSc1MCc+PHJlY3Qgd2lkdGg9JzUwJyBoZWlnaHQ9JzUwJyBmaWxsPSdjY2MnLz48L3N2Zz4=' style='max-height: 50px; display: inline-block; border-radius: 4px; vertical-align: middle;'>|2|是|否|也許|不知道",
+            '</div>',
+            
+            "    <button onclick=\"window.parsePsvAndLoadQuiz(this.closest('#quizArea'))\" class=\"w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700\">載入並開始測驗</button>",
+             " <button onclick=\"window.QS_launchGame(this.closest('#quizArea'));window.QS_parseAndLoadQuiz(this.closest('#quizArea'));\" class=\"w-full px-4 py-2 text-md font-semibold text-white bg-red-600 rounded-xl hover:bg-yellow-700 transition duration-150\">切水果</button>",           
+            '<p id="errorMsg" class="text-red-500 mt-3 hidden">數據格式錯誤。</p>',
+            '</div>',
+
+            // --- 測驗顯示模式 (Quiz View) ---
+            '<div id="quiz_view" class="w-full" style="display: none;">',
+            '<h3 class="text-3xl font-bold mb-4 text-blue-600">互動式測驗</h3>',
+            '<div class="text-2xl font-extrabold mb-4 text-red-600" id="timerDisplay">15s</div>',
+
+            '<div class="text-left mb-6">',
+            '<p class="text-gray-600 mb-2">問題 <span id="currentQIndex" class="font-bold">0</span> / <span id="totalQuestions" class="font-bold">0</span></p>',
+            '<div class="w-full bg-gray-200 rounded-full h-2.5"><div id="progress" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div></div>',
+            '</div>',
+
+            '<div class="bg-blue-50 p-6 rounded-lg mb-6 shadow-md min-h-[150px] flex flex-col justify-center text-left">',
+            '<div class="flex justify-between items-start mb-2">',
+            '<p class="text-xl font-medium text-gray-800" id="questionText">點擊「編輯數據」按鈕載入測驗</p>',
+            " <button onclick=\"window.speakQuestion(this.closest('#quizArea'))\" class=\"text-2xl ml-3 text-blue-500 hover:text-blue-700 transition\">🔊</button>",
+
+            '</div>',
+            '</div>',
+
+            '<div id="optionsContainer" class="space-y-3"></div>',
+            
+            '<div class="mt-6 flex justify-between space-x-4">',
+            " <button id=\"editButton\" onclick=\"window.toggleEditMode(this.closest('#quizArea'), true)\" class=\"px-4 py-2 text-md font-semibold text-white bg-gray-600 rounded-xl hover:bg-gray-700 transition duration-150\">編輯數據</button>",
+            " <button id=\"nextButton\" onclick=\"window.nextQuestion(this.closest('#quizArea'))\" class=\"hidden px-6 py-3 text-lg font-semibold text-white bg-green-600 rounded-xl hover:bg-green-700 transition duration-150 shadow-lg shadow-green-500/50\">下一題</button>",
+            '</div>',
+            '</div>',
+            '</div>'
+        ];
+        return htmlArray.join('\n');
+    };
+    
+    // =========================================================================
+    // IMAGE INSERT FUNCTION (FIXED with Selection API)
+    // =========================================================================
+    
+    /**
+     * @brief 提示用戶輸入圖片 URL 並插入標準化的 <img> 標籤到光標位置。
+     * 使用 Selection API 確保精確插入和替換選區。
+     */
+    window.insertImageTag = function(quizArea) {
+        const quizDataElement = quizArea.querySelector('#quizData');
+        if (!quizDataElement) return;
+
+        quizDataElement.focus(); // 確保元素獲得焦點
+
+        const selection = window.getSelection();
+        
+        if (selection.rangeCount === 0 || !quizDataElement.contains(selection.anchorNode)) {
+            // 如果沒有選區或選區不在 quizData 內，將光標設置到內容末尾
+            const range = document.createRange();
+            range.selectNodeContents(quizDataElement);
+            range.collapse(false); // 塌陷到末尾
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        
+        // 此時 selection 內一定有一個有效的 range
+        const range = selection.getRangeAt(0);
+
+        const url = prompt("請輸入圖片的 URL 地址 (例如: https://placehold.co/50x50):");
+        if (!url) {
+            window.showModal('圖片 URL 為空，已取消操作。', '取消');
+            return;
+        }
+
+        const alt = prompt("請輸入圖片的簡短描述 (Alt Text):", "圖例");
+        
+        // 創建一個帶有 inline style 的標準化 <img ...> 標籤
+        const imgHtml = `<img src='${url}' alt='${alt}' style='max-height: 50px; display: inline-block; border-radius: 4px; vertical-align: middle;'>`;
+
+        // 1. 創建臨時 div 來解析 HTML 字符串
+        const tempDiv = document.createElement('span');
+        tempDiv.innerHTML = imgHtml;
+        const fragment = document.createDocumentFragment();
+        while (tempDiv.firstChild) {
+            fragment.appendChild(tempDiv.firstChild);
+        }
+
+        // 2. 刪除選區內容 (這將替換任何選中的文本或元素)
+        range.deleteContents(); 
+        
+        // 3. 插入新的節點
+        range.insertNode(fragment);
+
+        // 4. 將光標移動到插入內容之後
+        selection.collapseToEnd();
+
+        window.showModal('圖片標籤已成功插入到光標位置。', '圖片插入成功');
+    };
+    
+    // =========================================================================
+    // PASTE HANDLING FUNCTION
+    // =========================================================================
+
+    window.handlePastedData = function(event) {
+        event.preventDefault();
+
+        const text = event.clipboardData.getData('text/plain');
+        const targetElement = event.target;
+
+        let processedText = text.replace(/\t/g, '|');
+        processedText = processedText.replace(/(\r\n|\n|\r)/g, '<br>');
+
+        // 這裡我們仍然使用 innerHTML/execCommand 配合定位，因為貼上大量數據時效率更高
+        targetElement.innerHTML = ''; 
+        targetElement.focus();        
+        document.execCommand('insertHTML', false, processedText);
+        
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(targetElement);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        window.showModal('試算表數據已貼上並轉換為 | 垂直線分隔格式。', '貼上成功');
+    };
+
+    // =========================================================================
+    // QUIZ LOGIC (FIXED INDEXING)
+    // =========================================================================
+
+    window.speakQuestion = function(quizArea) {
+        if ('speechSynthesis' in window) {
+            const questionTextElement = quizArea.querySelector('#questionText');
+            if (!questionTextElement) return;
+
+            const textToSpeak = window.convertHtmlToText(questionTextElement.innerHTML);
+            
+            if (!textToSpeak) return;
+
+            window.speechSynthesis.cancel(); 
+
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            
+            const voices = window.speechSynthesis.getVoices();
+            const zhVoice = voices.find(voice => voice.lang === 'zh-TW' || voice.lang === 'zh-CN');
+            if (zhVoice) {
+                utterance.voice = zhVoice;
+            } else {
+                utterance.lang = 'zh-TW'; 
+            }
+            
+            utterance.rate = 1.0; 
+            utterance.pitch = 1.0;
+
+            window.speechSynthesis.speak(utterance);
+        } else {
+            window.showModal("您的瀏覽器不支持語音合成 (TTS) 功能。", "TTS 錯誤");
+        }
+    };
+
+    window.showModal = function(content, title = '通知') {
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const modalOverlay = document.getElementById('modalOverlay');
+
+        if (modalTitle) modalTitle.textContent = title;
+        if (modalBody) modalBody.innerHTML = content;
+        if (modalOverlay) modalOverlay.classList.remove('hidden');
+    };
+
+    window.toggleEditMode = function(quizArea, showEdit) {
+        if (!quizArea) return;
+        window.stopTimer(); 
+        window.speechSynthesis.cancel(); 
+
+        const editView = quizArea.querySelector('#edit_view');
+        const quizView = quizArea.querySelector('#quiz_view');
+        
+        if (showEdit) {
+            if (editView) editView.style.display = 'block';
+            if (quizView) quizView.style.display = 'none';
+        } else {
+            if (editView) editView.style.display = 'none';
+            if (quizView) quizView.style.display = 'block';
+            window.renderQuestion(quizArea); 
+        }
+    };
+    
+    window.stopTimer = function() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    };
+
+    window.handleTimeout = function(quizArea) {
+        window.stopTimer();
+        window.speechSynthesis.cancel(); 
+        const q = quizData[currentQuestionIndex];
+        
+        if (q && !isAnswered) { 
+            isAnswered = true;
+            
+            incorrectAnswers.push({
+                question: q.question, 
+                correctAnswer: q.options[q.correctIndex] 
+            });
+
+            const correctText = q.options[q.correctIndex];
+            const questionTextElement = quizArea.querySelector('#questionText');
+            if (questionTextElement) questionTextElement.innerHTML = '時間到！這題的正確答案是：' + correctText;
+            
+            const optionsContainer = quizArea.querySelector('#optionsContainer');
+            if (optionsContainer) {
+                optionsContainer.querySelectorAll('button').forEach(btn => {
+                    btn.disabled = true;
+                    btn.classList.remove('hover:bg-blue-100');
+                });
+            }
+
+            const nextButton = quizArea.querySelector('#nextButton');
+            if (nextButton) nextButton.classList.remove('hidden');
+
+            window.showModal('時間到！這題的答案是：' + window.convertHtmlToText(correctText), '自動跳過');
+        }
+    };
+       
+    window.startTimer = function(quizArea) {
+        window.stopTimer(); 
+        let timeLeft = 15;
+        const timerDisplay = quizArea.querySelector('#timerDisplay');
+        if (timerDisplay) timerDisplay.textContent = `${timeLeft}s`;
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            if (timerDisplay) timerDisplay.textContent = `${timeLeft}s`;
+
+            if (timeLeft <= 0) {
+                window.handleTimeout(quizArea);
+            }
+        }, 1000);
+    };
+
+                         let lines='';
+    window.parsePsvAndLoadQuiz = function(quizArea) {
+        const quizDataElement = quizArea.querySelector('#quizData');
+        const errorMsgElement = quizArea.querySelector('#errorMsg');
+
+        const rawHtmlText = quizDataElement.innerHTML.trim(); 
+        let cleanedText = rawHtmlText.replace(/<br\s*\/?>/gi, '\n'); 
+        cleanedText = cleanedText.replace(/<\/?(p|div|span)[^>]*>/gi, '\n');
+        cleanedText = cleanedText.replace(/\s*\n\s*/g, '\n').trim();
+
+          lines = cleanedText.split('\n').filter(line => line.trim() !== '');
+ 
+        let validQuestions = [];
+        let parsingError = false;
+        let errorLine = -1;
+
+        lines.forEach((line, index) => {
+            const parts = line.split('|').map(part => part.trim()); 
+
+            if (parts.length !== 7) { 
+                errorLine = index + 1; 
+                parsingError = true; 
+                return; 
+            }
+
+            // 修正：從 1-based 索引開始解析 (1 到 4)
+            const correctIndex1Based = parseInt(parts[2].trim()); 
+
+            if (isNaN(correctIndex1Based) || correctIndex1Based < 1 || correctIndex1Based > 4) {
+                 errorLine = index + 1; 
+                 parsingError = true; 
+                 return;
+            }
+            
+            // 轉換為 0-based 索引供內部使用 (0 到 3)
+            const correctIndex0Based = correctIndex1Based - 1; 
+
+            validQuestions.push({
+                id: parseInt(parts[0].trim()),
+                question: parts[1].trim(),
+                correctIndex: correctIndex0Based, 
+                options: [parts[3].trim(), parts[4].trim(), parts[5].trim(), parts[6].trim()]
+            });
+        });
+        
+        if (parsingError || validQuestions.length === 0) {
+            if (errorMsgElement) errorMsgElement.classList.remove('hidden');
+            // 修正：更新錯誤訊息以反映 1-4 索引
+            let message = '數據格式錯誤。請檢查每行是否有 **7 個欄位**，並以 **`|` 垂直線** 分隔，且正確答案索引在 **1-4 範圍內 (1=A, 4=D)**。';
+            if (errorLine !== -1) { message = '**第 ' + errorLine + ' 行** 數據欄位數不正確或答案索引無效。請修正該行。'; }
+            window.showModal(message, '解析錯誤');
+            return;
+        }
+//alert(JSON.stringify(validQuestions));
+        quizData = window.shuffleArray(validQuestions); 
+        currentQuestionIndex = 0;
+        score = 0;
+        isAnswered = false;
+        incorrectAnswers = []; 
+        
+        const totalQuestions = quizArea.querySelector('#totalQuestions');
+        if (totalQuestions) totalQuestions.textContent = quizData.length;
+        if (errorMsgElement) errorMsgElement.classList.add('hidden');
+        
+        window.toggleEditMode(quizArea, false); 
+    };
+    
+    window.renderQuestion = function(quizArea) {
+        window.stopTimer(); 
+        window.speechSynthesis.cancel(); 
+
+        if (currentQuestionIndex >= quizData.length) {
+            window.showScore(quizArea);
+            return;
+        }
+
+        const q = quizData[currentQuestionIndex];
+        isAnswered = false;
+        
+        const nextButton = quizArea.querySelector('#nextButton');
+        const questionText = quizArea.querySelector('#questionText');
+        const currentQIndex = quizArea.querySelector('#currentQIndex');
+        const progress = quizArea.querySelector('#progress');
+        const optionsContainer = quizArea.querySelector('#optionsContainer');
+        
+        if (nextButton) nextButton.classList.add('hidden');
+        
+        const displayQuestion = q.question.trim() || "問題文本遺失或格式錯誤。";
+
+        if (questionText) questionText.innerHTML = q.id + '. ' + displayQuestion;
+        
+        if (currentQIndex) currentQIndex.textContent = currentQuestionIndex + 1;
+        
+        const progressPercent = ((currentQuestionIndex) / quizData.length) * 100;
+        if (progress) progress.style.width = `${progressPercent}%`;
+
+        if (optionsContainer) optionsContainer.innerHTML = '';
+        
+        const optionLabels = ['A', 'B', 'C', 'D'];
+
+        let optionsWithStatus = q.options.map((text, originalIndex) => ({
+            text: text,
+            isCorrect: originalIndex === q.correctIndex
+        }));
+
+        const shuffledOptions = window.shuffleArray(optionsWithStatus);
+        
+        shuffledOptions.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.className = 'option-button w-full text-left p-4 rounded-lg bg-gray-100 hover:bg-blue-100 text-gray-800 font-medium shadow-sm';
+            
+            const optionText = option.text.trim() || "此選項數據遺失";
+            
+            const renderedOption = '<span class="font-bold mr-3">' + optionLabels[index] + '.</span> ' + optionText;
+            
+            button.innerHTML = renderedOption;
+            
+            button.onclick = () => window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);
+            
+            if (optionsContainer) optionsContainer.appendChild(button);
+        });
+
+        window.startTimer(quizArea); 
+    };
+
+    window.checkAnswer = function(isCorrect, button, container, shuffledOptions, quizArea) {
+        if (isAnswered) return;
+        isAnswered = true;
+        window.stopTimer(); 
+        window.speechSynthesis.cancel(); 
+
+        const buttons = container.querySelectorAll('button');
+        
+        buttons.forEach(btn => {
+            btn.disabled = true;
+            btn.classList.remove('hover:bg-blue-100');
+            btn.style.cursor = 'default';
+        });
+
+        if (isCorrect) {
+            score++;
+            button.classList.remove('bg-gray-100', 'hover:bg-blue-100');
+            button.classList.add('bg-green-500', 'text-white', 'font-extrabold', 'ring-4', 'ring-green-400');
+        } else {
+            button.classList.remove('bg-gray-100', 'hover:bg-blue-100');
+            button.classList.add('bg-red-500', 'text-white', 'font-extrabold', 'ring-4', 'ring-red-400');
+
+            const q = quizData[currentQuestionIndex];
+            incorrectAnswers.push({
+                question: q.question,
+                correctAnswer: q.options[q.correctIndex]
+            });
+
+            const correctOption = shuffledOptions.find(opt => opt.isCorrect);
+            
+            const correctOptionHtml = correctOption.text;
+            
+            const correctButton = Array.from(buttons).find(btn => btn.innerHTML.includes(correctOptionHtml));
+            
+            if (correctButton) {
+                correctButton.classList.remove('bg-gray-100', 'hover:bg-blue-100');
+                correctButton.classList.add('bg-green-200', 'text-green-800', 'border-4', 'border-dashed', 'border-green-600');
+            }
+        }
+
+        const nextButton = quizArea.querySelector('#nextButton');
+        if (nextButton) nextButton.classList.remove('hidden');
+    };
+
+    window.nextQuestion = function(quizArea) {
+        currentQuestionIndex++;
+        window.renderQuestion(quizArea);
+    };
+    
+    /**
+     * @brief 顯示最終分數
+     */
+    window.showScore = function(quizArea) {
+        window.stopTimer(); 
+        const total = quizData.length;
+        
+        const progress = quizArea.querySelector('#progress');
+        const currentQIndex = quizArea.querySelector('#currentQIndex');
+        const nextButton = quizArea.querySelector('#nextButton');
+        const questionText = quizArea.querySelector('#questionText');
+        const optionsContainer = quizArea.querySelector('#optionsContainer');
+        
+        const finalProgress = 100;
+        if (progress) progress.style.width = `${finalProgress}%`;
+        if (currentQIndex) currentQIndex.textContent = total;
+        
+        if (nextButton) nextButton.classList.add('hidden');
+        if (questionText) questionText.textContent = `測驗完成！`;
+
+        let reviewHTML = '';
+        if (incorrectAnswers.length > 0) {
+            reviewHTML += '<h4 class="text-xl font-bold mt-6 mb-3 text-red-600">❌ 錯題回顧:</h4>';
+            reviewHTML += '<div class="space-y-4 text-left">';
+            incorrectAnswers.forEach((item, index) => {
+                reviewHTML += `<div class="p-3 bg-red-50 rounded-lg border border-red-200">`;
+                
+                const reviewQuestion = item.question;
+                reviewHTML += '<p class="font-semibold text-gray-800">Q' + (index + 1) + ': ' + reviewQuestion + '</p>';
+                
+                const reviewAnswer = item.correctAnswer;
+                reviewHTML += '<p class="text-sm text-green-700 mt-1">✓ 正確答案: ' + reviewAnswer + '</p>';
+                reviewHTML += '</div>';
+            });
+            reviewHTML += '</div>';
+        } else {
+             reviewHTML += '<div class="text-2xl font-extrabold text-green-700 mt-4 mb-4">🎉 全部答對！表現優異！</div>';
+        }
+        
+        if (optionsContainer) {
+            optionsContainer.innerHTML = [
+                '<div class="text-3xl font-extrabold text-blue-600 mt-4 mb-4">最終分數: ' + score + ' / ' + total + '</div>',
+                '<div class="text-2xl font-bold text-gray-700 mb-6">得分率: ' + (((score / total) * 100).toFixed(1)) + '%</div>',
+                reviewHTML
+            ].join('\n');
+        }
+    };
+    
+    // =========================================================================
+    // UTILITY FUNCTIONS 
+    // =========================================================================
+    
+    window.shuffleArray = function(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    };
+    
+    window.convertHtmlToText = function(htmlString) {
+        const tempDiv = document.createElement('div');
+        const cleanHtml = htmlString.replace(/<img[^>]*>/gi, '');
+        tempDiv.innerHTML = cleanHtml;
+        return tempDiv.textContent || tempDiv.innerText || '';
+    };
+
+    window.copyPsvToClipboard = function() {
+        const quizDataElement = document.getElementById('quizData');
+
+        if (!quizDataElement) return;
+
+        try {
+            const rawHtmlText = quizDataElement.innerHTML.trim(); 
+            let cleanedText = rawHtmlText
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/?(div|p|span)[^>]*>/gi, '\n') 
+                .replace(/\s*\n\s*/g, '\n')
+                .trim();
+
+            const tempInput = document.createElement('textarea');
+            tempInput.value = cleanedText;
+            document.body.appendChild(tempInput);
+            tempInput.select(tempInput);
+
+            let success = false;
+            try {
+                success = document.execCommand('copy');
+            } catch (err) {
+                console.error('execCommand failed:', err);
+            }
+            document.body.removeChild(tempInput);
+
+            if (success) {
+                 window.showModal('測驗數據（垂直線分隔格式）已複製到剪貼簿！', '複製成功');
+            } else {
+                 window.showModal('無法自動複製，請手動選取並複製內容。', '複製失敗');
+            }
+
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+            window.showModal('無法自動複製，請手動選取並複製內容。', '複製失敗');
+        }
+document.getElementById('quizDataSource').value=rawHtmlText;
+    };
+    
+    // =========================================================================
+    // UTILITY FUNCTIONS 
+    // =========================================================================
+    
+    window.shuffleArray = function(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    };
+    
+    window.convertHtmlToText = function(htmlString) {
+        const tempDiv = document.createElement('div');
+        const cleanHtml = htmlString.replace(/<img[^>]*>/gi, '');
+        tempDiv.innerHTML = cleanHtml;
+        return tempDiv.textContent || tempDiv.innerText || '';
+    };
+
+    window.copyPsvToClipboard = function() {
+        const quizDataElement = document.getElementById('quizData');
+        if (!quizDataElement) return;
+
+        try {
+            const rawHtmlText = quizDataElement.innerHTML.trim(); 
+            let cleanedText = rawHtmlText
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/?(div|p|span)[^>]*>/gi, '\n') 
+                .replace(/\s*\n\s*/g, '\n')
+                .trim();
+
+            const tempInput = document.createElement('textarea');
+            tempInput.value = cleanedText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            
+            let success = false;
+            try {
+                success = document.execCommand('copy');
+            } catch (err) {
+                console.error('execCommand failed:', err);
+            }
+            document.body.removeChild(tempInput);
+
+            if (success) {
+                 window.showModal('測驗數據（垂直線分隔格式）已複製到剪貼簿！', '複製成功');
+            } else {
+                 window.showModal('無法自動複製，請手動選取並複製內容。', '複製失敗');
+            }
+
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+            window.showModal('無法自動複製，請手動選取並複製內容。', '複製失敗');
+        }
+    };
+//======================== 切水果遊戲開始===========================================================================
+     // --- 全域遊戲狀態變數 ---
+        let QS_quizData = []; 
+        let QS_currentQuestionIndex = 0; 
+        let QS_gameScore = 0; 
+        let QS_lives = 3;
+        
+        // --- 遊戲狀態 & UI 元素 ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('game-score');
+        const livesDisplay = document.getElementById('lives');
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+        const initialStartButton = document.getElementById('initial-start-button');
+        const currentQuestionDisplay = document.getElementById('current-question');
+        const appContainer = document.getElementById('app-container');
+        const launchWrapper = document.getElementById('launch-wrapper');
+        const quizMessageDetail = document.getElementById('quiz-message-detail');
+        const quizEditor = document.getElementById('quiz-editor');
+        const gameStartMessage = document.getElementById('game-start-message');
+        const totalQuestionsLoaded = document.getElementById('total-questions-loaded');
+        const errorMsgElement = document.getElementById('errorMsg');
+        
+        // 關鍵：對可編輯 DIV 的引用，用於讀取當前內容
+
+
+
+        //const quizDataElement = document.getElementById('quizData'); 
+ 
+        let isRunning = false;
+        let lastTime = 0;
+        let targets = []; 
+        let particles = [];
+        const maxParticles = 50;
+        let mousePath = [];
+        const maxPathLength = 5;
+        
+        // --- 輔助函式 ---
+
+        const QS_updateLoadedQuestionCount = function() {
+            totalQuestionsLoaded.textContent = QS_quizData.length;
+        };
+
+        const showMessage = function(title, detail, buttonText = "確定", buttonCallback) {
+            messageText.textContent = title;
+            quizMessageDetail.innerHTML = detail;
+            initialStartButton.textContent = buttonText;
+            
+            if (buttonCallback) {
+                 initialStartButton.onclick = buttonCallback;
+            } else {
+                 // 預設行為：顯示編輯器
+                 initialStartButton.onclick = function() { window.QS_toggleEditMode(true); };
+            }
+            
+            messageBox.classList.remove('opacity-0', 'pointer-events-none');
+            quizEditor.classList.add('hidden'); 
+            gameStartMessage.classList.remove('hidden');
+        };
+
+        window.QS_runDiagnostic = function() {
+            // 診斷功能仍從 live DOM 讀取，因為它是為了展示讀取結果。
+		 let areaq=document.getElementById('quizArea');
+                              //alert(document.getElementById('quizArea').querySelector('#quizData').innerText);
+            const innerText=document.getElementById('quizArea').querySelector('#quizData').innerText;
+            // const innerText = areaq.querySelector('#quizData').innerText;
+            const htmlContent = `
+                <h3 class="text-xl font-bold text-red-400 mb-2">測驗資料 DOM 診斷結果（ID: #quizData）</h3>
+                <p class="text-gray-300 text-sm mb-4">解析器現在使用 **.innerHTML + 清理** 來讀取。</p>
+
+                <div class="bg-gray-800 p-3 rounded-lg overflow-x-auto text-left space-y-2" id="diagnostic-display">
+                    <p class="text-orange-400 font-bold">1. .innerText (原始純文字):</p>
+                    <pre class="bg-gray-900 p-2 rounded text-xs text-green-300">${innerText.substring(0, 500)}...</pre>
+                </div>
+            `;
+            
+            showMessage("資料診斷完成", htmlContent, "返回編輯器", function() {
+                window.QS_toggleEditMode(true); 
+            });
+        }
+        
+        const shuffleArray = function(array) { 
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        };
+
+        const resizeCanvas = function() { 
+            const parent = canvas.parentNode;
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+        };
+        
+        class GameElement { 
+            constructor(text, x, y, radius, isCorrect) {
+                this.text = text;
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.isCorrect = isCorrect;
+                this.color = isCorrect ? 'rgb(52, 211, 153)' : 'rgb(239, 68, 68)'; 
+                this.gravity = 0.05; 
+                this.vy = -Math.random() * 5 - 4; 
+                this.vx = (Math.random() - 0.5) * 3; 
+                this.isSliced = false;
+            }
+            update() {
+                this.vy += this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+            draw() {
+                if (this.isSliced) return;
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 16px Inter';
+                ctx.textAlign = 'center';
+                const display_text = this.text.length > 12 ? this.text.substring(0, 10) + '...' : this.text;
+                ctx.fillText(display_text, this.x, this.y + 5); 
+            }
+        };
+        
+        class Particle { 
+             constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 3 + 1;
+                this.color = color;
+                this.vx = (Math.random() - 0.5) * 5;
+                this.vy = (Math.random() - 0.5) * 5;
+                this.alpha = 1;
+                this.decay = 0.05;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+                if (this.alpha < 0) this.alpha = 0;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        };
+
+        const spawnTargets = function(correctText, decoyText) { 
+            targets = []; 
+            
+            const radius = 45; 
+            const y = canvas.height + radius; 
+
+            const x1 = Math.random() * (canvas.width * 0.4 - radius * 2) + radius; 
+            const x2 = canvas.width - (Math.random() * (canvas.width * 0.4 - radius * 2) + radius); 
+
+            const target1 = new GameElement(correctText, x1, y, radius, true);
+            const target2 = new GameElement(decoyText, x2, y, radius, false);
+
+            if (Math.random() < 0.5) {
+                targets.push(target1, target2);
+            } else {
+                targets.push(target2, target1);
+            }
+        }
+
+        const generateParticles = function(x, y, color) { 
+            for (let i = 0; i < maxParticles; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        };
+
+        const gameOver = function(allQuestionsCompleted, outOfLives, error = false) { 
+            isRunning = false;
+            targets = []; 
+            
+            initialStartButton.textContent = "再玩一次";
+            initialStartButton.onclick = window.QS_startQuiz; 
+            
+            if (error) {
+                messageText.textContent = "嚴重資料錯誤";
+                quizMessageDetail.textContent = "遊戲因測驗資料結構問題而停止。";
+            } else if (allQuestionsCompleted) {
+                messageText.textContent = "測驗大師！";
+                quizMessageDetail.textContent = `恭喜你！你完成了所有 ${QS_quizData.length} 個問題。最終分數：${QS_gameScore}。`; 
+            } else if (outOfLives) {
+                messageText.textContent = "遊戲結束！生命值耗盡。";
+                quizMessageDetail.textContent = `你用完了所有生命！你答對了 ${QS_gameScore} 題。點擊「再玩一次」重試。`; 
+            } else {
+                 messageText.textContent = "遊戲結束！";
+                 quizMessageDetail.textContent = `最終分數：${QS_gameScore}。點擊再玩一次！`;
+            }
+            
+            QS_updateLoadedQuestionCount(); 
+            quizEditor.classList.add('hidden');
+            gameStartMessage.classList.remove('hidden');
+            messageBox.classList.remove('opacity-0', 'pointer-events-none');
+        };
+
+
+        const launchNextItem = function() { 
+            targets = []; 
+            
+            if (QS_lives <= 0) { 
+                gameOver(false, true); 
+                return;
+            }
+            
+            if (QS_currentQuestionIndex >= QS_quizData.length || QS_quizData.length === 0) { 
+                if (QS_quizData.length > 0) {
+                    gameOver(true, false);
+                } else {
+                    showMessage('無測驗資料！', '請先使用「編輯資料」按鈕載入測驗問題。', '編輯資料');
+                }
+                return;
+            }
+            
+            const questionObj = QS_quizData[QS_currentQuestionIndex]; 
+
+            if (!questionObj || questionObj.options.length !== 4) {
+                 currentQuestionDisplay.textContent = "錯誤：資料結構無效或資料遺失。";
+                 gameOver(false, false, true); 
+                 return;
+            }
+
+            const question = questionObj.question;
+            const correctIndex1Based = questionObj.correctIndex; 
+            const allOptions = questionObj.options;
+            
+            const arrayIndex = correctIndex1Based - 1; 
+            const correctAnswer = allOptions[arrayIndex];
+            
+            const incorrectOptions = allOptions.filter(function(_, index) { return index !== arrayIndex; });
+
+            const randomIndex = Math.floor(Math.random() * incorrectOptions.length);
+            const decoyAnswer = incorrectOptions[randomIndex];
+
+            currentQuestionDisplay.innerHTML = `Q ${QS_currentQuestionIndex + 1}/${QS_quizData.length}: ${question}`; 
+            spawnTargets(correctAnswer, decoyAnswer);
+            isRunning = true; 
+        };
+        
+        const checkSlice = function(x, y) { 
+             for (let i = targets.length - 1; i >= 0; i--) {
+                const target = targets[i];
+                if (target.isSliced) continue;
+
+                const distance = Math.sqrt(Math.pow(target.x - x, 2) + Math.pow(target.y - y, 2));
+
+                if (distance < target.radius) {
+                    target.isSliced = true;
+                    generateParticles(target.x, target.y, target.color);
+                    
+                    if (target.isCorrect) {
+                        QS_gameScore += 1; 
+                        currentQuestionDisplay.textContent = `答對了！+1 分。`;
+                        QS_currentQuestionIndex++; 
+                    } else {
+                        QS_lives -= 1; 
+                        currentQuestionDisplay.textContent = `錯誤！你切了 ${target.text}。-1 生命。`;
+                    }
+                    
+                    if (QS_lives > 0) {
+                        launchNextItem(); 
+                    } else {
+                        gameOver(false, true); 
+                    }
+                    return;
+                }
+            }
+        };
+
+        const gameLoop = function(timestamp) { 
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            let questionMissed = false; 
+
+            for (let i = targets.length - 1; i >= 0; i--) {
+                const target = targets[i];
+                
+                if (isRunning) target.update();
+
+                target.draw();
+
+                if (target.y > canvas.height + target.radius * 2) {
+                    if (target.isCorrect && !target.isSliced) {
+                        if (isRunning) { 
+                            QS_lives -= 1; 
+                            currentQuestionDisplay.textContent = `錯過正確答案：${target.text}！-1 生命。`;
+                            questionMissed = true; 
+                        }
+                    }
+                    targets.splice(i, 1);
+                }
+            }
+            
+            if (questionMissed) {
+                if (QS_lives > 0) { 
+                    launchNextItem(); 
+                } else {
+                    gameOver(false, true); 
+                }
+                return;
+            };
+
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw();
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            if (mousePath.length > 1) {
+                ctx.globalAlpha = 0.8;
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(mousePath[0].x, mousePath[0].y);
+                for (let i = 1; i < mousePath.length; i++) {
+                    ctx.lineTo(mousePath[i].x, mousePath[i].y);
+                }
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+
+            scoreDisplay.textContent = QS_gameScore; 
+            livesDisplay.textContent = QS_lives; 
+
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        const getCanvasMousePosition = function(e) { 
+            const rect = canvas.getBoundingClientRect();
+            let x, y;
+
+            if (e.touches && e.touches.length > 0) {
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top;
+            } else {
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top;
+            }
+
+            return { x, y };
+        };
+
+        let isSlicing = false;
+        
+        const startSlicing = function(e) { 
+            if (!isRunning) return;
+            isSlicing = true;
+            const pos = getCanvasMousePosition(e);
+            mousePath = [pos];
+            checkSlice(pos.x, pos.y);
+        };
+
+        const moveSlicing = function(e) { 
+            if (!isRunning || !isSlicing) return;
+            e.preventDefault(); 
+            const pos = getCanvasMousePosition(e);
+            
+            mousePath.push(pos);
+            while (mousePath.length > maxPathLength) {
+                mousePath.shift();
+            }
+
+            if (mousePath.length >= 2) {
+                checkSlice(pos.x, pos.y);
+            }
+        };
+
+        const endSlicing = function() { 
+            isSlicing = false;
+            mousePath = []; 
+        };
+
+
+        // --- 全域入口函式 ---
+
+        window.QS_toggleEditMode = function(show) {
+            if (show) {
+                document.getElementById('quizDataSource').value=quizDataElement.innerText;
+                quizEditor.classList.remove('hidden'); 
+                gameStartMessage.classList.add('hidden');
+                messageBox.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                quizEditor.classList.add('hidden');
+                gameStartMessage.classList.remove('hidden');
+                if (QS_quizData.length > 0) {
+                     messageBox.classList.add('opacity-0', 'pointer-events-none');
+                }
+            }
+        };
+
+
+ let quizDataElementX='';       
+        window.QS_launchGame = function(ele) {
+            launchWrapper.style.display = 'none';
+            appContainer.style.display = 'flex';
+             resizeCanvas(); 
+//alert('ele='+ele.querySelector('#quizData').innerText);
+             quizDataElementX=ele.querySelector('#quizData');
+ 
+            QS_updateLoadedQuestionCount(); 
+            // 遊戲啟動後，強制進入編輯模式，讓用戶點擊「載入」
+            showMessage('測驗斬擊啟動', '請點擊「編輯資料」以載入或輸入您的 PSV 格式測驗數據。', '編輯資料', function() {
+                 window.QS_toggleEditMode(true); 
+            });
+        };
+
+        // 【關鍵修正】：使用 innerHTML + 正則表達式進行資料淨化與解析
+        window.QS_parseAndLoadQuiz = function(source) {
+            // 1. 從 DOM 獲取原始文字，使用 innerHTML 以捕獲 <br> 和其他標籤
+   
+    
+          // quizDataElementX=document.getElementById('quizArea').querySelector('#quizData');
+            //alert('Parsing:'+quizDataElementX.innerText);  
+
+             const rawHtmlText = quizDataElementX.innerHTML.trim();
+            
+            // 2. 嚴格資料淨化：將編輯器可能插入的 HTML 標籤轉換為標準換行符 (\n)
+            let cleanedText = rawHtmlText.replace(/<br\s*\/?>/gi, '\n'); // 替換 <br>
+            cleanedText = cleanedText.replace(/<\/?(p|div|span)[^>]*>/gi, '\n'); // 替換 <p>, <div>, <span>
+            // 標準化換行符，確保沒有連續換行或多餘的空白
+            cleanedText = cleanedText.replace(/\s*\n\s*/g, '\n').trim(); 
+
+            // 3. 按標準 \n 拆分，並過濾掉空行
+            const lines = cleanedText.split('\n').filter(function(line) { return line.trim() !== ''; });
+            
+            let validQuestions = [];
+            let parsingError = false;
+            let errorLine = -1;
+
+            lines.forEach(function(line, index) {
+                // 4. 按 PSV 分隔符 (|) 分割，並清理每個部分的空白
+                const parts = line.split('|').map(function(part) { return part.trim(); }); 
+
+                if (parts.length !== 7) { 
+                    errorLine = index + 1; 
+                    parsingError = true; 
+                    return; 
+                }
+
+                const rawIndex = parts[2].trim();
+                const correctIndex1Based = parseInt(rawIndex, 10); 
+                
+                // 檢查索引是否為 1 到 4 之間的乾淨數字
+                if (isNaN(correctIndex1Based) || correctIndex1Based < 1 || correctIndex1Based > 4 || String(correctIndex1Based) !== rawIndex) {
+                    errorLine = index + 1; 
+                    parsingError = true; 
+                    return;
+                }
+                
+                validQuestions.push({
+                    id: parseInt(parts[0].trim()),
+                    question: parts[1].trim(),
+                    correctIndex: correctIndex1Based, // 保持 1-based 索引以符合遊戲邏輯
+                    options: [parts[3].trim(), parts[4].trim(), parts[5].trim(), parts[6].trim()]
+                });
+            });
+            
+            errorMsgElement.classList.add('hidden');
+
+            // 錯誤處理
+            if (parsingError || validQuestions.length === 0) {
+                const message = `
+                    <p class="font-extrabold text-red-300">第 ${errorLine} 行格式不正確，或者「正確選項索引」不是乾淨的 1 到 4 之間的數字。</p>
+                    <p class="mt-2 text-sm">請檢查格式: ID | 問題 | **正確選項索引 (1-4, 必須是數字)** | 選項1 | 選項2 | 選項3 | 選項4</p>
+                `;
+                showMessage('資料解析錯誤', message, '修正資料', function() {
+                    window.QS_toggleEditMode(true); 
+                });
+                QS_quizData = [];
+                QS_updateLoadedQuestionCount();
+                return;
+            }
+
+            // 成功解析：更新全域資料並重設遊戲狀態
+            QS_quizData = shuffleArray(validQuestions); 
+            QS_currentQuestionIndex = 0; 
+            QS_gameScore = 0;
+            QS_lives = 3;
+            
+            QS_updateLoadedQuestionCount();
+            
+            // 成功載入後，直接開始遊戲
+            window.QS_startQuiz();
+        };
+
+        window.QS_startQuiz = function() {
+            if (QS_quizData.length === 0) {
+
+             // window.QS_parseAndLoadQuiz(); 
+               //window.QS_toggleEditMode(true); 
+                 //document.getElementById('launch-wrapper').style.display='';
+                showMessage('無測驗資料！', '請先使用「編輯資料」按鈕載入測驗問題。', '編輯資料');
+
+                return;
+            }
+            // 確保所有狀態完全重置 (以防從 Game Over 狀態重啟)
+            QS_currentQuestionIndex = 0; 
+            QS_gameScore = 0;
+            QS_lives = 3;
+            targets = [];
+            particles = [];
+            
+            messageBox.classList.add('opacity-0', 'pointer-events-none');
+            
+            // 啟動遊戲
+            launchNextItem();
+            
+            lastTime = performance.now();
+        };
+        
+        // --- 初始化 ---
+        canvas.addEventListener('mousedown', startSlicing);
+        canvas.addEventListener('mousemove', moveSlicing);
+        canvas.addEventListener('mouseup', endSlicing);
+        canvas.addEventListener('mouseleave', endSlicing); 
+
+        canvas.addEventListener('touchstart', startSlicing);
+        canvas.addEventListener('touchmove', moveSlicing);
+        canvas.addEventListener('touchend', endSlicing);
+        canvas.addEventListener('touchcancel', endSlicing);
+        
+        window.addEventListener('load', function() {
+            resizeCanvas();
+            requestAnimationFrame(gameLoop); 
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+//=========================切水果遊戲結束======================================================================
+//===============================  core logic =================================================================
         window.initElement = function(element) {
             let resizer = element.querySelector('.resizer');
             if (!resizer) {
@@ -3900,7 +5337,17 @@ document.getElementById('tmBar').style.display='none';
         }
 
 
-
+    window.flip=function(){
+        //activeItem.style.transform='perspective: 1000px';
+      //activeItem.style.transform='transform-style:preserve-3d';
+     if(activeItem.style.transform=='rotateY(180deg)'){
+       activeItem.style.transform='rotateY(0deg)';
+     }else{
+       activeItem.style.transform='rotateY(180deg)';
+       showModal(activeItem.style.transform,'');
+     }
+       showModal(activeItem.style.transform,'');
+    }
 
 //全螢幕切換
 let isFullScreen =false;
@@ -4093,9 +5540,9 @@ element.requestFullscreen()
                 }
                 
                 // If there's content loaded, ensure the Firestore listener handles the reload
-                //if (currentPageName && isAuthReady) {
-                    //loadPageContent(currentPageName); 
-                //}
+                // if (currentPageId) {
+                   //loadPageData(currentPageId); //loadPageContent(currentPageName); 
+                // }
             }
         }
         
