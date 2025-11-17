@@ -462,6 +462,7 @@ pointer-events: auto;
         <button onclick="importProject()"  title="import" >📥</button>
               <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleFileImport(event)">           
          <button onclick="exportProject()" title="export"  >📤</button>
+         <button onclick="document.all.codeArea.style.display='';document.getElementById('htmlPageCode').value=editor.innerHTML;" title="Coding"  >✍</button>
        </div>
         <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
          <button onclick="document.getElementById('teamBoard').style.display=(document.getElementById('teamBoard').style.display=='none')?'':'none';" title="showScoreBoard"  >👨‍👨‍👧‍👧</button>
@@ -535,10 +536,13 @@ pointer-events: auto;
     </div>
 
     <div   id="codeArea" style="display:none;">
-        <input type="text" id="fname" value="default_file.json">
+        <button onclick="document.all.codeArea.style.display='none'; " title="close"  >❎</button>
+            <input type="text" id="fname" value="default_file.json">
+          <button onclick="document.all.codeArea.style.display=''; editor.innerHTML=document.getElementById('htmlPageCode').value;" title="export"  ><b>✅</b></button>
         <div id="pagelist"></div>
         <div id="Navi"></div>
-      <textarea id="htmlPageCode" cols="150" rows="10" style="display:;" > </textarea>
+      <textarea id="htmlPageCode" cols="150" rows="10" style="display:;border:1px dashed green" > </textarea>
+         
         <textarea  id="temp"   ></textarea>
         <img id="coverpic" src="">
          
