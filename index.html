@@ -1,7 +1,4 @@
-﻿
-
-
-<html lang="en">
+﻿<html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -76,6 +73,9 @@
             width: 90%;
             text-align: center;
 	justify-content: center;align-items: center;
+            position:absolute;
+           top:0px;           left:calc(50vw - 200px);   
+           z-index:50;
         }
         .result-display {
             font-size: 4rem;
@@ -227,6 +227,7 @@ pointer-events: auto;
                 <div>
                     生命: <span id="lives" class="text-red-400 font-bold text-xl">3</span>
                 </div>
+<button onclick="window.toggleGameTheme('none');" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">關閉</button>
             </div>
             
             <!-- 當前問題顯示區 -->
@@ -305,7 +306,7 @@ pointer-events: auto;
             <div id="info-bar" class="flex justify-between w-full mb-4 text-lg font-bold text-gray-700 max-w-4xl">
                 <div class="p-3 bg-blue-100 rounded-lg shadow-md flex items-center">
                     <span class="text-blue-700">P1 Score: <span id="p1-score">0</span></span>
-                </div>
+                </div><button onclick="window.toggleGameTheme('none');" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">☒</button>
                 <div class="p-3 bg-red-100 rounded-lg shadow-md flex items-center">
                     <span class="text-red-700">P2 Score: <span id="p2-score">0</span></span>
                 </div>
@@ -319,18 +320,7 @@ pointer-events: auto;
             </p>
 
             <!-- Dynamic Data Container (Hidden, required for parsing) -->
-            <div id="quizArea" class="hidden">
-                <div id="quizData">
-                    1|What is the capital of France?|2|London|Paris|Berlin|Rome,
-                    2|Which planet is known as the Red Planet?|3|Venus|Jupiter|Mars|Saturn,
-                    3|What is 5 multiplied by 4?|3|25|10|20|15,
-                    4|Largest ocean on Earth?|1|Pacific|Atlantic|Indian|Arctic,
-                    5|Who wrote 'Romeo and Juliet'?|4|Charles Dickens|Jane Austen|Mark Twain|William Shakespeare,
-                    6|In what year did the Titanic sink?|1|1912|1905|1923|1931,
-                    7|What is the chemical symbol for gold?|4|Ag|Fe|Cu|Au,
-                    8|How many continents are there?|3|5|6|7|8
-                </div>
-            </div>
+
         </div>
 
     </div>
@@ -339,8 +329,8 @@ pointer-events: auto;
 
 
     <!-- 抽號碼開始 -->
-<div id="picker-wrapper" class="picker-container hidden" style="margin-left:500px">
-    <h2 class="text-2xl font-bold mb-6 text-orange-800">班級抽號機 (0 - 29 號)</h2>
+<div id="picker-wrapper" class="picker-container hidden" >
+    <h2 class="text-2xl font-bold mb-6 text-orange-800">班級抽號機 </h2>
     
     <!-- FLIP CONTAINER WRAPPER -->
     <div id="flipContainer" class="flip-container">
@@ -376,10 +366,11 @@ pointer-events: auto;
     </button>
 
     <div class="mt-8 pt-4 border-t border-gray-200">
-        <h2 class="text-lg font-semibold mb-2">已抽出的號碼 (<span id="countDisplay">0</span> / 30)</h2>
+        <h2 class="text-lg font-semibold mb-2">已抽出的號碼 (<span id="countDisplay">0</span> / <input type="number" id="maxClassNumber" min="1" max="30" step="1" value="30" oninput="window.resetPicker();" >)</h2>
         <div id="pickedList" class="text-sm text-gray-600 flex flex-wrap justify-center gap-2">
             <!-- 已抽出的號碼將顯示在這裡 -->
         </div>
+ 
     </div>
 </div>
 
@@ -498,7 +489,7 @@ pointer-events: auto;
     TIME:<span id="gameTimerDisplay" class="text-xl font-mono text-gray-700 p-2 bg-green-400 rounded-lg border border-gray-300">1:00 </span>
 </div>
             <span id="speechResult" style="margin-left: 20px;"></span>
-<button id="toggleQuizBtn" onclick="window.toggleGameTheme('quiz');" title="測驗題" >💯</button>
+ <button onclick="window.toggleGameTheme('quiz');">❓</button>
 <button id="toggleQuizBtn" onclick="window.toggleGameTheme('slasher');window.QS_launchGame(document.getElementById('quizArea'),'slasher');window.QS_parseAndLoadQuiz(document.getElementById('quizArea'),'slasher');" title="切水果" >🌠</button>
 <button id="startGameButton" title="雙打測驗" onclick="window.toggleGameTheme('dual');">🤼</button>
         </div>
@@ -1006,8 +997,8 @@ pointer-events: auto;
     <script type="module">
         // Import Firebase v12 SDKs. Including getDocs, collection, and deleteDoc.
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
-
+        import { getFirestore, doc, setDoc,getDoc, onSnapshot, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+//import { getFirestore, collection, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
         // --- 1. FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyA-psoCWI_u2iYoLXznb6kH_g3KTw00Qow",
@@ -1030,7 +1021,7 @@ pointer-events: auto;
         
         // Multi-Project Variable (DEFAULT ID)
         let currentProjectDocumentId = 'classroom_master_file'; 
-        
+        //let currentProjectDocumentId = 'NewProjcet';         
         // Core Project Data
         let projectData = []; 
         let currentPageId = null;
@@ -1220,6 +1211,8 @@ function startRealtimeProjectListener() {
                         throw new Error("Invalid format");
                     }
                     projectData = importedData;
+
+  
                     currentPageId = Object.keys(projectData)[0] || null;
                     saveProject(); // Save the newly imported project to localStorage
                     renderPageList();
@@ -1276,7 +1269,7 @@ function startRealtimeProjectListener() {
         // --- Multi-Project Listing & Management Functions ---
 
         /** Fetches all document IDs and renders the list in the modal. */
-        window.renderAllProjectsList = async function() {
+        window.OLDrenderAllProjectsList = async function() {
             const listContainer = document.getElementById('all-projects-list');
             listContainer.innerHTML = 'Loading saved projects...';
             
@@ -1326,6 +1319,177 @@ function startRealtimeProjectListener() {
                 console.error("Error fetching project list:", error);
             }
         }
+
+
+
+// --- Multi-Project Listing & Management Functions ---
+
+/** Fetches all document IDs and renders the list in the modal, including management buttons. */
+window.renderAllProjectsList = async function() {
+    const listContainer = document.getElementById('all-projects-list');
+    listContainer.innerHTML = 'Loading saved projects...';
+    
+    // Pre-fill the input field with the current ID
+    document.getElementById('new-project-id-input').value = currentProjectDocumentId;
+
+    try {
+        const querySnapshot = await getDocs(collection(db, PROJECTS_COLLECTION));
+        
+        let html = '<ul style="list-style:none; padding:0;">';
+        
+        if (querySnapshot.empty) {
+            html += '<li style="padding: 10px; color: gray;">No saved projects found.</li>';
+        } else {
+            querySnapshot.forEach((doc) => {
+                const projectId = doc.id;
+                const isActive = projectId === currentProjectDocumentId;
+                const status = isActive ? ' (ACTIVE)' : '';
+                
+                html += `<li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 5px; border: 1px solid #ddd; border-radius: 4px; background: ${isActive ? '#e6f3ff' : '#fff'};">
+                            <span 
+                                onclick="window.switchProjectAndCloseList('${projectId}')" 
+                                style="cursor:pointer; flex-grow: 1; color: ${isActive ? '#007bff' : '#333'}; font-weight: ${isActive ? 'bold' : 'normal'};"
+                            >
+                                ${projectId}${status}
+                            </span>
+                            
+                            <button 
+                                onclick="window.renameProject('${projectId}')" 
+                                style="margin-left: 5px; background: #ffc107; color: #333; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-weight: bold;"
+                                title="Rename this project"
+                            >
+                                ✏️ Rename
+                            </button>
+                            
+                            <button 
+                                onclick="window.duplicateProject('${projectId}')" 
+                                style="margin-left: 5px; background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-weight: bold;"
+                                title="Create a copy of this project"
+                            >
+                                ➕ Duplicate
+                            </button>
+
+                            <button 
+                                onclick="window.deleteProject('${projectId}')" 
+                                style="margin-left: 5px; background: #f87171; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-weight: bold;"
+                                title="Permanently delete this project"
+                            >
+                                🗑️ Delete
+                            </button>
+                        </li>`;
+            });
+        }
+        html += '</ul>';
+        
+        listContainer.innerHTML = html;
+        
+        // Show the modal
+        document.getElementById('project-list-modal').style.display = 'block';
+
+    } catch (error) {
+        listContainer.innerHTML = 'Error loading projects: Check console for details.';
+        console.error("Error fetching project list:", error);
+    }
+}
+
+
+/** Renames an existing project document by duplicating it to a new ID and deleting the old one. */
+window.renameProject = async function(oldProjectId) {
+    if (!oldProjectId) return;
+
+    // 1. Get New Project ID from User
+    const newProjectId = prompt(`Rename Project "${oldProjectId}" to:`, oldProjectId + '_renamed');
+    
+    if (!newProjectId || newProjectId === oldProjectId) {
+        if (newProjectId) alert("Rename canceled: The new name must be different from the old name.");
+        return; // User cancelled or name is the same
+    }
+
+    try {
+        // --- STEP 1: READ data from old document ---
+        const oldProjectRef = doc(db, PROJECTS_COLLECTION, oldProjectId);
+        const oldProjectSnapshot = await getDoc(oldProjectRef); // Assuming getDoc is available from your setup
+        
+        if (!oldProjectSnapshot.exists()) {
+            alert(`Error: Project "${oldProjectId}" not found in Firestore.`);
+            return;
+        }
+
+        const projectDataToMove = oldProjectSnapshot.data();
+
+        // --- STEP 2: WRITE data to new document (the rename) ---
+        const newProjectRef = doc(db, PROJECTS_COLLECTION, newProjectId);
+        await setDoc(newProjectRef, projectDataToMove);
+        console.log(`Project successfully duplicated to new name: "${newProjectId}"`);
+
+        // --- STEP 3: DELETE old document ---
+        await deleteDoc(oldProjectRef);
+        console.log(`Original project "${oldProjectId}" successfully deleted.`);
+
+        // --- STEP 4: UPDATE local state if necessary ---
+        if (oldProjectId === currentProjectDocumentId) {
+            // If the active project was renamed, switch to the new ID
+            window.switchProject(newProjectId);
+        }
+        
+        // --- STEP 5: REFRESH the list ---
+        window.renderAllProjectsList();
+        
+        showModal('專案已更名', `Project **${oldProjectId}** successfully renamed to **${newProjectId}**.`);
+
+    } catch (error) {
+        alert("Error renaming project. See console for details.");
+        console.error("Error renaming document:", error);
+    }
+};
+
+/** Duplicates an existing project document to a new ID. */
+window.duplicateProject = async function(originalProjectId) {
+    if (!originalProjectId) return;
+
+    // 1. Get New Project ID from User
+    const newProjectId = prompt(`Duplicate Project "${originalProjectId}" as:`, originalProjectId + '_copy');
+
+    if (!newProjectId || newProjectId === originalProjectId) {
+        if (newProjectId) alert("Duplication canceled: The new name must be different from the original name.");
+        return; // User cancelled or name is the same
+    }
+
+    try {
+        // --- STEP 1: READ data from original document ---
+        const originalProjectRef = doc(db, PROJECTS_COLLECTION, originalProjectId);
+        const originalProjectSnapshot = await getDoc(originalProjectRef); // Assuming getDoc is available
+        
+        if (!originalProjectSnapshot.exists()) {
+            alert(`Error: Project "${originalProjectId}" not found in Firestore.`);
+            return;
+        }
+
+        const projectDataToCopy = originalProjectSnapshot.data();
+
+        // --- STEP 2: WRITE data to new document ---
+        const newProjectRef = doc(db, PROJECTS_COLLECTION, newProjectId);
+        await setDoc(newProjectRef, projectDataToCopy);
+        console.log(`Project successfully duplicated: "${newProjectId}"`);
+
+        // --- STEP 3: REFRESH the list ---
+        window.renderAllProjectsList();
+        
+        showModal('專案已複製', `Project **${originalProjectId}** successfully duplicated as **${newProjectId}**.`);
+
+    } catch (error) {
+        alert("Error duplicating project. See console for details.");
+        console.error("Error duplicating document:", error);
+    }
+};
+
+
+
+
+
+
+
+
 
         /** Executes the project switch and closes the list modal. */
         window.switchProjectAndCloseList = function(rawNewProjectId) {
@@ -1387,6 +1551,14 @@ function startRealtimeProjectListener() {
             }
         }
         
+
+
+
+
+
+
+
+
         // --- Page Management Functions (Existing) ---
 
         window.loadProjectFromLocalStorage=function() {
@@ -3564,9 +3736,9 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
         // If the user denies permission, or no mic is found/working.
         console.error("Microphone access failed:", error);
         if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
-            window.showModal("Microphone permission was denied. Please check your browser's site settings.", 'Error');
+            window.popBox("Microphone permission was denied. Please check your browser's site settings.", 'Error');
         } else {
-            window.showModal("Could not access a microphone device. Please check your connections.", 'Error');
+            window.popBox("Could not access a microphone device. Please check your connections.", 'Error');
         }
         return false;
     }
@@ -3582,7 +3754,7 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
     const micReady = await window.ensureMicrophoneControl();
     if (!micReady) {
         // Stop the function if access failed
-       window.showModal('Mic is not ready','error');
+       window.popBox('Mic is not ready','error');
         return; 
     }
 
@@ -3645,24 +3817,38 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
 	//alert('new---textarea---'+document.getElementById('quizData').innerText);
  
  
-        if (!theme) return;
+        if (!theme){ return;}
                 launchWrapper.style.display = 'none';
                appContainer.style.display = 'flex';
               dualGameContainer.style.display = 'none';
+
+        if (theme== 'none') {
+                launchWrapper.style.display = 'none';
+               appContainer.style.display = 'none';
+              dualGameContainer.style.display = 'none';
+
+            return;
+         }
+
         if (theme === 'flasher') {
               launchWrapper.style.display = '';
               appContainer.style.display = 'none';
+
               //dualGameContainer.style.display = 'none';
               //dualGameContainer.style.display = 'flex';
         }
         if (theme === 'dual') {
               launchWrapper.style.display = 'none';
               appContainer.style.display = 'none';
+
               //dualGameContainer.style.display = 'none';
                dualGameContainer.style.display = 'flex';
         }     
         if (theme === 'quiz') { 
-	       window.parsePsvAndLoadQuiz(document.getElementById('quizArea'));
+	       window.parsePsvAndLoadQuiz(editor.querySelector('#quizArea'));
+                launchWrapper.style.display = 'none';
+               appContainer.style.display = 'none';
+              dualGameContainer.style.display = 'none';
 		//return;
         }       
     }
@@ -3829,7 +4015,7 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
 
         const url = prompt("請輸入圖片的 URL 地址 (例如: https://placehold.co/50x50):");
         if (!url) {
-            window.showModal('圖片 URL 為空，已取消操作。', '取消');
+            window.popBox('圖片 URL 為空，已取消操作。', '取消');
             return;
         }
 
@@ -3916,11 +4102,11 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
 
             window.speechSynthesis.speak(utterance);
         } else {
-            window.showModal("您的瀏覽器不支持語音合成 (TTS) 功能。", "TTS 錯誤");
+            window.popBox("您的瀏覽器不支持語音合成 (TTS) 功能。", "TTS 錯誤");
         }
     };
 
-    window.showModal = function(content, title = '通知') {
+    window.popBox = function(content, title = '通知') {
         const modalTitle = document.getElementById('modalTitle');
         const modalBody = document.getElementById('modalBody');
         const modalOverlay = document.getElementById('modalOverlay');
@@ -3983,7 +4169,7 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
             const nextButton = quizArea.querySelector('#nextButton');
             if (nextButton) nextButton.classList.remove('hidden');
 
-            window.showModal('時間到！這題的答案是：' + window.convertHtmlToText(correctText), '自動跳過');
+            window.popBox('時間到！這題的答案是：' + window.convertHtmlToText(correctText), '自動跳過');
         }
     };
        
@@ -4057,7 +4243,7 @@ document.getElementById('quizArea').querySelector('#quizData').innerText=quizDat
             // 修正：更新錯誤訊息以反映 1-4 索引
             let message = '數據格式錯誤。請檢查每行是否有 **7 個欄位**，並以 **`|` 垂直線** 分隔，且正確答案索引在 **1-4 範圍內 (1=A, 4=D)**。';
             if (errorLine !== -1) { message = '**第 ' + errorLine + ' 行** 數據欄位數不正確或答案索引無效。請修正該行。'; }
-            window.showModal(message, '解析錯誤');
+            window.popBox(message, '解析錯誤');
             return;
         }
 //alert(JSON.stringify(validQuestions));
@@ -4279,12 +4465,12 @@ document.getElementById('quizArea').querySelector('#quizData').innerText=quizDat
             if (success) {
                  window.showModal('測驗數據（垂直線分隔格式）已複製到剪貼簿！', '複製成功');
             } else {
-                 window.showModal('無法自動複製，請手動選取並複製內容。', '複製失敗');
+                 window.popBox('無法自動複製，請手動選取並複製內容。', '複製失敗');
             }
 
         } catch (err) {
             console.error('Failed to copy text: ', err);
-            window.showModal('無法自動複製，請手動選取並複製內容。', '複製失敗');
+            window.popBox('無法自動複製，請手動選取並複製內容。', '複製失敗');
         }
 document.getElementById('quizDataSource').value=rawHtmlText;
     };
@@ -4338,12 +4524,12 @@ document.getElementById('quizDataSource').value=rawHtmlText;
             if (success) {
                  window.showModal('測驗數據（垂直線分隔格式）已複製到剪貼簿！', '複製成功');
             } else {
-                 window.showModal('無法自動複製，請手動選取並複製內容。', '複製失敗');
+                 window.popBox('無法自動複製，請手動選取並複製內容。', '複製失敗');
             }
 
         } catch (err) {
             console.error('Failed to copy text: ', err);
-            window.showModal('無法自動複製，請手動選取並複製內容。', '複製失敗');
+            window.popBox('無法自動複製，請手動選取並複製內容。', '複製失敗');
         }
     };
 //======================== 切水果遊戲開始===========================================================================
@@ -4647,8 +4833,8 @@ document.getElementById('quizDataSource').value=rawHtmlText;
 
            if(QS_currentQuestionIndex == QS_quizData.length){
                // alert('pass');
-             //window.showModal(QS_currentQuestionIndex+'---'+QS_quizData.length,'');
-           window.showModal(`恭喜你！你完成了所有 ${QS_quizData.length} 個問題。最終分數：${QS_gameScore}。`,'');
+             //window.popBox(QS_currentQuestionIndex+'---'+QS_quizData.length,'');
+           window.popBox(`恭喜你！你完成了所有 ${QS_quizData.length} 個問題。最終分數：${QS_gameScore}。`,'');
                 //quizMessageDetail.textContent = `恭喜你！你完成了所有 ${QS_quizData.length} 個問題。最終分數：${QS_gameScore}。`; 
                // gameOver(allQuestionsCompleted,false); 
            }
@@ -6290,8 +6476,8 @@ document.getElementById('quizDataSource').value=rawHtmlText;
             // Add the click handler to the start button
             startGameButton.addEventListener('click', () => {
                 // 1. Hide the button
-                startGameButton.style.display = 'none';
-                
+                  //startGameButton.style.display = 'none';
+                  startGameButton.style.display = '';              
                 // 2. Show the game container (and the canvas inside it)
                 dualGameContainer.style.display = 'flex';
                 
@@ -6315,47 +6501,38 @@ document.getElementById('quizDataSource').value=rawHtmlText;
 
 
     // 全域變數用於儲存號碼狀態
-    const MAX_NUMBER = 30; 
+    let MAX_NUMBER = 30; 
     let availableNumbers = [];
     let pickedNumbers = [];
     let isFlipping = false; // Prevent multiple clicks during animation
-
+ 
     // =========================================================================
     // MODAL AND SPEECH FUNCTIONS (Used for non-alert communication)
     // =========================================================================
 
-    window.showModal = function(content, title = '通知') {
+    window.popMSG = function(content, title = '通知') {
+
         document.getElementById('modalTitle').textContent = title;
         document.getElementById('modalBody').textContent = content;
         document.getElementById('modalOverlay').classList.remove('hidden');
     }
 
-    window.speakText = function(text) {
-        if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'zh-TW'; 
-            
-            const voices = speechSynthesis.getVoices();
-            const chineseVoice = voices.find(voice => voice.lang === 'zh-TW') || voices.find(voice => voice.lang.startsWith('zh'));
-            if (chineseVoice) {
-                utterance.voice = chineseVoice;
-            }
 
-            speechSynthesis.speak(utterance);
-        } else {
-            console.warn("瀏覽器不支援語音合成。");
-        }
-    }
 
     // =========================================================================
     // PICKER LOGIC
     // =========================================================================
 
     window.initializeNumbers = function() {
+	let r=parseInt(document.getElementById('maxClassNumber').value);
+        	 MAX_NUMBER=r;
+            showModal(r,'');
         availableNumbers = [];
         pickedNumbers = [];
-        for (let i = 0; i < MAX_NUMBER; i++) {
+
+        for (let i = 1; i <= MAX_NUMBER; i++) {
             availableNumbers.push(i);
+
         }
         updateDisplay();
         document.getElementById('pickBtn').disabled = false;
@@ -6376,7 +6553,7 @@ document.getElementById('quizDataSource').value=rawHtmlText;
             .join('');
 
         countElement.textContent = pickedNumbers.length;
-
+        	MAX_NUMBER=parseInt(document.getElementById('maxClassNumber').value);
         if (pickedNumbers.length === MAX_NUMBER) {
             document.getElementById('pickBtn').disabled = true;
             document.getElementById('pickBtn').textContent = '號碼已抽完';
@@ -6387,7 +6564,7 @@ document.getElementById('quizDataSource').value=rawHtmlText;
     window.pickNumber = function() {
         if (availableNumbers.length === 0 || isFlipping) {
             if (availableNumbers.length === 0) {
-                window.showModal('所有號碼已抽出。請重置號碼池。', '提示');
+                window.popMSG('所有號碼已抽出。請重置號碼池。', '提示');
                 window.speakText('所有號碼已抽出。');
             }
             return;
@@ -6426,7 +6603,7 @@ document.getElementById('quizDataSource').value=rawHtmlText;
         // 4. Wait for animation, then show modal and speak
         setTimeout(() => {
             window.speakText(speechText);
-            window.showModal(drawNumber + ' 號', '抽中的是');
+            //window.popMSG(drawNumber + ' 號', '抽中的是');
             updateDisplay();
             isFlipping = false;
         }, 850); // Delay slightly longer than CSS transition time (0.8s)
@@ -6435,7 +6612,7 @@ document.getElementById('quizDataSource').value=rawHtmlText;
     window.resetPicker = function() {
         window.initializeNumbers();
         document.getElementById('flipper').classList.remove('is-flipped');
-        window.showModal('號碼池已重置，現在可以重新抽籤了！', '重置成功');
+        window.popMSG('號碼池已重置，現在可以重新抽籤了！', '重置成功');
     }
 
     document.addEventListener('DOMContentLoaded', window.initializeNumbers);
@@ -6889,9 +7066,9 @@ document.getElementById('tmBar').style.display='none';
        activeItem.style.transform='rotateY(0deg)';
      }else{
        activeItem.style.transform='rotateY(180deg)';
-       showModal(activeItem.style.transform,'');
+       popBox(activeItem.style.transform,'');
      }
-       showModal(activeItem.style.transform,'');
+       popBox(activeItem.style.transform,'');
     }
 
 //全螢幕切換
