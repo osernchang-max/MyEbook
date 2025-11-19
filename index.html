@@ -3143,8 +3143,8 @@ window.rotateElement = function(degrees) {
 
      window.handleGestureStart=function(e) {
             // 只有在 'Select/Move' 模式下，且沒有選中任何元素時，才啟用滑動
-            if (currentTool !== null || activeItem !== null) return;
-            
+            if (currentTool !== null || (activeItem !== null && !activeItem.classList.contains('locked'))) return;
+            // if (currentTool !== null || activeItem !== null) return;          
             // 確保只處理單點觸摸或滑鼠點擊
             const clientX = e.clientX || e.touches[0].clientX;
             const clientY = e.clientY || e.touches[0].clientY;
@@ -3257,7 +3257,7 @@ window.pushHistoryState=function() {
 
 
 
-
+        //---------------------------------------Scratch-like Movement 
         window.initElements= function() {
             const elements = editor.querySelectorAll('.draggable-image, .floating-div');
             elements.forEach(el => initElement(el));
