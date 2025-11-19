@@ -1,7 +1,7 @@
 ﻿<html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=0.8">
     <title>💡MyEbook</title>
        <script src="https://cdn.tailwindcss.com"></script> 
     <script src="./Canvas_files/saved_resource"></script>
@@ -193,6 +193,52 @@ pointer-events: auto;
             color: #1f2937;
         }
         /* --- END 3D FLIP CSS --- */
+        .dice {
+            /* CRITICAL FIX for touchstart reliability */
+            touch-action: none; 
+            
+            width: 120px;
+            height: 120px;
+            
+            /* Visual styling for the dice */
+            background-color: #f7f7f7;
+            border: 8px solid #3b82f6; /* Blue border */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            
+            /* Grid layout for the dots */
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 12px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            background-color: #1f2937; /* Dark gray dot */
+            border-radius: 50%;
+            place-self: center; /* Center dot in its grid cell */
+            transition: opacity 0.15s;
+        }
+
+        /* Active state for visual feedback */
+        .dice:active {
+            transform: scale(0.95);
+        }
+
+        /* Grid positioning classes for the 9 dots (D1 to D9) */
+        .d1 { grid-area: 1 / 1; } /* Top Left */
+        .d2 { grid-area: 1 / 2; } /* Top Center */
+        .d3 { grid-area: 1 / 3; } /* Top Right */
+        .d4 { grid-area: 2 / 1; } /* Middle Left */
+        .d5 { grid-area: 2 / 2; } /* Absolute Center */
+        .d6 { grid-area: 2 / 3; } /* Middle Right */
+        .d7 { grid-area: 3 / 1; } /* Bottom Left */
+        .d8 { grid-area: 3 / 2; } /* Bottom Center */
+        .d9 { grid-area: 3 / 3; } /* Bottom Right */
     </style>
 </head>
 <body onclick="window.dropmenu();window.expand();"  ontouchstart="window.dropmenu();window.expand();" >
@@ -578,16 +624,16 @@ const transformValue = computedStyle.getPropertyValue('transform');
         </div>
     </div>
     
-    <div id="project-list-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-        <div style="background: white; width: 800px; margin: 50px auto; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-            <h2 style="margin-top: 0;">Select Project</h2>
+   <div id="project-list-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="background: white; width: 800px; height:90%;margin: 50px auto; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <h2 style="margin-top: 0;">專案選單</h2>
             
-            輸入專案名稱:<input type="text" id="new-project-id-input" placeholder="Enter new project ID or select below" style="width: 80%; padding: 10px; margin-bottom: 15px; box-sizing: border-box;border:2px dotted gray">
+            輸入專案名稱:<input type="text" id="new-project-id-input" placeholder="Enter new project ID or select below" style="width: 50%; padding: 10px; margin-bottom: 15px; box-sizing: border-box;border:2px dotted gray">
             <button onclick="window.switchProjectAndCloseList(document.getElementById('new-project-id-input').value)" style="padding: 8px 15px; margin-right: 10px;background-color:cyan;border-radius:8px;border:1px solid black">新增專案</button>
-            <button onclick="document.getElementById('project-list-modal').style.display = 'none';background-color:pink;border-radius:8px;border:1px solid black">Cancel</button>
+            <button onclick="document.getElementById('project-list-modal').style.display = 'none';" style="padding: 8px 15px; margin-right: 10px;background-color:pink;border-radius:8px;border:1px solid black">Cancel</button>
 
             <hr style="margin: 15px 0;">
-            <div id="all-projects-list" style="max-height: 400px; overflow-y: auto;">
+            <div id="all-projects-list" style="max-height: 350px; overflow-y: auto;">
                 </div>
         </div>
     </div>
@@ -605,12 +651,206 @@ const transformValue = computedStyle.getPropertyValue('transform');
          
     </div>
 
+<script>
+        const diceElement = document.getElementById('dice');
+        const resultElement = document.getElementById('rollResult');
 
+        // Dot mapping: Index in the array corresponds to the roll number (1-6).
+        // The value is an array of which dot IDs (1-9) should be visible (opacity: 1).
+        // Note: Dots D2, D4, D6, D8 (Top/Bottom/Left/Right centers) are only used for the 6 face.
+        const dotVisibilityMap = {
+            1: [5], // Center only
+            2: [1, 9], // Top-Left, Bottom-Right
+            3: [1, 5, 9], // Top-Left, Center, Bottom-Right
+            4: [1, 3, 7, 9], // All corners
+            5: [1, 3, 5, 7, 9], // All corners and center
+            6: [1, 3, 4, 6, 7, 9] // All corners and side centers
+        };
 
+        /**
+         * Hides all dots on the dice face.
+         */
+        function hideAllDots() {
+            for (let i = 1; i <= 9; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                // Use opacity to hide/show, making it smooth
+                if (dot) dot.style.opacity = '0';
+            }
+        }
 
+        /**
+         * Renders the dice face based on the roll result.
+         * @param {number} roll The number rolled (1-6).
+         */
+        function renderDiceFace(roll) {
+            const visibleDots = dotVisibilityMap[roll] || [];
+            
+            // 1. Hide all dots first
+            hideAllDots();
 
+            // 2. Show only the necessary dots for the current roll
+            visibleDots.forEach(dotId => {
+                const dot = document.getElementById(`dot-${dotId}`);
+                if (dot) dot.style.opacity = '1';
+            });
+        }
 
+        /**
+         * The main function triggered by touchstart or click.
+         * @param {Event} event The touch or click event.
+         */
+        window.rollDice = function(event) {
+            // Optional: Preventing default behavior on touchstart is handled by touch-action: none in CSS.
+            // If you needed specific touch handling (like preventing scrolling only during a drag),
+            // you might put event.preventDefault() here, but for a simple tap, it's often unnecessary
+            // and can cause the click translation issue you saw before.
+            
+            // 1. Generate a random number between 1 and 6
+            const newRoll = Math.floor(Math.random() * 6) + 1;
 
+            // 2. Update the visual face
+            renderDiceFace(newRoll);
+
+            // 3. Update the result text
+            resultElement.textContent = `Roll: ${newRoll}`;
+
+            console.log(`Dice rolled: ${newRoll}`);
+
+            // If the event is touchstart, we want to allow the subsequent click event
+            // to fire, but since we're handling the action here, it's safe.
+            // However, if you add more complex touch logic later, you might need to
+            // re-evaluate where you use event.preventDefault().
+        }
+
+        // Initialize the dice to show '1' when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDiceFace(1);
+        });
+</script>
+<textarea id="diceSampleX" style="display:none" >
+<div class="draggable-image">
+<div class="dice-container">
+    <style>
+        .dice {
+            /* CRITICAL: Allows touchstart/click without interference from scrolling/dragging */
+            touch-action: none; 
+            width: 80px;
+            height: 80px;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 10px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 8px;
+            cursor: pointer;
+            user-select: none;
+            margin: 20px auto;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            background: #d90429; /* Red dot */
+            border-radius: 50%;
+            place-self: center;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+        .d1 { grid-area: 1 / 1; }
+        .d2 { grid-area: 1 / 3; }
+        .d3 { grid-area: 3 / 1; }
+        .d4 { grid-area: 3 / 3; }
+        .d5 { grid-area: 2 / 2; }
+        .d6 { grid-area: 1 / 2; }
+        .d7 { grid-area: 3 / 2; }
+        /* Dots for the 6 face (4 and 6 are corners, need 2 extra here) */
+        .d8 { grid-area: 2 / 1; }
+        .d9 { grid-area: 2 / 3; }
+    </style>
+
+    <!-- The Component with the required class and event handlers -->
+    <div id="dice" 
+         class="draggable-image dice" 
+         onclick="roll(this)" 
+         ontouchstart="roll(this)">
+        
+        <!-- Only 5 main dots are strictly needed for 1-5, but 9 makes all faces possible via the grid -->
+        <div class="dot d1" id="d-1"></div>
+        <div class="dot d2" id="d-2"></div>
+        <div class="dot d3" id="d-3"></div>
+        <div class="dot d4" id="d-4"></div>
+        <div class="dot d5" id="d-5"></div>
+        <div class="dot d6" id="d-6"></div>
+        <div class="dot d7" id="d-7"></div>
+        <div class="dot d8" id="d-8"></div>
+        <div class="dot d9" id="d-9"></div>
+    </div>
+
+    <script>
+        const faceMap = {
+            1: [5], // Center
+            2: [1, 4], // Top-Left, Bottom-Right
+            3: [1, 5, 4], // Top-Left, Center, Bottom-Right
+            4: [1, 2, 3, 4], // All corners
+            5: [1, 2, 3, 4, 5], // All corners and center
+            6: [1, 2, 3, 4, 8, 9] // Corners and the middle-side dots (d8, d9)
+        };
+
+        function showFace(roll, dice) {
+            // Find all dot elements within this specific dice instance
+            const dots = dice.querySelectorAll('.dot');
+            dots.forEach(dot => dot.style.opacity = '0');
+
+            const visibleDotIds = faceMap[roll] || [];
+            visibleDotIds.forEach(dotIndex => {
+                // Since the class list is 'd1', 'd2', etc., we select based on the index.
+                const dot = dice.querySelector(`.d${dotIndex}`);
+                if (dot) dot.style.opacity = '1';
+            });
+        }
+
+        window.roll = function(diceElement) {
+            const newRoll = Math.floor(Math.random() * 6) + 1;
+            showFace(newRoll, diceElement);
+            console.log("Rolled: " + newRoll);
+        }
+
+        // Initialize to show 1 on load
+        document.addEventListener('DOMContentLoaded', () => {
+             // Find the dice element and initialize the face
+            const initialDice = document.querySelector('.dice');
+            if (initialDice) {
+                showFace(1, initialDice);
+            }
+        });
+    </script>
+</div>
+<div class="resizer"></div>
+</div>
+</textarea>
+
+<textarea id="diceSample" style="display:none">
+<div class="draggable-image" style="z-index:50">
+    <div id="dice" 
+         class="dice rounded-xl"
+         onclick="rollDice(event)"
+         ontouchstart="rollDice(event)">
+
+        <!-- 9 Dot Elements in a 3x3 Grid -->
+        <div class="dot d1" id="dot-1"></div>
+        <div class="dot d2" id="dot-2"></div>
+        <div class="dot d3" id="dot-3"></div>
+        <div class="dot d4" id="dot-4"></div>
+        <div class="dot d5" id="dot-5"></div>
+        <div class="dot d6" id="dot-6"></div>
+        <div class="dot d7" id="dot-7"></div>
+        <div class="dot d8" id="dot-8"></div>
+        <div class="dot d9" id="dot-9"></div>
+    </div>
+<div class="resizer" ></div>
+</div>
+</textarea>
 
 
 
@@ -2512,10 +2752,16 @@ window.swapImg=function(targetElement){
         }
     }
 
-
-
-
  window.insertDice=function(){
+
+	 const dicecode=document.getElementById('diceSample').innerText;
+	document.getElementById('temp').value=dicecode;
+	window.pasteClone();
+
+}
+
+
+ window.OLDinsertDice=function(){
 
 	 const dicecode=`<div class="draggable-image " style="background-image: url('https://www.emojiall.com/images/120/samsung/2685.png'); background-size: cover; z-index: 10; left: 439px; top: 161px; width: 76px; height: 72px; border-radius: 8px;padding:0px;margin:0px;box-shadow:2px 2px  gray" id="" contenteditable="true" data-listener-added_4520328c="true"><span style="" contenteditable="true">AAAA<img src="https://www.emojiall.com/images/120/samsung/2681.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2682.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2683.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2684.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2685.png" style="height: auto; width: 200px;" ondblclick="dealme(this);" alt="按兩下調整尺寸"></span><img src="https://www.emojiall.com/images/120/samsung/2680.png" style="width: 200px;" alt="按兩下調整尺寸"><div class="resizer"></div></div>`;
 
