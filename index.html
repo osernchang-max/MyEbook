@@ -1,5 +1,4 @@
-﻿
-<html lang="en">
+﻿<html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -196,7 +195,7 @@ pointer-events: auto;
         /* --- END 3D FLIP CSS --- */
     </style>
 </head>
-<body onclick="window.dropmenu();window.expand();" onmousestart="window.dropmenu();window.expand()" >
+<body onclick="window.dropmenu();window.expand();"  ontouchstart="window.dropmenu();window.expand();" >
 
      <div id="screen" class="p-0 bg-white shadow-lg rounded-xl" style="border:2px double gray "><!-- 全螢幕範圍開始 -->
 
@@ -581,9 +580,9 @@ const transformValue = computedStyle.getPropertyValue('transform');
     
     <div id="project-list-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
         <div style="background: white; width: 800px; margin: 50px auto; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-            <h2 style="margin-top: 0;">專案選單</h2>
+            <h2 style="margin-top: 0;">Select Project</h2>
             
-            &#128161;輸入專案名稱:<input type="text" id="new-project-id-input" placeholder="Enter new project ID or select below" style="width: 50%; padding: 10px; margin-bottom: 15px; box-sizing: border-box;border:2px dotted gray">
+            輸入專案名稱:<input type="text" id="new-project-id-input" placeholder="Enter new project ID or select below" style="width: 80%; padding: 10px; margin-bottom: 15px; box-sizing: border-box;border:2px dotted gray">
             <button onclick="window.switchProjectAndCloseList(document.getElementById('new-project-id-input').value)" style="padding: 8px 15px; margin-right: 10px;background-color:cyan;border-radius:8px;border:1px solid black">新增專案</button>
             <button onclick="document.getElementById('project-list-modal').style.display = 'none';background-color:pink;border-radius:8px;border:1px solid black">Cancel</button>
 
@@ -948,7 +947,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
 		<button onclick="window.PicNav()">	<font size="6" title=="閃示卡" >🖼️</font></button>       <button onclick="window.textSlider()"><font size="6" title=="動畫" >📽️</font></button>
 <button onclick="window.pickNumber();" style="font-size:12px;border:2px solid gray;border-radius:12px;padding:2px"  id="pickBtn"> 🙋‍♂️</button>
 <button onclick="document.getElementById('picker-wrapper').classList.remove('hidden');" style="font-size:12px;border:2px solid gray;border-radius:12px;padding:2px"  id="rstBtn"> ⚙</button><button onclick="window.insertDice();" style="font-size:25px" > 🎲</button>
-<button onclick="alert('wtf');alert(document.getElementById('htmlPageCode').value);window.restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
+<button onclick="window.restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
 <button onclick="window.dartMode();"  id="dartModeBtn" title="遊戲模式" style="font-size:20px" >🎯on</button>
 
 
@@ -2315,8 +2314,7 @@ window.addDivWithImageBackgroundElement = function() {
 		         });
                 }
 	}else{
-            //if(event.srcElement.classList.contains('dice')){
-	       activeItem.getElementsByTagName("span")[0].style.display='none';
+	activeItem.getElementsByTagName("span")[0].style.display='none';
 		activeItem.setAttribute('contentEditable','false');
 
 	        if(imgpool){
@@ -2328,7 +2326,6 @@ window.addDivWithImageBackgroundElement = function() {
 
 	
 		window.swapImg(activeItem);
-		//}
 
 	}//end if design mode
 
@@ -2520,7 +2517,7 @@ window.swapImg=function(targetElement){
 
  window.insertDice=function(){
 
-	 const dicecode=`<div class="draggable-image dice" style="background-image: url('https://www.emojiall.com/images/120/samsung/2685.png'); background-size: cover; z-index: 10; left: 439px; top: 161px; width: 76px; height: 72px; border-radius: 8px;padding:0px;margin:0px;box-shadow:2px 2px  gray" id="" contenteditable="true" data-listener-added_4520328c="true"><span style="" contenteditable="true">AAAA<img src="https://www.emojiall.com/images/120/samsung/2681.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2682.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2683.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2684.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2685.png" style="height: auto; width: 200px;" ondblclick="dealme(this);" alt="按兩下調整尺寸"></span><img src="https://www.emojiall.com/images/120/samsung/2680.png" style="width: 200px;" alt="按兩下調整尺寸"><div class="resizer"></div></div>`;
+	 const dicecode=`<div class="draggable-image " style="background-image: url('https://www.emojiall.com/images/120/samsung/2685.png'); background-size: cover; z-index: 10; left: 439px; top: 161px; width: 76px; height: 72px; border-radius: 8px;padding:0px;margin:0px;box-shadow:2px 2px  gray" id="" contenteditable="true" data-listener-added_4520328c="true"><span style="" contenteditable="true">AAAA<img src="https://www.emojiall.com/images/120/samsung/2681.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2682.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2683.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2684.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2685.png" style="height: auto; width: 200px;" ondblclick="dealme(this);" alt="按兩下調整尺寸"></span><img src="https://www.emojiall.com/images/120/samsung/2680.png" style="width: 200px;" alt="按兩下調整尺寸"><div class="resizer"></div></div>`;
 
 	document.getElementById('temp').value=dicecode;
 	window.pasteClone();
@@ -3094,7 +3091,7 @@ window.rotateElement = function(degrees) {
 
     const xurlInput = document.getElementById('Xurl');
     const bgiconImg = document.getElementById('bgicon');
-    
+    let myinfo;
     // Set the input field value
     xurlInput.value = imageUrl;
 
@@ -3123,7 +3120,7 @@ window.rotateElement = function(degrees) {
 			    let mytext=	document.getElementById('gameInfo').innerText;
 				myinfo=mytext.split('*');
 				document.getElementById('gameInfo').innerHTML=myinfo[0]+'*<b>'+window.randomItem()+'</b>*'+myinfo[2];
-                                window.speakText(document.getElementById('gameInfo').innerText);				
+                                window.speakText(document.getElementById('gameInfo').innerText.replace('*',''));				
 			  }else{
                            window.speakText('find '+window.randomItem());
 			  }
@@ -3143,8 +3140,8 @@ window.rotateElement = function(degrees) {
 
      window.handleGestureStart=function(e) {
             // 只有在 'Select/Move' 模式下，且沒有選中任何元素時，才啟用滑動
-            if (currentTool !== null || (activeItem !== null && !activeItem.classList.contains('locked'))) return;
-            // if (currentTool !== null || activeItem !== null) return;          
+            if (currentTool !== null || activeItem !== null) return;
+            
             // 確保只處理單點觸摸或滑鼠點擊
             const clientX = e.clientX || e.touches[0].clientX;
             const clientY = e.clientY || e.touches[0].clientY;
@@ -3257,7 +3254,7 @@ window.pushHistoryState=function() {
 
 
 
-        //---------------------------------------Scratch-like Movement 
+
         window.initElements= function() {
             const elements = editor.querySelectorAll('.draggable-image, .floating-div');
             elements.forEach(el => initElement(el));
