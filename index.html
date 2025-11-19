@@ -1,4 +1,5 @@
-﻿<html lang="en">
+﻿
+<html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,12 +13,17 @@
         body {  
               font-family:  'cwTeXYen','Inter', sans-serif;
             background-color: #f7f7f7;
-
+margin: 0;
+    padding: 0;
   
          }
         /* Editor Area */
-        #editor-wrapper { display: flex; flex-grow: 1; }
-        #editor { height: 100%; width: 100%; border: 2px solid #e5e7eb; background-color: #ffffff; position: relative; overflow: hidden; touch-action: none; cursor: default; }
+        #editor-wrapper { display: flex; flex-grow: 1; margin: 0;
+    padding: 0;
+    border: none;
+    /* Also ensure it is positioned relative for context */
+    position: relative;}
+        #editor { height: 100%; width: 100%; border: 0px solid #e5e7eb; background-color: #ffffff; position: relative; overflow: hidden; touch-action: none; cursor: default;transform-origin: top left; }
         
         /* Drawing Canvas */
         #drawingCanvas { position: absolute; top: 0; left: 0; z-index: 15; pointer-events: none; }
@@ -190,7 +196,7 @@ pointer-events: auto;
         /* --- END 3D FLIP CSS --- */
     </style>
 </head>
-<body onclick="window.dropmenu();window.expand();" >
+<body onclick="window.dropmenu();window.expand();" onmousestart="window.dropmenu();window.expand()" >
 
      <div id="screen" class="p-0 bg-white shadow-lg rounded-xl" style="border:2px double gray "><!-- 全螢幕範圍開始 -->
 
@@ -460,22 +466,83 @@ pointer-events: auto;
          </div>
         <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
 <script>
-  window.zoomout=function(zoomV){
-         let z=document.getElementById('zoom').value *10; 
+    /**
+     * Sets the zoom level on the document body using CSS transform: scale().
+     * @param {number|null} [zoomV=null] - Optional zoom percentage (e.g., 90, 100).
+     */
+    window.setZoom = function(zoomV = null) {
+        let scaleFactor; // The unitless float (e.g., 0.9, 1.0)
         
-   if(!zoomV){
-       //editor.style.zoom = z+"%";
-      
-      document.body.style.zoom = z+"%";
-    }else{
-     document.body.style.zoom = zoomV+"%";
-    }
+        // 1. Determine the target zoom value
+        if (zoomV !== null) {
+            // Use the value passed from the buttons (e.g., 90, 100)
+            scaleFactor = zoomV / 100; 
+        } else {
+            // Use the value from the range input (e.g., 5.0 to 20.0, representing 50% to 200%)
+            // Assuming your range values (0.5 to 20) are meant to be multiplied by 10 to get a percentage.
+            const rangeValue = parseFloat(document.getElementById('zoom').value);
+            // Example: 10 * 10 = 100%. Scale factor = 1.0
+            scaleFactor = rangeValue / 10; 
+        }
 
-}
+        // 2. Apply the scaling and origin to the body
+        const bodyStyle = document.getElementById('editor').style;
+
+        // Set the transform for scaling
+        bodyStyle.transform = `scale(${scaleFactor})`;
+        
+        // Ensure scaling originates from the top left to align with scroll management
+        bodyStyle.transformOrigin = 'top left'; 
+        
+        // Optional: Resetting the zoom property since we prefer transform: scale
+        bodyStyle.zoom = '100%'; 
+
+        // Important: You'll likely need to adjust the scroll position here 
+        // to implement the "panning" effect you mentioned earlier.
+        // For now, this just handles the visual zoom.
+// Use this only if the style is NOT set inline (less common for dynamic zooming)
+const computedStyle = window.getComputedStyle(editor);
+const transformValue = computedStyle.getPropertyValue('transform');
+
+// transformValue will be a matrix string, e.g., "matrix(1.5, 0, 0, 1.5, 0, 0)"
+// You'd need a different regex to parse the scale factor from the matrix string.
+// Stick to setting and reading the inline style property (editor.style.transform) for simplicity.
+    };
 </script>
-           🔍<input type="range" id="zoom" min="1" max="20" value="10" title="Zoom Scale" class="w-20" onchange="zoomout();" >
-<button onclick="window.zoomout(90)" class="px-1 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition duration-150 shadow-md">90%</button>
-           <button onclick="window.zoomout(100)" class="px-1 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition duration-150 shadow-md">100%</button>
+
+
+
+<div>
+    🔍
+<button 
+    id="pan-toggle-btn" 
+    onclick="togglePanMode()" 
+    class="px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition duration-150 shadow-md">
+    Toggle Pan Mode
+</button>
+    <input 
+        type="range" 
+        id="zoom" 
+        min="5" 
+        max="15" 
+        step="1" 
+        value="10" 
+        title="Zoom Scale" 
+        class="w-20" 
+        oninput="setZoom();" 
+    >
+    
+    <button 
+        onclick="window.setZoom(90)" 
+        class="px-1 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition duration-150 shadow-md">
+        90%
+    </button>
+    <button 
+        onclick="window.setZoom(100)" 
+        class="px-1 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition duration-150 shadow-md">
+        100%
+    </button>
+</div>
 <!--
             <button onclick="window.toggleEditMode();window.toggleEditable();">Toggle Edit</button>
             <button onclick="document.execCommand('bold', false, null)">B</button>
@@ -503,8 +570,8 @@ pointer-events: auto;
                 </ul>
         </div>
         
-        <div id="editor-wrapper"> 
-            <div id="editor"  contenteditable="true">
+        <div id="editor-wrapper" id="editor-container" style="overflow: auto;"> 
+            <div id="editor"  contenteditable="true" style="transform: scale(X); transform-origin: top left;">
 <canvas id="drawingCanvas" ></canvas>
                 Loading project data from Firestore...            
             </div> 
@@ -513,12 +580,12 @@ pointer-events: auto;
     </div>
     
     <div id="project-list-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-        <div style="background: white; width: 400px; margin: 50px auto; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-            <h3 style="margin-top: 0;">Select Project</h3>
+        <div style="background: white; width: 800px; margin: 50px auto; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <h2 style="margin-top: 0;">專案選單</h2>
             
-            <input type="text" id="new-project-id-input" placeholder="Enter new project ID or select below" style="width: 100%; padding: 10px; margin-bottom: 15px; box-sizing: border-box;">
-            <button onclick="window.switchProjectAndCloseList(document.getElementById('new-project-id-input').value)" style="padding: 8px 15px; margin-right: 10px;">Load/Create New</button>
-            <button onclick="document.getElementById('project-list-modal').style.display = 'none'">Cancel</button>
+            &#128161;輸入專案名稱:<input type="text" id="new-project-id-input" placeholder="Enter new project ID or select below" style="width: 50%; padding: 10px; margin-bottom: 15px; box-sizing: border-box;border:2px dotted gray">
+            <button onclick="window.switchProjectAndCloseList(document.getElementById('new-project-id-input').value)" style="padding: 8px 15px; margin-right: 10px;background-color:cyan;border-radius:8px;border:1px solid black">新增專案</button>
+            <button onclick="document.getElementById('project-list-modal').style.display = 'none';background-color:pink;border-radius:8px;border:1px solid black">Cancel</button>
 
             <hr style="margin: 15px 0;">
             <div id="all-projects-list" style="max-height: 400px; overflow-y: auto;">
@@ -1045,7 +1112,12 @@ pointer-events: auto;
          const editToggleBtn = document.getElementById('editToggleBtn');
         const lockToggleBtn = document.getElementById('lockToggleBtn');
 
+	let isPanModeActive = false;
+	 
+	 
 
+	// Get the element that acts as the scroll container (usually the body)
+	const scrollContainer = document.body;
 
 
 // --- NEW: Gesture State Variables ---
@@ -2243,7 +2315,8 @@ window.addDivWithImageBackgroundElement = function() {
 		         });
                 }
 	}else{
-	activeItem.getElementsByTagName("span")[0].style.display='none';
+            //if(event.srcElement.classList.contains('dice')){
+	       activeItem.getElementsByTagName("span")[0].style.display='none';
 		activeItem.setAttribute('contentEditable','false');
 
 	        if(imgpool){
@@ -2255,6 +2328,7 @@ window.addDivWithImageBackgroundElement = function() {
 
 	
 		window.swapImg(activeItem);
+		//}
 
 	}//end if design mode
 
@@ -2446,7 +2520,7 @@ window.swapImg=function(targetElement){
 
  window.insertDice=function(){
 
-	 const dicecode=`<div class="draggable-image " style="background-image: url('https://www.emojiall.com/images/120/samsung/2685.png'); background-size: cover; z-index: 10; left: 439px; top: 161px; width: 76px; height: 72px; border-radius: 8px;padding:0px;margin:0px;box-shadow:2px 2px  gray" id="" contenteditable="true" data-listener-added_4520328c="true"><span style="" contenteditable="true">AAAA<img src="https://www.emojiall.com/images/120/samsung/2681.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2682.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2683.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2684.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2685.png" style="height: auto; width: 200px;" ondblclick="dealme(this);" alt="按兩下調整尺寸"></span><img src="https://www.emojiall.com/images/120/samsung/2680.png" style="width: 200px;" alt="按兩下調整尺寸"><div class="resizer"></div></div>`;
+	 const dicecode=`<div class="draggable-image dice" style="background-image: url('https://www.emojiall.com/images/120/samsung/2685.png'); background-size: cover; z-index: 10; left: 439px; top: 161px; width: 76px; height: 72px; border-radius: 8px;padding:0px;margin:0px;box-shadow:2px 2px  gray" id="" contenteditable="true" data-listener-added_4520328c="true"><span style="" contenteditable="true">AAAA<img src="https://www.emojiall.com/images/120/samsung/2681.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2682.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2683.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2684.png" style="height: auto; width: 200px;" ondblclick="window.dealme(this);" alt="按兩下調整尺寸"><img src="https://www.emojiall.com/images/120/samsung/2685.png" style="height: auto; width: 200px;" ondblclick="dealme(this);" alt="按兩下調整尺寸"></span><img src="https://www.emojiall.com/images/120/samsung/2680.png" style="width: 200px;" alt="按兩下調整尺寸"><div class="resizer"></div></div>`;
 
 	document.getElementById('temp').value=dicecode;
 	window.pasteClone();
@@ -7071,7 +7145,7 @@ document.getElementById('tmBar').style.display='none';
        popBox(activeItem.style.transform,'');
     }
 
-//全螢幕切換
+//========================================================全螢幕相關處理================[involves draw(e)]======================================
 let isFullScreen =false;
 
  window.FullScreen=function(){
@@ -7102,6 +7176,177 @@ element.requestFullscreen()
 
     }
 }
+
+
+function panEditor(container, editor, deltaX, deltaY, zoomFactor) {
+  // 1. Convert the pan amount (delta) from *screen pixels* to *editor-content pixels*.
+  // The actual scroll distance needs to be adjusted by the inverse of the zoom factor.
+  const scrollDeltaX = deltaX / zoomFactor;
+  const scrollDeltaY = deltaY / zoomFactor;
+
+  // 2. Apply the change to the container's scroll position.
+  container.scrollLeft += scrollDeltaX;
+  container.scrollTop += scrollDeltaY;
+
+  // Optional: Add listeners for mouse-drag/touch events to calculate deltaX/Y
+  // and call this function repeatedly for smooth panning.
+}
+
+function getUnscaledEditorCoordinates(editor, container, clientX, clientY, zoomFactor) {
+  // 1. Get the bounding rectangle of the editor (gives position in viewport)
+  const rect = editor.getBoundingClientRect();
+
+  // 2. Calculate the position relative to the *top-left of the scaled editor*
+  //    (This is the mouse position *inside* the scaled editor element)
+  const editorX = clientX - rect.left;
+  const editorY = clientY - rect.top;
+
+  // 3. Convert the relative position back to *unscaled content coordinates*
+  //    by dividing by the zoom factor.
+  const unscaledX = editorX / zoomFactor;
+  const unscaledY = editorY / zoomFactor;
+
+  // 4. Factor in the container's scroll offset.
+  //    The canvas position should be based on the unscaled coordinates,
+  //    but the actual drawing should be positioned relative to the container's scroll
+  //    *if* the canvas is absolutely positioned within the container.
+  
+  // NOTE: For overlay canvas, it is usually fixed to the viewport,
+  // so you only need the unscaled position to calculate where to draw.
+
+  // The *drawing coordinates* on the canvas will also need to be scaled
+  // if the canvas itself is NOT scaled, but the editor IS.
+
+  // The final, most useful value for plotting points on the unscaled editor content:
+  return {
+    x: unscaledX + container.scrollLeft,
+    y: unscaledY + container.scrollTop
+  };
+}
+
+
+
+/**
+ * Toggles the pan mode on/off.
+ */
+window.togglePanMode = function() {
+    isPanModeActive = !isPanModeActive;
+    const btn = document.getElementById('pan-toggle-btn');
+    
+    if (isPanModeActive) {
+        // Activate pan mode
+        btn.textContent = 'Pan Mode: ON';
+        btn.classList.replace('bg-blue-600', 'bg-red-600');
+        
+        // Add listeners only when pan mode is ON
+        scrollContainer.addEventListener('mousedown', startPan);
+        scrollContainer.addEventListener('mousemove', pan);
+        scrollContainer.addEventListener('mouseup', stopPan);
+        scrollContainer.addEventListener('mouseleave', stopPan);
+
+        // Add touch support for touchpads/mobiles
+        scrollContainer.addEventListener('touchstart', startPan);
+        scrollContainer.addEventListener('touchmove', pan);
+        scrollContainer.addEventListener('touchend', stopPan);
+        
+        // Change cursor to indicate drag-ability
+        scrollContainer.style.cursor = 'grab';
+        
+    } else {
+        // Deactivate pan mode
+        btn.textContent = 'Toggle Pan Mode';
+        btn.classList.replace('bg-red-600', 'bg-blue-600');
+        
+        // Remove listeners when pan mode is OFF
+        scrollContainer.removeEventListener('mousedown', startPan);
+        scrollContainer.removeEventListener('mousemove', pan);
+        scrollContainer.removeEventListener('mouseup', stopPan);
+        scrollContainer.removeEventListener('mouseleave', stopPan);
+
+        scrollContainer.removeEventListener('touchstart', startPan);
+        scrollContainer.removeEventListener('touchmove', pan);
+        scrollContainer.removeEventListener('touchend', stopPan);
+
+        scrollContainer.style.cursor = 'default';
+        
+        isDragging = false; // Ensure dragging is stopped
+    }
+};
+
+/**
+ * Starts the drag operation on mousedown or touchstart.
+ */
+function startPan(e) {
+    if (!isPanModeActive) return;
+
+    e.preventDefault(); // Prevent text selection/default scrolling
+    isDragging = true;
+    scrollContainer.style.cursor = 'grabbing';
+    
+    // Get initial cursor position, adjusting for touch events
+    lastX = e.clientX || e.touches[0].clientX;
+    lastY = e.clientY || e.touches[0].clientY;
+}
+
+/**
+ * Handles the dragging and updates the scroll position.
+ */
+function pan(e) {
+    if (!isDragging) return;
+
+    // Get current cursor position, adjusting for touch events
+    const currentX = e.clientX || e.touches[0].clientX;
+    const currentY = e.clientY || e.touches[0].clientY;
+
+    // Calculate the difference (delta) from the last position
+    const deltaX = currentX - lastX;
+    const deltaY = currentY - lastY;
+    
+    // Get the current zoom factor (e.g., 0.9, 1.0, 1.5)
+    // We assume setZoom() is active and the body has a transform
+    const transform = scrollContainer.style.transform;
+    const match = transform.match(/scale\(([^)]+)\)/);
+    const zoomFactor = match ? parseFloat(match[1]) : 1.0;
+
+    // The scroll distance must be adjusted by the inverse of the zoom factor.
+    // If zoomed in (zoomFactor > 1), moving the mouse 10px on screen 
+    // corresponds to a smaller distance in the actual content size.
+    const scrollDeltaX = deltaX / zoomFactor;
+    const scrollDeltaY = deltaY / zoomFactor;
+
+    // Apply the change to the scroll position
+    scrollContainer.scrollLeft -= scrollDeltaX;
+    scrollContainer.scrollTop -= scrollDeltaY;
+
+    // Update last position for the next move event
+    lastX = currentX;
+    lastY = currentY;
+}
+
+/**
+ * Stops the drag operation on mouseup, mouseleave, or touchend.
+ */
+function stopPan() {
+    if (!isPanModeActive) return;
+    
+    isDragging = false;
+    scrollContainer.style.cursor = 'grab'; // Restore grab cursor
+}
+
+// Add the original setZoom function here for context, 
+// ensuring the body has `transform-origin: top left;` set.
+
+/*
+// Example of your setZoom function (ensure it's in the final script)
+window.setZoom = function(zoomV = null) {
+    // ... (rest of the setZoom logic from the previous answer)
+    const bodyStyle = document.getElementById('editor-wrapper');
+    bodyStyle.transform = `scale(${scaleFactor})`;
+    bodyStyle.transformOrigin = 'top left'; 
+    // ...
+};
+*/
+
 
 
 
@@ -7294,9 +7539,9 @@ element.requestFullscreen()
             [lastX, lastY] = [lastX + 0.1, lastY + 0.1]; 
         }
 
-        function draw(e) {
+      function draw(e) {
             if (!isDrawing) return;
-            
+   
             const rect = drawingCanvas.getBoundingClientRect();
             let x = e.clientX - rect.left;
             let y = e.clientY - rect.top;
@@ -7306,8 +7551,110 @@ element.requestFullscreen()
             context.lineTo(x, y);
             context.stroke();
             
-            [lastX, lastY] = [x, y];
+         [lastX, lastY] = [x, y];
+
+
+const editor = document.getElementById('editor');
+//const editor = document.getElementById('editor-wrapper');
+    const container = editor.parentElement; // Assuming the editor is in a scrollable container
+
+const transformMatch = editor.style.transform.match(/scale\(([^)]+)\)/);
+    
+    let zoomFactor = 1.0; // Default to 1.0 (no zoom)
+    //const zoomFactor = parseFloat(editor.style.transform.match(/scale\(([^)]+)\)/)[1] || 1.0);
+
+// 2. Safely extract the value if a match was found
+    if (transformMatch && transformMatch[1]) {
+        zoomFactor = parseFloat(transformMatch[1]);
+    }
+
+
+    const editorRect = editor.getBoundingClientRect();
+
+    // 1. Get the unscaled position inside the editor content
+    const unscaledX = (e.clientX - editorRect.left) / zoomFactor;
+    const unscaledY = (e.clientY - editorRect.top) / zoomFactor;
+    
+    // 2. Adjust for scroll (this is the coordinate relative to the unscaled editor's top-left corner)
+    const contentX = unscaledX + container.scrollLeft;
+    const contentY = unscaledY + container.scrollTop;
+
+    // 3. Convert content coordinates back to canvas/viewport coordinates for drawing
+    const canvasDrawX = (contentX - container.scrollLeft) * zoomFactor + editorRect.left;
+    const canvasDrawY = (contentY - container.scrollTop) * zoomFactor + editorRect.top;
+
+
+   
+
+// TEMPORARY TEST: Subtract the 80px offset
+ 
+  let OFFSET = 0; 
+    unscaledX = (e.clientX - editorRect.left - OFFSET) / zoomFactor; 
+   unscaledY = (e.clientY - editorRect.top - OFFSET) / zoomFactor;
         }
+
+
+
+function TEMPdraw(e) {
+    if (!isDrawing) return;
+
+    const editor = document.getElementById('editor');
+    const drawingCanvas = document.getElementById('drawingCanvas');
+    const context = drawingCanvas.getContext('2d');
+    
+    // --- Determine Scroll Container ---
+    // If your editor is the only content and the entire page scrolls, 
+    // the scroll parent is typically the document body/documentElement.
+    // If the editor is inside a specific scrollable <div>, use its parent.
+    const container = editor.parentElement; 
+    
+    // Get scroll values from the container
+    const scrollLeft = container.scrollLeft || 0;
+    const scrollTop = container.scrollTop || 0;
+    
+    // --- Get Zoom Factor ---
+    const transformMatch = editor.style.transform.match(/scale\(([^)]+)\)/);
+    // Default to 1.0 if not found, to prevent division by zero/NaN errors
+    const zoomFactor = transformMatch ? parseFloat(transformMatch[1]) : 1.0; 
+    
+    // --- Get Editor Position ---
+    const editorRect = editor.getBoundingClientRect(); 
+
+    // 1. Calculate the distance from the mouse to the editor's top-left corner (in scaled screen pixels)
+    const mouseToEditorX = e.clientX - editorRect.left;
+    const mouseToEditorY = e.clientY - editorRect.top;
+
+    // 2. Convert to unscaled content coordinates
+    // This gives the exact coordinate inside the *unscaled* content div.
+    const contentX = (mouseToEditorX / zoomFactor) + scrollLeft;
+    const contentY = (mouseToEditorY / zoomFactor) + scrollTop;
+
+    // 3. Convert back to Canvas/Viewport coordinates for drawing
+    // This coordinate is where the point should be drawn on the unscaled canvas overlay.
+    const canvasDrawX = (contentX - scrollLeft) * zoomFactor + editorRect.left;
+    const canvasDrawY = (contentY - scrollTop) * zoomFactor + editorRect.top;
+
+    // --- EXECUTE DRAWING ---
+    
+    // Use the calculated, correct coordinates
+    let x = canvasDrawX;
+    let y = canvasDrawY;
+    
+    context.beginPath();
+    context.moveTo(lastX, lastY);
+    context.lineTo(x, y);
+    context.stroke();
+    
+    // Update lastX and lastY for the next segment
+    [lastX, lastY] = [x, y];
+}
+
+
+
+
+
+
+
 
         function stopDrawing() {
 	
