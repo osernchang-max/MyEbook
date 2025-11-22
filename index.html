@@ -147,6 +147,26 @@ pointer-events: auto;
             background-color: #f9fafb;
             touch-action: none; /* Prevents default browser actions like scrolling/zooming */
         }
+        /*  canno game look */
+        .game-container { background-color: #374151; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); width: 850px; }
+        #game-canvas { background-color: #87CEEB; border: 2px solid #1f2937; border-radius: 0.5rem; }
+        .player-control-panel { background-color: #4b5563; padding: 1rem; border-radius: 0.75rem; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2); }
+        input[type=range] { width: 100%; height: 8px; border-radius: 4px; background: #6b7280; -webkit-appearance: none; appearance: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #6366f1; cursor: pointer; transition: background 0.2s; }
+        .player-1-text { color: #f87171; }
+        .player-2-text { color: #34d399; }
+        .fire-btn-base {
+            @apply w-full mt-3 font-bold py-2 rounded-lg shadow-md transition duration-150 transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50;
+        }
+        /* Style for the Start Button */
+        #start-button {
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 5px 0 0 #1e40af;
+        }
+        #start-button:hover {
+            box-shadow: 0 3px 0 0 #1e40af;
+            transform: translateY(2px);
+        }
         /* --- 3D FLIP CSS --- */
         .flip-container {
             perspective: 1000px; /* Gives the scene depth */
@@ -265,7 +285,7 @@ pointer-events: auto;
 
 <!-- 切水果遊戲 開始-->
     <!-- 遊戲主容器 -->
-    <div id="app-container" class="relative hidden w-full h-full p-4">
+    <div id="app-container" class="relative hidden w-full h-full p-4  max-w-4xl">
         <!-- 畫布區域 -->
         <div class="relative w-full h-full max-w-4xl max-h-[800px] mx-auto flex-grow">
             <canvas id="gameCanvas" class="relative z-0"></canvas>
@@ -296,11 +316,11 @@ pointer-events: auto;
         <!-- 訊息/結果/錯誤 彈窗 (預設在最前面) -->
         <div id="message-box" class="modal fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-70">
             <div id="game-start-message" class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-md w-full text-center border-t-4 border-indigo-500">
-                <h2 id="message-text" class="text-3xl font-extrabold mb-4 text-white">測驗斬擊大師</h2>
+                <h2 id="message-text" class="text-3xl font-extrabold mb-4 text-white">Olsen Chang Awesom Jobs</h2>
                 <p id="quiz-message-detail" class="text-gray-300 mb-6">
                     這是一個基於 PSV（Pipe Separated Values）資料的遊戲。點擊「編輯資料」來載入您的測驗。
                 </p>
-                <button id="initial-start-button" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-700 transition duration-150">
+                <button id="initial-start-button" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-700 transition duration-150 hidden">
                     編輯資料
                 </button>
                 <div class="mt-4 text-sm text-gray-400">
@@ -348,33 +368,76 @@ pointer-events: auto;
 
 <!-- 雙人遊戲開始  dual game-->
 
-    <div class="flex flex-col items-center w-full max-w-5xl">
+       <div id="cannonGame" class="hidden game-container flex flex-col items-center">
+     
 
-        <!-- DUAL GAME CONTAINER (Initially hidden) -->
-        <div id="dualGameContainer" class="flex flex-col items-center w-full" style="display: none;">
-            
-            <!-- Scoreboard and Controls -->
-            <div id="info-bar" class="flex justify-between w-full mb-4 text-lg font-bold text-gray-700 max-w-4xl">
-                <div class="p-3 bg-blue-100 rounded-lg shadow-md flex items-center">
-                    <span class="text-blue-700">P1 Score: <span id="p1-score">0</span></span>
-                </div><button onclick="window.toggleGameTheme('none');" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">☒</button>
-                <div class="p-3 bg-red-100 rounded-lg shadow-md flex items-center">
-                    <span class="text-red-700">P2 Score: <span id="p2-score">0</span></span>
-                </div>
-            </div>
 
-            <!-- Canvas Container: ID is dualGameCanvas -->
-            <canvas id="dualGameCanvas"></canvas>
-            
-            <p class="text-sm text-gray-500 mt-4 text-center">
-                **TOUCH:** Swipe on your screen half to move. | **P1 Keys:** W/A/S/D | **P2 Keys:** Arrows
-            </p>
 
-            <!-- Dynamic Data Container (Hidden, required for parsing) -->
-
+        <!-- 初始啟動畫面 -->
+        <div id="start-screen" class="flex flex-col items-center justify-center p-12 bg-gray-700 rounded-lg w-full h-[600px] text-center">
+            <h2 class="text-3xl font-semibold mb-4 text-white">歡迎來到對戰射擊場！</h2>
+            <p class="mb-8 text-lg text-gray-300">擊中正確答案的方塊以得分。P1 先發射。</p>
+            <!-- 函數呼叫更新 -->
+            <button id="start-button" onclick="dual_startGame()" class="bg-blue-600 text-white text-2xl font-bold py-4 px-10 rounded-xl hover:bg-blue-700">
+                🚀 開始遊戲
+            </button>
         </div>
 
+        <!-- 遊戲元素區域 (預設隱藏) -->
+        <div id="game-elements" class="hidden w-full flex flex-col items-center">
+        
+            <!-- Scoreboard -->
+            <div class="flex justify-between w-full mb-4 px-4 text-lg font-bold">
+                <div class="player-1-text">P1 分數: <span id="score-p1">0</span></div><p id="game-status" class="text-xl font-bold text-yellow-300 text-center mb-3">準備開始...</p>
+<button onclick="window.toggleGameTheme('none');" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">關閉</button>
+                <div class="player-2-text">P2 分數: <span id="score-p2">0</span></div>
+            </div>
+            
+            <!-- 遊戲狀態/測驗區 (僅顯示文字) -->
+            <div id="quiz-panel" class="w-full bg-yellow-900/50 p-4 rounded-lg mb-4 border border-yellow-500 transition duration-300 min-h-[100px]">
+                
+                <p id="question-text" class="text-lg font-medium text-white text-center"></p>
+            </div>
+
+            <!-- Canvas for the Game Area -->
+            <canvas id="game-canvas" width="800" height="450"></canvas>
+            
+            <!-- Controls Section -->
+            <div class="w-full flex justify-between space-x-4 mt-6">
+                
+                <!-- Player 1 Controls -->
+                <div id="p1-controls" class="player-control-panel flex-1 player-1-text">
+                    <h2 class="text-xl mb-3 font-bold">Player 1 (紅方)</h2>
+                    
+                    <div class="control-label">瞄準角度: <span id="angle-p1">45</span>°</div>
+                    <!-- 函數呼叫更新 -->
+                    <input type="range" id="angle-slider-p1" min="10" max="90" value="45" oninput="dual_updateAngle(1, this.value)">
+                    
+                    <!-- 函數呼叫更新 -->
+                    <button onclick="dual_fireBullet(1)" class="fire-btn-base bg-red-600 hover:bg-red-700 text-white" id="fire-btn-p1" disabled>
+                        FIRE!
+                    </button>
+                </div>
+
+                <!-- Player 2 Controls -->
+                <div id="p2-controls" class="player-control-panel flex-1 player-2-text">
+                    <h2 class="text-xl mb-3 font-bold">Player 2 (綠方)</h2>
+                    
+                    <div class="control-label">瞄準角度: <span id="angle-p2">135</span>°</div>
+                    <!-- 函數呼叫更新 -->
+                    <input type="range" id="angle-slider-p2" min="90" max="170" value="135" oninput="dual_updateAngle(2, this.value)">
+
+                    <!-- 函數呼叫更新 -->
+                    <button onclick="dual_fireBullet(2)" class="fire-btn-base bg-green-600 hover:bg-green-700 text-white" id="fire-btn-p2" disabled>
+                        FIRE!
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
+
+
+
 
 <!--雙人遊戲結束  dual game-->
 
@@ -531,7 +594,7 @@ pointer-events: auto;
         }
 
         // 2. Apply the scaling and origin to the body
-        const bodyStyle = document.getElementById('editor').style;
+        const bodyStyle = document.getElementById('main-container').style;
 
         // Set the transform for scaling
         bodyStyle.transform = `scale(${scaleFactor})`;
@@ -562,18 +625,18 @@ const transformValue = computedStyle.getPropertyValue('transform');
 <button 
     id="pan-toggle-btn" 
     onclick="togglePanMode()" 
-    class="px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition duration-150 shadow-md">
-    Toggle Pan Mode
+    class="px-2 py-1 bg-blue-200 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition duration-150 shadow-md">
+    🤚
 </button>
     <input 
         type="range" 
         id="zoom" 
         min="5" 
-        max="15" 
+        max="20" 
         step="1" 
         value="10" 
         title="Zoom Scale" 
-        class="w-20" 
+        style="width:40px" 
         oninput="setZoom();" 
     >
     
@@ -594,17 +657,21 @@ const transformValue = computedStyle.getPropertyValue('transform');
             <button onclick="window.applyForeColor('#0000ff')">Blue Text</button>
 -->
         </div>
-        
-        <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
-            <button id="toggleGameModeBtn" onclick="window.toggleGameMode();">▶️ 🎮 Game Mode</button>
-<div id="tmBar" style="display:none ;position:absolute;z-index:50;top:80px;left:45vw;" onclick="this.style.display='none';" >
-    TIME:<span id="gameTimerDisplay" class="text-xl font-mono text-gray-700 p-2 bg-green-400 rounded-lg border border-gray-300">1:00 </span>
-</div>
-            <span id="speechResult" style="margin-left: 20px;"></span>
+<div id="quizToolBar" style="border-left: 1px solid #ccc; display:inline;display:none" >
  <button onclick="window.toggleGameTheme('quiz');">❓</button>
-<button id="toggleQuizBtn" onclick="window.toggleGameTheme('slasher');window.QS_launchGame(document.getElementById('quizArea'),'slasher');window.QS_parseAndLoadQuiz(document.getElementById('quizArea'),'slasher');" title="切水果" >🌠</button>
+<button id="toggleQuizBtn" onclick="window.toggleGameTheme('slasher');window.QS_launchGame(document.getElementById('quizArea'),'slasher');window.QS_parseAndLoadQuiz(document.getElementById('quizArea'),'slasher');" title="切水果" >🎈</button>
 <button id="startGameButton" title="雙打測驗" onclick="window.toggleGameTheme('dual');">🤼</button>
-        </div>
+</div>
+         <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
+             <button id="toggleGameModeBtn" onclick="window.toggleGameMode();">▶️ 🎮 Game Mode</button>
+
+              <div id="tmBar" style="display:none ;position:absolute;z-index:50;top:80px;left:45vw;" onclick="this.style.display='none';" >
+                  TIME:<span id="gameTimerDisplay" class="text-xl font-mono text-gray-700 p-2 bg-green-400 rounded-lg border border-gray-300">1:00 </span>
+               </div>
+               <span id="speechResult" style="margin-left: 20px;" onclick="this.innerText='';" ></span>
+
+
+          </div>
     </div>
 
     <div id="main-container">
@@ -727,108 +794,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
             renderDiceFace(1);
         });
 </script>
-<textarea id="diceSampleX" style="display:none" >
-<div class="draggable-image">
-<div class="dice-container">
-    <style>
-        .dice {
-            /* CRITICAL: Allows touchstart/click without interference from scrolling/dragging */
-            touch-action: none; 
-            width: 80px;
-            height: 80px;
-            background: #fff;
-            border: 2px solid #000;
-            border-radius: 10px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            padding: 8px;
-            cursor: pointer;
-            user-select: none;
-            margin: 20px auto;
-        }
-        .dot {
-            width: 12px;
-            height: 12px;
-            background: #d90429; /* Red dot */
-            border-radius: 50%;
-            place-self: center;
-            opacity: 0;
-            transition: opacity 0.1s;
-        }
-        .d1 { grid-area: 1 / 1; }
-        .d2 { grid-area: 1 / 3; }
-        .d3 { grid-area: 3 / 1; }
-        .d4 { grid-area: 3 / 3; }
-        .d5 { grid-area: 2 / 2; }
-        .d6 { grid-area: 1 / 2; }
-        .d7 { grid-area: 3 / 2; }
-        /* Dots for the 6 face (4 and 6 are corners, need 2 extra here) */
-        .d8 { grid-area: 2 / 1; }
-        .d9 { grid-area: 2 / 3; }
-    </style>
 
-    <!-- The Component with the required class and event handlers -->
-    <div id="dice" 
-         class="draggable-image dice" 
-         onclick="roll(this)" 
-         ontouchstart="roll(this)">
-        
-        <!-- Only 5 main dots are strictly needed for 1-5, but 9 makes all faces possible via the grid -->
-        <div class="dot d1" id="d-1"></div>
-        <div class="dot d2" id="d-2"></div>
-        <div class="dot d3" id="d-3"></div>
-        <div class="dot d4" id="d-4"></div>
-        <div class="dot d5" id="d-5"></div>
-        <div class="dot d6" id="d-6"></div>
-        <div class="dot d7" id="d-7"></div>
-        <div class="dot d8" id="d-8"></div>
-        <div class="dot d9" id="d-9"></div>
-    </div>
-
-    <script>
-        const faceMap = {
-            1: [5], // Center
-            2: [1, 4], // Top-Left, Bottom-Right
-            3: [1, 5, 4], // Top-Left, Center, Bottom-Right
-            4: [1, 2, 3, 4], // All corners
-            5: [1, 2, 3, 4, 5], // All corners and center
-            6: [1, 2, 3, 4, 8, 9] // Corners and the middle-side dots (d8, d9)
-        };
-
-        function showFace(roll, dice) {
-            // Find all dot elements within this specific dice instance
-            const dots = dice.querySelectorAll('.dot');
-            dots.forEach(dot => dot.style.opacity = '0');
-
-            const visibleDotIds = faceMap[roll] || [];
-            visibleDotIds.forEach(dotIndex => {
-                // Since the class list is 'd1', 'd2', etc., we select based on the index.
-                const dot = dice.querySelector(`.d${dotIndex}`);
-                if (dot) dot.style.opacity = '1';
-            });
-        }
-
-        window.roll = function(diceElement) {
-            const newRoll = Math.floor(Math.random() * 6) + 1;
-            showFace(newRoll, diceElement);
-            console.log("Rolled: " + newRoll);
-        }
-
-        // Initialize to show 1 on load
-        document.addEventListener('DOMContentLoaded', () => {
-             // Find the dice element and initialize the face
-            const initialDice = document.querySelector('.dice');
-            if (initialDice) {
-                showFace(1, initialDice);
-            }
-        });
-    </script>
-</div>
-<div class="resizer"></div>
-</div>
-</textarea>
 
 <textarea id="diceSample" style="display:none">
 <div class="draggable-image" style="z-index:50">
@@ -877,7 +843,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
 
 
     
-            <button  title="切換編輯工具列" onclick="document.getElementById('styleControls').style.display=(document.getElementById('styleControls').style.display=='none')?'inline':'none';document.getElementById('MyTittle').style.display='';DesignMode=!DesignMode;this.innerText=(DesignMode)?'📝設計模式':'✔️白板模式';document.getElementById('toolbar').style.position=(document.getElementById('toolbar').style.position='absolute')?'':'absolute';"   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
+            <button  title="切換編輯工具列" onclick="document.getElementById('styleControls').style.display=(document.getElementById('styleControls').style.display=='none')?'inline':'none';document.getElementById('MyTittle').style.display='';DesignMode=!DesignMode;this.innerText=(DesignMode)?'📝設計模式':'✔️白板模式';window.toggleSpeak();document.getElementById('toolbar').style.position=(document.getElementById('toolbar').style.position='absolute')?'':'absolute';"   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
 
 
 
@@ -1038,7 +1004,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
  
     <button  title="從圖庫插入" onclick="addDivWithImageBackgroundElement();document.all.picker.style.display='';"  style="background:cyan;border-radius:25%" >圖庫</button>
             <!-- NEW: Add Text Element Dropdown -->
-
+<button onclick="window.handlePaste()" >貼上本機圖片(<1m)</button>
 
 <!-- add menu -->
 </div>
@@ -1190,11 +1156,14 @@ const transformValue = computedStyle.getPropertyValue('transform');
 <button onclick="window.restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
 <button onclick="window.dartMode();"  id="dartModeBtn" title="遊戲模式" style="font-size:20px" >🎯on</button>
 
+<button   onclick="window.stopSpeaking();" title="stop speaking">🔳</button>
 
-
-
-
+<span>
+<button" id="speakBtn" style="font-size:20px"  onclick="window.toggleSpeak()" >🔇</button>
+</span>
 <div id="voiceGameControls" class="flex flex-col items-center gap-1 p-1 font-xs bg-yellow-50 rounded-lg shadow-inner"  >
+
+
     <button id="voiceButton" onclick="window.startRandomVoiceGame();document.getElementById('speechResult').style.display='';" 
             title="語音辨識Start Random Voice Recognition Game" 
             class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition duration-150 shadow-md">
@@ -1203,6 +1172,8 @@ const transformValue = computedStyle.getPropertyValue('transform');
     <div id="OLDspeechResult" class="text-sm font-medium text-gray-500"     ontouchstart="this.style.display='none';" onclick="this.style.display='none';"   style="position:absolute;z-index:50;top:40px;left:100px;width:90%;height:80px;background:white;border-radius:16px;border:2px gray solid;padding:10px;font-size:30px;opacity:0.9;display:none">
         Click to start recognizing words by item ID.
     </div>
+
+
 </div>
 
 <div id="gameModeControls" class="flex flex-wrap items-center gap-2">
@@ -1346,7 +1317,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
         let counter = 0; 
         let activeItem = null; // CRITICAL: This needs to be set by your drag/drop handlers
         let oldX = 0, oldY = 0; // Assuming these are used by drag/drop
- 
+        let speaking=true;
        // --- Globals ---
          const editToggleBtn = document.getElementById('editToggleBtn');
         const lockToggleBtn = document.getElementById('lockToggleBtn');
@@ -2134,6 +2105,8 @@ window.movePage = function(pageId, direction) {
             DesignMode = !DesignMode; 
             const isEditable = editor.getAttribute('contenteditable') === 'true';
             editor.setAttribute('contenteditable', !isEditable);
+	speaking=!speaking;
+	speakBtn.textContent=(!speaking)?'🔇':'🔈';
         }
 
 
@@ -3003,13 +2976,13 @@ window.selectItem = function(item) {
         window.bringForward= function() {
             if (!activeItem || activeItem.id === 'editor') return;
             // Max z-index for normal elements is 14 (canvas is 15)
-            const currentZIndex = parseInt(activeItem.style.zIndex) || 10;
+            const currentZIndex = parseInt(activeItem.style.zIndex) || 20;
             activeItem.style.zIndex = Math.min(14, currentZIndex + 1);
         }
 
       window.sendBackward= function() {
             if (!activeItem || activeItem.id === 'editor') return;
-            const currentZIndex = parseInt(activeItem.style.zIndex) || 10;
+            const currentZIndex = parseInt(activeItem.style.zIndex) || 20;
             activeItem.style.zIndex = Math.max(10, currentZIndex - 1);
         }
 
@@ -3047,13 +3020,16 @@ window.selectItem = function(item) {
                 activeItem.classList.remove('editing'); 
                 activeItem.blur();
 	        pushHistoryState(); 
+             
             } else {
                 // Start editing
                 activeItem.setAttribute('contenteditable', 'true');
                 activeItem.classList.add('editing');
                 activeItem.focus();
+             
             }
             updateEditButtonState();
+
         }
 
 window.resetSlides = function() {
@@ -3206,7 +3182,7 @@ editor.addEventListener('mousedown', handleStart);
 editor.addEventListener('touchstart', handleStart);
 
  editor.addEventListener('dblclick',toggleContentEditable);
-
+editor.addEventListener('paste', handlePaste);
 
 //-----OLD listener
 
@@ -3527,11 +3503,12 @@ window.showModal = function(message, type = 'Info',target) {
         bgColor = '#3b82f6'; // Blue-500 equivalent (Info)
     }
 
-    // 2. Apply fixed positioning, styling, and color
+    // 2. Apply fixed positioning, styling, and color===OLD: right: 20px;
     modal.style.cssText = `
         position: fixed;
         top: 40px; /* Adjusted to 40px for better placement */
-        right: 20px;
+      right: 50vw;
+        font-size:20px;
         padding: 12px 20px;
         border-radius: 8px;
         color: white;
@@ -4137,20 +4114,20 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
         if (!theme){ return;}
                 launchWrapper.style.display = 'none';
                appContainer.style.display = 'flex';
-              dualGameContainer.style.display = 'none';
-
+              //dualGameContainer.style.display = 'none';
+              document.getElementById('cannonGame').classList.add('hidden');
         if (theme== 'none') {
                 launchWrapper.style.display = 'none';
                appContainer.style.display = 'none';
-              dualGameContainer.style.display = 'none';
-
+              //dualGameContainer.style.display = 'none';
+              document.getElementById('cannonGame').classList.add('hidden');	
             return;
          }
 
         if (theme === 'flasher') {
               launchWrapper.style.display = '';
               appContainer.style.display = 'none';
-
+              document.getElementById('cannonGame').classList.add('hidden');
               //dualGameContainer.style.display = 'none';
               //dualGameContainer.style.display = 'flex';
         }
@@ -4159,13 +4136,16 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
               appContainer.style.display = 'none';
 
               //dualGameContainer.style.display = 'none';
-               dualGameContainer.style.display = 'flex';
+              // dualGameContainer.style.display = 'flex';
+	window.dual_startGame();
+               document.getElementById('cannonGame').classList.remove('hidden');	
         }     
         if (theme === 'quiz') { 
 	       window.parsePsvAndLoadQuiz(editor.querySelector('#quizArea'));
                 launchWrapper.style.display = 'none';
                appContainer.style.display = 'none';
-              dualGameContainer.style.display = 'none';
+             // dualGameContainer.style.display = 'none';
+              document.getElementById('cannonGame').classList.add('hidden');
 		//return;
         }       
     }
@@ -4239,13 +4219,13 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
      */
     window.getQuizUIHTML = function() {
         const htmlArray = [
-            '<div id="quizArea" class="quiz-container flex flex-col items-center justify-center">',
-             //'<div style="position:absolute;top:40px;left:-40px;width:40px;height:40px;z-index:10;border-radius:25px;" onclick="document.getElementById('quizArea').style.displaly=(document.getElementById('quizArea').style.displaly='none')?'':'none'" >?</div>',
+            '<div id="quizArea" class="quiz-container flex flex-col items-center justify-center bg-white  rounded-lg ">',
+             '<button style="position:absolute;top:-10px;left:-20px;width:40px;height:40px;z-index:10;border-radius:25px;background-color:red;color:white" onclick="document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display=(document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display==\'none\')?\'\':\'none\';document.getElementById(\'quizToolBar\').style.display=(document.getElementById(\'quizToolBar\').style.display==\'none\')?\'\':\'none\';showModal(\'測驗遊戲按鈕顯示於工具列\',\'\')" >❔</button>',
             // --- 編輯數據模式 (Edit View) ---
             '<div id="edit_view" class="w-full" style="display: none;">',
-            //'<h2 class="text-2xl font-bold mb-4 text-gray-800">編輯測驗數據 (支援試算表貼上)</h2>',
+             '<h3 style="color:yellow;font-size:16pt;padding-left:30px">            編輯測驗題目 (支援試算表貼上)</h3>',
             // 修正：答案索引提示為 1-4
-            '<p class="text-sm text-gray-600 mb-3 text-left font-bold">每行需要 7 個欄位: 題號|問題(含圖片)|正確答案索引(1-4)|選項A|選項B|選項C|選項D</p>',
+            '<p class="text-sm text-gray-600 mb-3 text-left font-bold"> 題號|問題(含圖片)|正確答案索引(1-4)|選項A|選項B|選項C|選項D</p>',
             
             // 新增按鈕群組
             '<div class="flex space-x-2 mb-3">',
@@ -4261,13 +4241,19 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
             'style="min-height: 200px; cursor: text; text-align: left;"',
             '>',
             // 預設數據使用垂直線分隔，以供參考，答案索引已改為 1 (代表選項 A)
-            "1|哪個是正確的交通號誌？<img src='https://placehold.co/200x50/DDDDDD/000000?text=Question+Image' style='max-height: 50px; display: inline-block; border-radius: 4px; vertical-align: middle;'>|1|A: 停止標誌|B: 減速標誌|C: 讓路標誌|D: 禁止通行" +
-            "<br>2|光速約為每秒多少公里？|1|300000|150000|500000|90000" +
-            "<br>3|這是 Base64 編碼的圖片嗎？<img src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1MCcgaGVpZ2h0PSc1MCc+PHJlY3Qgd2lkdGg9JzUwJyBoZWlnaHQ9JzUwJyBmaWxsPSdjY2MnLz48L3N2Zz4=' style='max-height: 50px; display: inline-block; border-radius: 4px; vertical-align: middle;'>|2|是|否|也許|不知道",
+            "1|Which fruit is red?|1|apple|banana|guava|orang" +
+            "<br>2|Who's she？|2|my brother|my sister|Mr.Bean|my pen" +
+            "<br>3|Where's my bag？<img src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZf50Vs-UpWo_OfaGbqQbe_a1rhdfQ9zMqeg&s' style='max-height: 50px; display: inline-block; border-radius: 4px; vertical-align: middle;'>|2|on the desk|on the bed|in the box|under the table",
             '</div>',
             
             "    <button onclick=\"window.parsePsvAndLoadQuiz(this.closest('#quizArea'))\" class=\"w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700\">載入並開始測驗</button>",
-             " <button onclick=\"window.QS_launchGame(this.closest('#quizArea'));window.QS_parseAndLoadQuiz(this.closest('#quizArea'));\" class=\"w-full px-4 py-2 text-md font-semibold text-white bg-red-600 rounded-xl hover:bg-yellow-700 transition duration-150\">切水果</button>",           
+  '<div class="flex space-x-2 mb-3">',
+//" <button onclick=\"window.toggleGameTheme('quiz');\">❓</button>",
+"<button id=\"toggleQuizBtn\"  title=\"打氣球測驗\" class=\"flex-1 px-2 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition duration-150\" onclick=\"window.toggleGameTheme('slasher');window.QS_launchGame(document.getElementById('quizArea'),'slasher');window.QS_parseAndLoadQuiz(document.getElementById('quizArea'),'slasher');\"   >🎈打氣球遊戲</button>",
+"<button id=\"startGameButton\" title=\"雙打測驗\" class=\"flex-1 px-2 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition duration-150\" onclick=\"window.toggleGameTheme('dual');\">🤼雙打射擊</button>", 
+            '</div>',
+
+          
             '<p id="errorMsg" class="text-red-500 mt-3 hidden">數據格式錯誤。</p>',
             '</div>',
 
@@ -5453,1364 +5439,447 @@ document.getElementById('quizDataSource').value=rawHtmlText;
              //appContainer.style.display = 'none';
               //dualGameContainer.style.display = 'flex';
 //=========================切水果遊戲結束======================================================================
+
+
 //=========================================================== Dual player Game
 
 
-        // --- START OF IIFE FOR SCOPE ISOLATION ---
-        (function() {
-            const startGameButton = document.getElementById('startGameButton');
-            const dualGameContainer = document.getElementById('dualGameContainer');
+//=========================================================== Start Cannon Game
+
+
+
+        // --- 全域變數和常數 (已更新前綴) ---
+        const dualGameCanvas = document.getElementById('game-canvas');
+        const dualGameCtx = dualGameCanvas.getContext('2d'); 
+        const dual_WIDTH = dualGameCanvas.width;
+        const dual_HEIGHT = dualGameCanvas.height;
+        const dual_GROUND_Y = dual_HEIGHT - 50;
+        const dual_GRAVITY = 0.05; 
+
+        let dual_QUIZ_DATA = [];
+        let dual_MAX_ROUNDS = 0; 
+        
+        let dual_gameActive = false; 
+        let dual_currentPlayer = 2; 
+        let dual_bullet = null;
+
+        let dual_roundNumber = 0; 
+        let dual_currentQuizCorrectIndex = -1; // 0-based index
+        
+        let dual_targets = []; 
+
+        const dual_players = {
+            1: { 
+                id: 1, 
+                x: 50, 
+                y: dual_GROUND_Y, 
+                angleDeg: 45, 
+                score: 0, 
+                color: '#f87171' // Red
+            },
+            2: { 
+                id: 2, 
+                x: dual_WIDTH - 50, 
+                y: dual_GROUND_Y, 
+                angleDeg: 135, 
+                score: 0, 
+                color: '#34d399' // Green
+            }
+        };
+
+        const dual_BULLET_RADIUS = 5;
+        const dual_MUZZLE_VELOCITY = 13;
+        
+        // --- 核心函數 (已更新前綴) ---
+
+        /**
+         * 簡單的陣列亂序函數 (Shuffling)
+         */
+        function dual_shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        /**
+         * 核心解析函數：從 #quizData 元素中提取並結構化測驗資料。
+         * @returns {Array<Object>} 結構化後的測驗題目陣列。
+         */
+        function dual_getQuizDataArray() {
+            const quizDataElement = document.getElementById('quizData');
+            if (!quizDataElement) {
+                console.error("Quiz data element not found.");
+                return [];
+            }
             
-            const shuffleArray = (array) => {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-            };
-
-            function initializeAndStartGame() {
-                if (dualGameContainer.dataset.initialized === 'true') return;
-                dualGameContainer.dataset.initialized = 'true';
-
-                const canvas = document.getElementById('dualGameCanvas');
-                const ctx = canvas.getContext('2d');
-                
-                const p1ScoreDisplay = document.getElementById('p1-score');
-                const p2ScoreDisplay = document.getElementById('p2-score');
-
-                let CANVAS_WIDTH = 0;
-                let CANVAS_HEIGHT = 0;
-                let VIEW_WIDTH = 0;
-                let ANSWER_SPACING = 0; 
-                let answerBoxes = []; 
-
-                const PLAYER_SIZE_RATIO = 0.04; 
-                let PLAYER_SPEED_PIXELS = 0; 
-                const ANSWER_BOX_COUNT = 4;
-                const ANSWER_BOX_SIZE_RATIO = 0.16; 
-
-                let externalQuizSet = [];
-                let currentQuizIndex = 0;
-                let successMessage = null; // New state for success message
-
-                // --- Data Parsing (ULTRA-ROBUST FIX V2) ---
-                const parseQuizData = () => {
-                    const quizDataElement = document.getElementById('quizArea').querySelector('#quizData');
-                    if (!quizDataElement) {
-                        console.error("Quiz data element not found.");
-                        return;
-                    }
-                    
-                    try {
-                        let dataString = quizDataElement.textContent.trim();
-  
-            // 1. 從 DOM 獲取原始文字，使用 innerHTML 以捕獲 <br> 和其他標籤
-            const rawHtmlText = quizDataElementX.innerHTML.trim();
+            let externalQuizSet = [];
             
-            // 2. 嚴格資料淨化：將編輯器可能插入的 HTML 標籤轉換為標準換行符 (\n)
-            let cleanedText = rawHtmlText.replace(/<br\s*\/?>/gi, '\n'); // 替換 <br>
-            cleanedText = cleanedText.replace(/<\/?(p|div|span)[^>]*>/gi, '\n'); // 替換 <p>, <div>, <span>
-            // 標準化換行符，確保沒有連續換行或多餘的空白
-            cleanedText = cleanedText.replace(/\s*\n\s*/g, '\n').trim(); 
-
-            // 3. 按標準 \n 拆分，並過濾掉空行
-            const lines = cleanedText.split('\n').filter(function(line) { return line.trim() !== ''; });
-
-
-
-
-                      
-                       
-                        externalQuizSet = lines.map((item, index) => {
-                            // Split each item by the pipe '|' and remove leading/trailing spaces from parts
-                            const parts = item.split('|').map(p => p.trim());
-                            
-                            if (parts.length < 7) {
-                                console.warn(`Skipping malformed quiz item at index ${index}. Expected 7 parts (ID|Q|ANS_INDEX|A|B|C|D), got ${parts.length}. Data:`, item);
-                                return null;
-                            }
-                            
-                            const correctIndex1Based = parseInt(parts[2]);
-                            if (isNaN(correctIndex1Based) || correctIndex1Based < 1 || correctIndex1Based > 4) {
-                                console.error(`Invalid correct index for item ID ${parts[0]}: ${parts[2]}. Must be 1, 2, 3, or 4.`);
-                                return null;
-                            }
-                            
-                            return {
-                                id: parts[0],
-                                question: parts[1],
-                                correctIndex: correctIndex1Based - 1, // Convert 1-based index to 0-based
-                                answers: [parts[3], parts[4], parts[5], parts[6]]
-                            };
-                        }).filter(q => q !== null);
-                        
-                        if (externalQuizSet.length > 0) {
-                            shuffleArray(externalQuizSet); // Shuffle questions on load
-                        }
-                        console.log(`Loaded ${externalQuizSet.length} unique quiz questions.`);
-
-                    } catch(e) {
-                        console.error("CRITICAL QUIZ PARSING ERROR:", e);
-                        console.log("Please ensure your quizData strictly follows the format: ID|QUESTION|CORRECT_INDEX|A|B|C|D");
-                        externalQuizSet = [];
-                    }
-                };
+            try {
+                const rawHtmlText = quizDataElement.innerHTML.trim();
                 
-                // --- Game State ---
-                const players = {
-                    p1: { score: 0, x: 0, y: 0, color: '#3b82f6', controls: { up: 'w', down: 's', left: 'a', right: 'd' } },
-                    p2: { score: 0, x: 0, y: 0, color: '#ef4444', controls: { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' } }
-                };
+                let cleanedText = rawHtmlText.replace(/<br\s*\/?>/gi, '\n'); 
+                cleanedText = cleanedText.replace(/<\/?(p|div|span)[^>]*>/gi, '\n'); 
+                cleanedText = cleanedText.replace(/\s*\n\s*/g, '\n').trim(); 
 
-                let quizState = {
-                    question: "Loading...",
-                    answers: ["", "", "", ""],
-                    correctIndex: -1
-                };
+                const lines = cleanedText.split('\n').filter(line => line.trim() !== '');
+
+                externalQuizSet = lines.map((item, index) => {
+                    const parts = item.split('|').map(p => p.trim());
+                    
+                    if (parts.length < 7) { 
+                        console.warn(`Skipping malformed quiz item at line ${index + 1}. Expected minimum 7 parts, got ${parts.length}. Data:`, item);
+                        return null;
+                    }
+                    
+                    const correctIndex1Based = parseInt(parts[2]);
+                    
+                    if (isNaN(correctIndex1Based) || correctIndex1Based < 1 || correctIndex1Based > 4) {
+                        console.error(`Invalid correct index for item ID ${parts[0]} on line ${index + 1}: ${parts[2]}. Must be 1, 2, 3, or 4.`);
+                        return null;
+                    }
+                    
+                    return {
+                        id: parts[0],
+                        question: parts[1],
+                        correctIndex: correctIndex1Based - 1, 
+                        options: [parts[3], parts[4], parts[5], parts[6]] 
+                    };
+                }).filter(q => q !== null);
                 
-                const keys = {};
+                return externalQuizSet;
 
-                // --- Quiz Generation Logic ---
-                const generateQuiz = () => {
-                    if (externalQuizSet.length === 0) {
-                        quizState.question = "No quiz questions loaded. Check console for errors.";
-                        return;
-                    }
-                    
-                    // If currentQuizIndex is 0 and length is 1, it will load the same question (index 0)
-                    // If currentQuizIndex is 0 and length is > 1, it will load the next question (index 1)
+            } catch(e) {
+                console.error("CRITICAL QUIZ PARSING ERROR:", e);
+                return [];
+            }
+        }
 
-                    const quizItem = externalQuizSet[currentQuizIndex];
-                    
-                    quizState.question = quizItem.question;
-                    quizState.answers = quizItem.answers;
-                    quizState.correctIndex = quizItem.correctIndex;
-                    
-                    // Move to the next question (loops back to 0 when end is reached)
-                    currentQuizIndex = (currentQuizIndex + 1) % externalQuizSet.length;
-                    
-                    console.log(`Now loading Question ID ${quizItem.id}. Next Index: ${currentQuizIndex}. Total Questions: ${externalQuizSet.length}`);
-                }
+        /**
+         * 載入測驗資料 (使用核心解析函數)
+         */
+        function dual_loadQuizData() {
+            dual_QUIZ_DATA = dual_getQuizDataArray();
 
-                // --- Responsiveness and Recalculation ---
-                const resizeCanvas = () => {
-                    const maxContainerWidth = dualGameContainer.parentElement.offsetWidth * 0.95; 
-                    const newWidth = Math.min(maxContainerWidth, 800); 
-                    const newHeight = newWidth * (480 / 800); 
-
-                    canvas.width = newWidth;
-                    canvas.height = newHeight;
-                    
-                    CANVAS_WIDTH = newWidth;
-                    CANVAS_HEIGHT = newHeight;
-                    VIEW_WIDTH = CANVAS_WIDTH / 2;
-                    
-                    // Recalculate size and speed based on new height
-                    const PLAYER_SIZE = CANVAS_HEIGHT * PLAYER_SIZE_RATIO;
-                    PLAYER_SPEED_PIXELS = CANVAS_HEIGHT * 0.008; 
-                    
-                    const answerBoxHeight = CANVAS_HEIGHT * ANSWER_BOX_SIZE_RATIO;
-                    const answerBoxWidth = answerBoxHeight; 
-
-                    ANSWER_SPACING = (CANVAS_HEIGHT - ANSWER_BOX_COUNT * answerBoxHeight) / (ANSWER_BOX_COUNT + 1); 
-
-                    answerBoxes.length = 0;
-                    for(let i = 0; i < ANSWER_BOX_COUNT; i++) {
-                        answerBoxes.push({ 
-                            id: i, 
-                            x: VIEW_WIDTH - answerBoxWidth - (CANVAS_WIDTH * 0.025),
-                            y: ANSWER_SPACING * (i + 1) + answerBoxHeight * i, 
-                            width: answerBoxWidth, 
-                            height: answerBoxHeight 
-                        });
-                    }
-
-                    players.p1.x = VIEW_WIDTH / 2 - PLAYER_SIZE / 2;
-                    players.p1.y = CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2;
-                    players.p2.x = VIEW_WIDTH / 2 - PLAYER_SIZE / 2;
-                    players.p2.y = CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2;
-                };
-
-                // --- Input Handlers (Keyboard) ---
-                const handleKeyDown = (e) => { keys[e.key] = true; };
-                const handleKeyUp = (e) => { keys[e.key] = false; };
-                document.addEventListener('keydown', handleKeyDown);
-                document.addEventListener('keyup', handleKeyUp);
-
-                // --- Input Handlers (Touch/Swipe) ---
-                let touchStart = { x: 0, y: 0 };
-                const SWIPE_THRESHOLD = 20;
-
-                const handleTouchStart = (e) => {
-                    e.preventDefault(); 
-                    const touch = e.touches[0];
-                    touchStart.x = touch.clientX;
-                    touchStart.y = touch.clientY;
-                };
-
-                const handleTouchEnd = (e) => {
-                    e.preventDefault();
-                    const touchEnd = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
-                    const deltaX = touchEnd.x - touchStart.x;
-                    const deltaY = touchEnd.y - touchStart.y;
-                    
-                    const canvasRect = canvas.getBoundingClientRect(); 
-
-                    const touchMidX = (touchStart.x + touchEnd.x) / 2;
-                    const isPlayer1Touch = touchMidX < canvasRect.left + canvasRect.width / 2;
-
-                    const player = isPlayer1Touch ? players.p1 : players.p2;
-                    const controls = player.controls;
-
-                    if (Math.abs(deltaX) > SWIPE_THRESHOLD || Math.abs(deltaY) > SWIPE_THRESHOLD) {
-                        
-                        let keyToPress = null;
-                        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                            keyToPress = deltaX > 0 ? controls.right : controls.left;
-                        } else {
-                            keyToPress = deltaY > 0 ? controls.down : controls.up;
-                        }
-
-                        keys[keyToPress] = true;
-                        setTimeout(() => {
-                            keys[keyToPress] = false;
-                        }, 100); 
-                    }
-                };
-                
-                canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-                canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-
-                // --- Game Logic Functions ---
-                const checkCollision = (player) => {
-                    if (quizState.correctIndex === -1) return;
-
-                    const PLAYER_SIZE = CANVAS_HEIGHT * PLAYER_SIZE_RATIO;
-                    const playerRight = player.x + PLAYER_SIZE;
-                    const playerBottom = player.y + PLAYER_SIZE;
-
-                    for (const box of answerBoxes) {
-                        const boxRight = box.x + box.width;
-                        const boxBottom = box.y + box.height;
-
-                        if (playerRight > box.x && player.x < boxRight &&
-                            playerBottom > box.y && player.y < boxBottom) {
-                            
-                            const isCorrect = box.id === quizState.correctIndex;
-                            
-                            // Reset player position regardless of outcome
-                            player.x = VIEW_WIDTH / 2 - PLAYER_SIZE / 2;
-                            player.y = CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2;
-
-                            if (isCorrect) {
-                                player.score++;
-                                p1ScoreDisplay.textContent = players.p1.score;
-                                p2ScoreDisplay.textContent = players.p2.score;
-                                
-                                // Show temporary feedback message
-                                successMessage = { 
-                                    text: "正確! NEXT QUESTION", 
-                                    color: player.color,
-                                    x: CANVAS_WIDTH / 2, 
-                                    y: CANVAS_HEIGHT / 2 
-                                };
-
-                                setTimeout(() => {
-                                    successMessage = null;
-                                    generateQuiz(); // Generate the next quiz AFTER the message timeout
-                                }, 500); // 0.5 second pause for visual feedback
-                                
-                            } 
-                            break; 
-                        }
-                    }
-                }
-
-                const handleMovementInput = (player, viewBoundary) => {
-                    const controls = player.controls;
-                    const PLAYER_SIZE = CANVAS_HEIGHT * PLAYER_SIZE_RATIO;
-                    let dx = 0, dy = 0;
-
-                    if (keys[controls.up]) dy -= 1;
-                    if (keys[controls.down]) dy += 1;
-                    if (keys[controls.left]) dx -= 1;
-                    if (keys[controls.right]) dx += 1;
-
-                    if (dx !== 0 || dy !== 0) {
-                        const length = Math.sqrt(dx * dx + dy * dy);
-                        if (length > 0) {
-                            player.x += (dx / length) * PLAYER_SPEED_PIXELS;
-                            player.y += (dy / length) * PLAYER_SPEED_PIXELS;
-                        }
-                    }
-
-                    player.x = Math.max(0, Math.min(viewBoundary.width - PLAYER_SIZE, player.x));
-                    player.y = Math.max(0, Math.min(viewBoundary.height - PLAYER_SIZE, player.y));
-                }
-
-                const drawAnswerBox = (box, answerText) => {
-                    ctx.fillStyle = '#fef3c7'; 
-                    ctx.fillRect(box.x, box.y, box.width, box.height);
-                    
-                    ctx.strokeStyle = '#d97706'; 
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-                    ctx.fillStyle = '#1f2937'; 
-                    ctx.font = `${Math.floor(box.height * 0.25)}px Inter, sans-serif`; 
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    
-                    const words = answerText.split(' ');
-                    if (words.length > 2) { 
-                        // Handle multiline text for long answers
-                        const line1 = words.slice(0, Math.ceil(words.length / 2)).join(' ');
-                        const line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
-                        const lineHeight = Math.floor(box.height * 0.25) + 4;
-                        ctx.fillText(line1, box.x + box.width / 2, box.y + box.height / 2 - lineHeight / 2);
-                        ctx.fillText(line2, box.x + box.width / 2, box.y + box.height / 2 + lineHeight / 2);
-                    } else {
-                        ctx.fillText(answerText, box.x + box.width / 2, box.y + box.height / 2);
-                    }
-                }
-
-                const drawPlayer = (player) => {
-                    const PLAYER_SIZE = CANVAS_HEIGHT * PLAYER_SIZE_RATIO;
-                    ctx.fillStyle = player.color;
-                    ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
-                }
-
-                const drawView = (player, viewArea, isPlayer1) => {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.rect(viewArea.x, viewArea.y, viewArea.width, viewArea.height);
-                    ctx.clip();
-
-                    if (!isPlayer1) {
-                        ctx.translate(viewArea.x, 0); 
-                    }
-
-                    // Draw Question (問題)
-                    ctx.fillStyle = '#1f2937'; 
-                    ctx.font = `${Math.floor(CANVAS_HEIGHT * 0.045)}px Inter, sans-serif`; 
-                    ctx.textAlign = 'center';
-                    const questionText = quizState.question;
-                    const words = questionText.split(' ');
-                    const lineHeight = Math.floor(CANVAS_HEIGHT * 0.045) + 5;
-                    
-                    const qX = VIEW_WIDTH / 2;
-                    const qY_base = CANVAS_HEIGHT * 0.083; 
-
-                    if (words.length > 5) { 
-                        let line1 = words.slice(0, Math.ceil(words.length / 2)).join(' ');
-                        let line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
-                        ctx.fillText(line1, qX, qY_base - lineHeight / 2);
-                        ctx.fillText(line2, qX, qY_base + lineHeight / 2);
-                    } else {
-                        ctx.fillText(questionText, qX, qY_base);
-                    }
-
-
-                    // Draw Answer Boxes (答案區)
-                    answerBoxes.forEach((box, index) => {
-                        const answerText = quizState.answers[index];
-                        drawAnswerBox(box, answerText); 
-                    });
-                    
-                    // Draw the Player (玩家)
-                    drawPlayer(player);
-
-                    // Draw the local arena boundary (競技場邊界)
-                    ctx.strokeStyle = player.color;
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(0, 0, VIEW_WIDTH, CANVAS_HEIGHT);
-                    
-                    ctx.restore();
-                }
-
-                // The 'update' function runs game logic
-                const update = () => {
-                    const pBoundary = { width: VIEW_WIDTH, height: CANVAS_HEIGHT };
-                    
-                    handleMovementInput(players.p1, pBoundary);
-                    checkCollision(players.p1);
-
-                    handleMovementInput(players.p2, pBoundary);
-                    checkCollision(players.p2); 
-                }
-
-                // The 'draw' function renders the scene
-                const draw = () => {
-                    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-                    // Draw the dividing line (分隔線)
-                    ctx.strokeStyle = '#1f2937';
-                    ctx.lineWidth = 5;
-                    ctx.beginPath();
-                    ctx.moveTo(VIEW_WIDTH, 0);
-                    ctx.lineTo(VIEW_WIDTH, CANVAS_HEIGHT);
-                    ctx.stroke();
-
-                    // Draw Player 1's View (左半邊)
-                    const view1 = { x: 0, y: 0, width: VIEW_WIDTH, height: CANVAS_HEIGHT };
-                    drawView(players.p1, view1, true);
-
-                    // Draw Player 2's View (右半邊)
-                    const view2 = { x: VIEW_WIDTH, y: 0, width: VIEW_WIDTH, height: CANVAS_HEIGHT };
-                    drawView(players.p2, view2, false);
-
-                    // Draw Success Message (如果存在)
-                    if (successMessage) {
-                        ctx.save();
-                        ctx.fillStyle = successMessage.color;
-                        ctx.font = `${Math.floor(CANVAS_HEIGHT * 0.08)}px Inter, sans-serif`;
-                        ctx.textAlign = 'center';
-                        ctx.fillText(successMessage.text, successMessage.x, successMessage.y);
-                        ctx.restore();
-                    }
-                }
-
-                // --- Game Loop ---
-                const gameLoop = () => {
-                    update();
-                    draw();
-                    requestAnimationFrame(gameLoop);
-                }
-
-                // --- Start Sequence ---
-                parseQuizData();
-                resizeCanvas(); 
-                generateQuiz(); 
-                gameLoop();
-
-                window.addEventListener('resize', resizeCanvas);
+            if (dual_QUIZ_DATA.length > 0) {
+                 dual_shuffleArray(dual_QUIZ_DATA); 
             }
 
-            // Add the click handler to the start button
-            startGameButton.addEventListener('click', () => {
-                // 1. Hide the button
-                startGameButton.style.display = 'none';
-                
-                // 2. Show the game container (and the canvas inside it)
-                dualGameContainer.style.display = 'flex';
-                
-                // 3. Start the logic
-                initializeAndStartGame();
+            dual_MAX_ROUNDS = dual_QUIZ_DATA.length * 2;
+            console.log(`Quiz data loaded. Total questions: ${dual_QUIZ_DATA.length}. Total rounds: ${dual_MAX_ROUNDS}`);
+        }
+
+        window.dual_startGame = function() {
+            dual_loadQuizData();
+
+            if (dual_QUIZ_DATA.length === 0) {
+                 document.getElementById('start-screen').classList.add('hidden');
+                 document.getElementById('game-elements').classList.remove('hidden');
+                 document.getElementById('game-status').innerHTML = '<span class="text-red-400">🚨 錯誤：無法載入測驗資料！請檢查 #quizData 的格式是否正確。</span>';
+                 document.getElementById('question-text').textContent = '';
+                 return;
+            }
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-elements').classList.remove('hidden');
+
+            // --- 新增: 重置分數狀態和 DOM 顯示 ---
+            dual_players[1].score = 0;
+            dual_players[2].score = 0;
+            document.getElementById('score-p1').textContent = 0;
+            document.getElementById('score-p2').textContent = 0;
+            // ------------------------------------
+
+            dual_gameActive = true;
+            
+            document.getElementById('angle-slider-p2').value = dual_players[2].angleDeg;
+            document.getElementById('angle-p1').textContent = dual_players[1].angleDeg;
+            document.getElementById('angle-p2').textContent = dual_players[2].angleDeg;
+            
+            dual_roundNumber = 0; 
+            dual_switchTurn(); 
+
+            dual_gameLoop();
+        }
+
+        // --- 測驗/目標函式 (已更新前綴) ---
+
+        function dual_setupTargets() {
+            // FIX: 統一索引計算 (使用 (roundNumber - 1) / 2)
+            const questionIndex = Math.floor((dual_roundNumber - 1) / 2); 
+            
+            if (questionIndex >= dual_QUIZ_DATA.length) return; 
+            
+            const question = dual_QUIZ_DATA[questionIndex];
+            dual_targets = []; // 每次設置新問題時都清空
+            
+            const TARGET_WIDTH = 120;
+            const TARGET_HEIGHT = 30;
+            const SPACING = 15;
+            
+            dual_currentQuizCorrectIndex = question.correctIndex; 
+
+            const totalHeight = question.options.length * TARGET_HEIGHT + (question.options.length - 1) * SPACING;
+            let currentY = dual_HEIGHT / 2 - totalHeight / 2; 
+
+            question.options.forEach((optionText, index) => {
+                const x = dual_WIDTH / 2 - TARGET_WIDTH / 2;
+                const y = currentY;
+                dual_targets.push({
+                    x: x,
+                    y: y,
+                    width: TARGET_WIDTH,
+                    height: TARGET_HEIGHT,
+                    text: `${index + 1}. ${optionText}`,
+                    isCorrect: index === dual_currentQuizCorrectIndex,
+                    hit: false
+                });
+                currentY += TARGET_HEIGHT + SPACING; 
             });
-        })(); 
-        // --- END OF IIFE ---
+        }
+
+        function dual_drawTargets() {
+            dual_targets.forEach(target => {
+                dualGameCtx.fillStyle = target.hit ? '#ef4444' : (target.isCorrect ? '#3b82f6' : '#6b7280'); 
+                dualGameCtx.fillRect(target.x, target.y, target.width, target.height);
+                
+                dualGameCtx.fillStyle = target.hit ? '#ffffff' : '#f3f4f6';
+                dualGameCtx.font = '12px Inter';
+                dualGameCtx.textAlign = 'center';
+                dualGameCtx.textBaseline = 'middle';
+                dualGameCtx.fillText(target.text, target.x + target.width / 2, target.y + target.height / 2);
+
+                dualGameCtx.strokeStyle = '#1f2937';
+                dualGameCtx.lineWidth = 1;
+                dualGameCtx.strokeRect(target.x, target.y, target.width, target.height);
+            });
+        }
 
 
+        function dual_displayQuestionAndEnableFire() {
+            const questionIndex = Math.floor((dual_roundNumber - 1) / 2);
+            if (questionIndex >= dual_QUIZ_DATA.length) return; 
 
-//=========================切水果遊戲結束======================================================================
-//=========================================================== Dual player Game
+            const question = dual_QUIZ_DATA[questionIndex];
 
+            const statusText = document.getElementById('game-status');
+            const questionText = document.getElementById('question-text');
 
-        // --- START OF IIFE FOR SCOPE ISOLATION ---
-        (function() {
-            const startGameButton = document.getElementById('startGameButton');
-            const dualGameContainer = document.getElementById('dualGameContainer');
+            statusText.textContent = `回合 ${dual_roundNumber}/${dual_MAX_ROUNDS} - 🎯 輪到玩家 ${dual_currentPlayer}：請射擊正確答案方塊！`;
+            // 每次都更新問題文字
+            questionText.textContent = `問題 ${question.id}: ${question.question}`;
             
-            const shuffleArray = (array) => {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-            };
-
-            function initializeAndStartGame() {
-                if (dualGameContainer.dataset.initialized === 'true') return;
-                dualGameContainer.dataset.initialized = 'true';
-
-                const canvas = document.getElementById('dualGameCanvas');
-                const ctx = canvas.getContext('2d');
-                
-                const p1ScoreDisplay = document.getElementById('p1-score');
-                const p2ScoreDisplay = document.getElementById('p2-score');
-
-                let CANVAS_WIDTH = 0;
-                let CANVAS_HEIGHT = 0;
-                let VIEW_WIDTH = 0;
-                let ANSWER_SPACING = 0; 
-                let answerBoxes = []; 
-
-                const PLAYER_SIZE_RATIO = 0.04; 
-                let PLAYER_SPEED_PIXELS = 0; 
-                const ANSWER_BOX_COUNT = 4;
-                const ANSWER_BOX_SIZE_RATIO = 0.16; 
-
-                let externalQuizSet = [];
-                let currentQuizIndex = 0;
-                let successMessage = null; // New state for success message
-
-                // --- Data Parsing (ULTRA-ROBUST FIX V2) ---
-                const parseQuizData = () => {
-                    const quizDataElement = document.getElementById('quizArea').querySelector('#quizData');
-                    if (!quizDataElement) {
-                        console.error("Quiz data element not found.");
-                        return;
-                    }
-                    
-                    try {
-                        let dataString = quizDataElement.textContent.trim();
-  
-            // 1. 從 DOM 獲取原始文字，使用 innerHTML 以捕獲 <br> 和其他標籤
-            const rawHtmlText = quizDataElementX.innerHTML.trim();
+            // FIX: 僅在靶子陣列為空時（新問題回合開始時）才設定靶子
+            if (dual_targets.length === 0) {
+                 dual_setupTargets(); 
+            }
             
-            // 2. 嚴格資料淨化：將編輯器可能插入的 HTML 標籤轉換為標準換行符 (\n)
-            let cleanedText = rawHtmlText.replace(/<br\s*\/?>/gi, '\n'); // 替換 <br>
-            cleanedText = cleanedText.replace(/<\/?(p|div|span)[^>]*>/gi, '\n'); // 替換 <p>, <div>, <span>
-            // 標準化換行符，確保沒有連續換行或多餘的空白
-            cleanedText = cleanedText.replace(/\s*\n\s*/g, '\n').trim(); 
+            document.getElementById('fire-btn-p1').disabled = (dual_currentPlayer !== 1);
+            document.getElementById('fire-btn-p2').disabled = (dual_currentPlayer !== 2);
+            document.getElementById('angle-slider-p1').disabled = (dual_currentPlayer !== 1);
+            document.getElementById('angle-slider-p2').disabled = (dual_currentPlayer !== 2);
+        }
 
-            // 3. 按標準 \n 拆分，並過濾掉空行
-            const lines = cleanedText.split('\n').filter(function(line) { return line.trim() !== ''; });
+        function dual_showResults() {
+            document.getElementById('fire-btn-p1').disabled = true;
+            document.getElementById('fire-btn-p2').disabled = true;
+            document.getElementById('angle-slider-p1').disabled = true;
+            document.getElementById('angle-slider-p2').disabled = true;
+            
+            const p1Score = dual_players[1].score;
+            const p2Score = dual_players[2].score;
+            let resultMessage = "";
 
+            if (p1Score > p2Score) {
+                resultMessage = `🎉 恭喜玩家 1 (紅方) 獲勝！分數：${p1Score} vs ${p2Score}`;
+            } else if (p2Score > p1Score) {
+                resultMessage = `🎉 恭喜玩家 2 (綠方) 獲勝！分數：${p2Score} vs ${p1Score}`;
+            } else {
+                resultMessage = `🤝 遊戲平手！雙方分數都是 ${p1Score}。`;
+            }
+            
+            document.getElementById('game-status').innerHTML = `<span class="text-2xl">${resultMessage}</span>`;
+            document.getElementById('question-text').textContent = "遊戲已結束。請重新載入頁面開始新遊戲。";
+            
+            dual_targets = []; 
+        }
 
+        function dual_switchTurn() {
+            dual_roundNumber++;
 
+            if (dual_roundNumber > dual_MAX_ROUNDS) {
+                dual_gameActive = false;
+                dual_showResults();
+                return;
+            }
+            
+            dual_currentPlayer = (dual_roundNumber % 2 !== 0) ? 1 : 2;
+            
+            // 只有在 P1 啟動一個新測驗項目時，才清空靶子
+            if (dual_roundNumber % 2 !== 0 && dual_roundNumber > 1) {
+                dual_targets = [];
+                dual_currentQuizCorrectIndex = -1;
+            }
+            
+            dual_displayQuestionAndEnableFire();
+        }
 
-                      
-                       
-                        externalQuizSet = lines.map((item, index) => {
-                            // Split each item by the pipe '|' and remove leading/trailing spaces from parts
-                            const parts = item.split('|').map(p => p.trim());
-                            
-                            if (parts.length < 7) {
-                                console.warn(`Skipping malformed quiz item at index ${index}. Expected 7 parts (ID|Q|ANS_INDEX|A|B|C|D), got ${parts.length}. Data:`, item);
-                                return null;
-                            }
-                            
-                            const correctIndex1Based = parseInt(parts[2]);
-                            if (isNaN(correctIndex1Based) || correctIndex1Based < 1 || correctIndex1Based > 4) {
-                                console.error(`Invalid correct index for item ID ${parts[0]}: ${parts[2]}. Must be 1, 2, 3, or 4.`);
-                                return null;
-                            }
-                            
-                            return {
-                                id: parts[0],
-                                question: parts[1],
-                                correctIndex: correctIndex1Based - 1, // Convert 1-based index to 0-based
-                                answers: [parts[3], parts[4], parts[5], parts[6]]
-                            };
-                        }).filter(q => q !== null);
-                        
-                        if (externalQuizSet.length > 0) {
-                            shuffleArray(externalQuizSet); // Shuffle questions on load
-                        }
-                        console.log(`Loaded ${externalQuizSet.length} unique quiz questions.`);
+        // --- 遊戲物理與繪圖函式 (已更新前綴) ---
 
-                    } catch(e) {
-                        console.error("CRITICAL QUIZ PARSING ERROR:", e);
-                        console.log("Please ensure your quizData strictly follows the format: ID|QUESTION|CORRECT_INDEX|A|B|C|D");
-                        externalQuizSet = [];
-                    }
-                };
-                
-                // --- Game State ---
-                const players = {
-                    p1: { score: 0, x: 0, y: 0, color: '#3b82f6', controls: { up: 'w', down: 's', left: 'a', right: 'd' } },
-                    p2: { score: 0, x: 0, y: 0, color: '#ef4444', controls: { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' } }
-                };
+        const dual_toRadians = (degrees) => degrees * (Math.PI / 180);
 
-                let quizState = {
-                    question: "Loading...",
-                    answers: ["", "", "", ""],
-                    correctIndex: -1
-                };
-                
-                const keys = {};
+        window.dual_updateAngle = function(playerId, value) {
+            const angle = parseInt(value);
+            dual_players[playerId].angleDeg = angle;
+            document.getElementById(`angle-p${playerId}`).textContent = angle;
+        }
 
-                // --- Quiz Generation Logic ---
-                const generateQuiz = () => {
-                    if (externalQuizSet.length === 0) {
-                        quizState.question = "No quiz questions loaded. Check console for errors.";
-                        return;
-                    }
-                    
-                    // If currentQuizIndex is 0 and length is 1, it will load the same question (index 0)
-                    // If currentQuizIndex is 0 and length is > 1, it will load the next question (index 1)
-
-                    const quizItem = externalQuizSet[currentQuizIndex];
-                    
-                    quizState.question = quizItem.question;
-                    quizState.answers = quizItem.answers;
-                    quizState.correctIndex = quizItem.correctIndex;
-                    
-                    // Move to the next question (loops back to 0 when end is reached)
-                    currentQuizIndex = (currentQuizIndex + 1) % externalQuizSet.length;
-                    
-                    console.log(`Now loading Question ID ${quizItem.id}. Next Index: ${currentQuizIndex}. Total Questions: ${externalQuizSet.length}`);
-                }
-
-                // --- Responsiveness and Recalculation ---
-                const resizeCanvas = () => {
-                    const maxContainerWidth = dualGameContainer.parentElement.offsetWidth * 0.95; 
-                    const newWidth = Math.min(maxContainerWidth, 800); 
-                    const newHeight = newWidth * (480 / 800); 
-
-                    canvas.width = newWidth;
-                    canvas.height = newHeight;
-                    
-                    CANVAS_WIDTH = newWidth;
-                    CANVAS_HEIGHT = newHeight;
-                    VIEW_WIDTH = CANVAS_WIDTH / 2;
-                    
-                    // Recalculate size and speed based on new height
-                    const PLAYER_SIZE = CANVAS_HEIGHT * PLAYER_SIZE_RATIO;
-                    PLAYER_SPEED_PIXELS = CANVAS_HEIGHT * 0.008; 
-                    
-                    const answerBoxHeight = CANVAS_HEIGHT * ANSWER_BOX_SIZE_RATIO;
-                    const answerBoxWidth = answerBoxHeight; 
-
-                    ANSWER_SPACING = (CANVAS_HEIGHT - ANSWER_BOX_COUNT * answerBoxHeight) / (ANSWER_BOX_COUNT + 1); 
-
-                    answerBoxes.length = 0;
-                    for(let i = 0; i < ANSWER_BOX_COUNT; i++) {
-                        answerBoxes.push({ 
-                            id: i, 
-                            x: VIEW_WIDTH - answerBoxWidth - (CANVAS_WIDTH * 0.025),
-                            y: ANSWER_SPACING * (i + 1) + answerBoxHeight * i, 
-                            width: answerBoxWidth, 
-                            height: answerBoxHeight 
-                        });
-                    }
-
-                    players.p1.x = VIEW_WIDTH / 2 - PLAYER_SIZE / 2;
-                    players.p1.y = CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2;
-                    players.p2.x = VIEW_WIDTH / 2 - PLAYER_SIZE / 2;
-                    players.p2.y = CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2;
-                };
-
-                // --- Input Handlers (Keyboard) ---
-                const handleKeyDown = (e) => { keys[e.key] = true; };
-                const handleKeyUp = (e) => { keys[e.key] = false; };
-                document.addEventListener('keydown', handleKeyDown);
-                document.addEventListener('keyup', handleKeyUp);
-
-                // --- Input Handlers (Touch/Swipe) ---
-                let touchStart = { x: 0, y: 0 };
-                const SWIPE_THRESHOLD = 20;
-
-                const handleTouchStart = (e) => {
-                    e.preventDefault(); 
-                    const touch = e.touches[0];
-                    touchStart.x = touch.clientX;
-                    touchStart.y = touch.clientY;
-                };
-
-                const handleTouchEnd = (e) => {
-                    e.preventDefault();
-                    const touchEnd = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
-                    const deltaX = touchEnd.x - touchStart.x;
-                    const deltaY = touchEnd.y - touchStart.y;
-                    
-                    const canvasRect = canvas.getBoundingClientRect(); 
-
-                    const touchMidX = (touchStart.x + touchEnd.x) / 2;
-                    const isPlayer1Touch = touchMidX < canvasRect.left + canvasRect.width / 2;
-
-                    const player = isPlayer1Touch ? players.p1 : players.p2;
-                    const controls = player.controls;
-
-                    if (Math.abs(deltaX) > SWIPE_THRESHOLD || Math.abs(deltaY) > SWIPE_THRESHOLD) {
-                        
-                        let keyToPress = null;
-                        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                            keyToPress = deltaX > 0 ? controls.right : controls.left;
-                        } else {
-                            keyToPress = deltaY > 0 ? controls.down : controls.up;
-                        }
-
-                        keys[keyToPress] = true;
-                        setTimeout(() => {
-                            keys[keyToPress] = false;
-                        }, 100); 
-                    }
-                };
-                
-                canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-                canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-
-                // --- Game Logic Functions ---
-                const checkCollision = (player) => {
-                    if (quizState.correctIndex === -1) return;
-
-                    const PLAYER_SIZE = CANVAS_HEIGHT * PLAYER_SIZE_RATIO;
-                    const playerRight = player.x + PLAYER_SIZE;
-                    const playerBottom = player.y + PLAYER_SIZE;
-
-                    for (const box of answerBoxes) {
-                        const boxRight = box.x + box.width;
-                        const boxBottom = box.y + box.height;
-
-                        if (playerRight > box.x && player.x < boxRight &&
-                            playerBottom > box.y && player.y < boxBottom) {
-                            
-                            const isCorrect = box.id === quizState.correctIndex;
-                            
-                            // Reset player position regardless of outcome
-                            player.x = VIEW_WIDTH / 2 - PLAYER_SIZE / 2;
-                            player.y = CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2;
-
-                            if (isCorrect) {
-                                player.score++;
-                                p1ScoreDisplay.textContent = players.p1.score;
-                                p2ScoreDisplay.textContent = players.p2.score;
-                                
-                                // Show temporary feedback message
-                                successMessage = { 
-                                    text: "正確! NEXT QUESTION", 
-                                    color: player.color,
-                                    x: CANVAS_WIDTH / 2, 
-                                    y: CANVAS_HEIGHT / 2 
-                                };
-
-                                setTimeout(() => {
-                                    successMessage = null;
-                                    generateQuiz(); // Generate the next quiz AFTER the message timeout
-                                }, 500); // 0.5 second pause for visual feedback
-                                
-                            } 
-                            break; 
-                        }
-                    }
-                }
-
-                const handleMovementInput = (player, viewBoundary) => {
-                    const controls = player.controls;
-                    const PLAYER_SIZE = CANVAS_HEIGHT * PLAYER_SIZE_RATIO;
-                    let dx = 0, dy = 0;
-
-                    if (keys[controls.up]) dy -= 1;
-                    if (keys[controls.down]) dy += 1;
-                    if (keys[controls.left]) dx -= 1;
-                    if (keys[controls.right]) dx += 1;
-
-                    if (dx !== 0 || dy !== 0) {
-                        const length = Math.sqrt(dx * dx + dy * dy);
-                        if (length > 0) {
-                            player.x += (dx / length) * PLAYER_SPEED_PIXELS;
-                            player.y += (dy / length) * PLAYER_SPEED_PIXELS;
-                        }
-                    }
-
-                    player.x = Math.max(0, Math.min(viewBoundary.width - PLAYER_SIZE, player.x));
-                    player.y = Math.max(0, Math.min(viewBoundary.height - PLAYER_SIZE, player.y));
-                }
-
-                const drawAnswerBox = (box, answerText) => {
-                    ctx.fillStyle = '#fef3c7'; 
-                    ctx.fillRect(box.x, box.y, box.width, box.height);
-                    
-                    ctx.strokeStyle = '#d97706'; 
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-                    ctx.fillStyle = '#1f2937'; 
-                    ctx.font = `${Math.floor(box.height * 0.25)}px Inter, sans-serif`; 
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    
-                    const words = answerText.split(' ');
-                    if (words.length > 2) { 
-                        // Handle multiline text for long answers
-                        const line1 = words.slice(0, Math.ceil(words.length / 2)).join(' ');
-                        const line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
-                        const lineHeight = Math.floor(box.height * 0.25) + 4;
-                        ctx.fillText(line1, box.x + box.width / 2, box.y + box.height / 2 - lineHeight / 2);
-                        ctx.fillText(line2, box.x + box.width / 2, box.y + box.height / 2 + lineHeight / 2);
-                    } else {
-                        ctx.fillText(answerText, box.x + box.width / 2, box.y + box.height / 2);
-                    }
-                }
-
-                const drawPlayer = (player) => {
-                    const PLAYER_SIZE = CANVAS_HEIGHT * PLAYER_SIZE_RATIO;
-                    ctx.fillStyle = player.color;
-                    ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
-                }
-
-                const drawView = (player, viewArea, isPlayer1) => {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.rect(viewArea.x, viewArea.y, viewArea.width, viewArea.height);
-                    ctx.clip();
-
-                    if (!isPlayer1) {
-                        ctx.translate(viewArea.x, 0); 
-                    }
-
-                    // Draw Question (問題)
-                    ctx.fillStyle = '#1f2937'; 
-                    ctx.font = `${Math.floor(CANVAS_HEIGHT * 0.045)}px Inter, sans-serif`; 
-                    ctx.textAlign = 'center';
-                    const questionText = quizState.question;
-                    const words = questionText.split(' ');
-                    const lineHeight = Math.floor(CANVAS_HEIGHT * 0.045) + 5;
-                    
-                    const qX = VIEW_WIDTH / 2;
-                    const qY_base = CANVAS_HEIGHT * 0.083; 
-
-                    if (words.length > 5) { 
-                        let line1 = words.slice(0, Math.ceil(words.length / 2)).join(' ');
-                        let line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
-                        ctx.fillText(line1, qX, qY_base - lineHeight / 2);
-                        ctx.fillText(line2, qX, qY_base + lineHeight / 2);
-                    } else {
-                        ctx.fillText(questionText, qX, qY_base);
-                    }
-
-
-                    // Draw Answer Boxes (答案區)
-                    answerBoxes.forEach((box, index) => {
-                        const answerText = quizState.answers[index];
-                        drawAnswerBox(box, answerText); 
-                    });
-                    
-                    // Draw the Player (玩家)
-                    drawPlayer(player);
-
-                    // Draw the local arena boundary (競技場邊界)
-                    ctx.strokeStyle = player.color;
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(0, 0, VIEW_WIDTH, CANVAS_HEIGHT);
-                    
-                    ctx.restore();
-                }
-
-                // The 'update' function runs game logic
-                const update = () => {
-                    const pBoundary = { width: VIEW_WIDTH, height: CANVAS_HEIGHT };
-                    
-                    handleMovementInput(players.p1, pBoundary);
-                    checkCollision(players.p1);
-
-                    handleMovementInput(players.p2, pBoundary);
-                    checkCollision(players.p2); 
-                }
-
-                // The 'draw' function renders the scene
-                const draw = () => {
-                    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-                    // Draw the dividing line (分隔線)
-                    ctx.strokeStyle = '#1f2937';
-                    ctx.lineWidth = 5;
-                    ctx.beginPath();
-                    ctx.moveTo(VIEW_WIDTH, 0);
-                    ctx.lineTo(VIEW_WIDTH, CANVAS_HEIGHT);
-                    ctx.stroke();
-
-                    // Draw Player 1's View (左半邊)
-                    const view1 = { x: 0, y: 0, width: VIEW_WIDTH, height: CANVAS_HEIGHT };
-                    drawView(players.p1, view1, true);
-
-                    // Draw Player 2's View (右半邊)
-                    const view2 = { x: VIEW_WIDTH, y: 0, width: VIEW_WIDTH, height: CANVAS_HEIGHT };
-                    drawView(players.p2, view2, false);
-
-                    // Draw Success Message (如果存在)
-                    if (successMessage) {
-                        ctx.save();
-                        ctx.fillStyle = successMessage.color;
-                        ctx.font = `${Math.floor(CANVAS_HEIGHT * 0.08)}px Inter, sans-serif`;
-                        ctx.textAlign = 'center';
-                        ctx.fillText(successMessage.text, successMessage.x, successMessage.y);
-                        ctx.restore();
-                    }
-                }
-
-                // --- Game Loop ---
-                const gameLoop = () => {
-                    update();
-                    draw();
-                    requestAnimationFrame(gameLoop);
-                }
-
-                // --- Start Sequence ---
-                parseQuizData();
-                resizeCanvas(); 
-                generateQuiz(); 
-                gameLoop();
-
-                window.addEventListener('resize', resizeCanvas);
+        window.dual_fireBullet = function(playerId) {
+            const player = dual_players[playerId];
+            if (!dual_gameActive || playerId !== dual_currentPlayer || dual_bullet) {
+                return;
             }
 
-            // Add the click handler to the start button
-            startGameButton.addEventListener('click', () => {
-                // 1. Hide the button
-                startGameButton.style.display = 'none';
-                
-                // 2. Show the game container (and the canvas inside it)
-                dualGameContainer.style.display = 'flex';
-                
-                // 3. Start the logic
-                initializeAndStartGame();
-            });
-        })(); 
-        // --- END OF IIFE ---
-
-
-
-
-//=========================切水果遊戲結束======================================================================
-//=========================================================== Dual player Game
-
-
-        // --- START OF IIFE FOR SCOPE ISOLATION ---
-        (function() {
-            const startGameButton = document.getElementById('startGameButton');
-            const dualGameContainer = document.getElementById('dualGameContainer');
+            const angleRad = dual_toRadians(player.angleDeg);
+            const barrelLength = 30;
             
-            const shuffleArray = (array) => {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
+            const startX = player.x + barrelLength * Math.cos(angleRad);
+            const startY = player.y - barrelLength * Math.sin(angleRad);
+
+            const vx = dual_MUZZLE_VELOCITY * Math.cos(angleRad);
+            const vy = -dual_MUZZLE_VELOCITY * Math.sin(angleRad);
+
+            dual_bullet = {
+                x: startX,
+                y: startY,
+                vx: vx,
+                vy: vy,
+                player: playerId,
+                color: player.color
             };
-
-            function initializeAndStartGame() {
-                if (dualGameContainer.dataset.initialized === 'true') return;
-                dualGameContainer.dataset.initialized = 'true';
-
-                const canvas = document.getElementById('dualGameCanvas');
-                const ctx = canvas.getContext('2d');
-                
-                const p1ScoreDisplay = document.getElementById('p1-score');
-                const p2ScoreDisplay = document.getElementById('p2-score');
-
-                let CANVAS_WIDTH = 0;
-                let CANVAS_HEIGHT = 0;
-                let VIEW_WIDTH = 0;
-                let ANSWER_SPACING = 0; 
-                let answerBoxes = []; 
-
-                const PLAYER_SIZE_RATIO = 0.04; 
-                let PLAYER_SPEED_PIXELS = 0; 
-                const ANSWER_BOX_COUNT = 4;
-                const ANSWER_BOX_SIZE_RATIO = 0.16; 
-
-                let externalQuizSet = [];
-                let currentQuizIndex = 0;
-                let successMessage = null; // New state for success message
-
-                // --- Data Parsing (ULTRA-ROBUST FIX V2) ---
-                const parseQuizData = () => {
-                    const quizDataElement = document.getElementById('quizArea').querySelector('#quizData');
-                    if (!quizDataElement) {
-                        console.error("Quiz data element not found.");
-                        return;
-                    }
-                    
-                    try {
-                        let dataString = quizDataElement.textContent.trim();
-  
-            // 1. 從 DOM 獲取原始文字，使用 innerHTML 以捕獲 <br> 和其他標籤
-            const rawHtmlText = quizDataElementX.innerHTML.trim();
             
-            // 2. 嚴格資料淨化：將編輯器可能插入的 HTML 標籤轉換為標準換行符 (\n)
-            let cleanedText = rawHtmlText.replace(/<br\s*\/?>/gi, '\n'); // 替換 <br>
-            cleanedText = cleanedText.replace(/<\/?(p|div|span)[^>]*>/gi, '\n'); // 替換 <p>, <div>, <span>
-            // 標準化換行符，確保沒有連續換行或多餘的空白
-            cleanedText = cleanedText.replace(/\s*\n\s*/g, '\n').trim(); 
+            document.getElementById('fire-btn-p1').disabled = true;
+            document.getElementById('fire-btn-p2').disabled = true;
+            document.getElementById('angle-slider-p1').disabled = true;
+            document.getElementById('angle-slider-p2').disabled = true;
+            document.getElementById('game-status').textContent = `玩家 ${playerId} 發射了！`;
+        }
 
-            // 3. 按標準 \n 拆分，並過濾掉空行
-            const lines = cleanedText.split('\n').filter(function(line) { return line.trim() !== ''; });
+        function dual_drawGround() {
+            dualGameCtx.fillStyle = '#4F9D28';
+            dualGameCtx.fillRect(0, dual_GROUND_Y, dual_WIDTH, dual_HEIGHT - dual_GROUND_Y);
+        }
 
+        function dual_drawCannon(player) {
+            dualGameCtx.fillStyle = player.color;
+            dualGameCtx.beginPath();
+            dualGameCtx.fillRect(player.x - 15, player.y - 10, 30, 10);
+            dualGameCtx.arc(player.x, player.y, 10, 0, Math.PI * 2);
+            dualGameCtx.fill();
 
+            const angleRad = dual_toRadians(player.angleDeg);
+            const barrelLength = 30;
+            const barrelWidth = 6;
+            
+            dualGameCtx.save();
+            dualGameCtx.translate(player.x, player.y);
+            dualGameCtx.fillStyle = player.color;
+            
+            if (player.id === 1) {
+                dualGameCtx.rotate(-angleRad); 
+                dualGameCtx.fillRect(0, -barrelWidth / 2, barrelLength, barrelWidth);
+            } else {
+                const visualAngleFromLeft = Math.PI - angleRad; 
+                dualGameCtx.rotate(visualAngleFromLeft); 
+                dualGameCtx.fillRect(-barrelLength, -barrelWidth / 2, barrelLength, barrelWidth);
+            }
+            
+            dualGameCtx.restore();
+        }
 
+        function dual_drawBullet() {
+            if (dual_bullet) {
+                dualGameCtx.fillStyle = dual_bullet.color;
+                dualGameCtx.beginPath();
+                dualGameCtx.arc(dual_bullet.x, dual_bullet.y, dual_BULLET_RADIUS, 0, Math.PI * 2);
+                dualGameCtx.fill();
+            }
+        }
 
-                      
-                       
-                        externalQuizSet = lines.map((item, index) => {
-                            // Split each item by the pipe '|' and remove leading/trailing spaces from parts
-                            const parts = item.split('|').map(p => p.trim());
-                            
-                            if (parts.length < 7) {
-                                console.warn(`Skipping malformed quiz item at index ${index}. Expected 7 parts (ID|Q|ANS_INDEX|A|B|C|D), got ${parts.length}. Data:`, item);
-                                return null;
-                            }
-                            
-                            const correctIndex1Based = parseInt(parts[2]);
-                            if (isNaN(correctIndex1Based) || correctIndex1Based < 1 || correctIndex1Based > 4) {
-                                console.error(`Invalid correct index for item ID ${parts[0]}: ${parts[2]}. Must be 1, 2, 3, or 4.`);
-                                return null;
-                            }
-                            
-                            return {
-                                id: parts[0],
-                                question: parts[1],
-                                correctIndex: correctIndex1Based - 1, // Convert 1-based index to 0-based
-                                answers: [parts[3], parts[4], parts[5], parts[6]]
-                            };
-                        }).filter(q => q !== null);
+        function dual_updateBullet() {
+            if (!dual_bullet) return;
+
+            dual_bullet.x += dual_bullet.vx;
+            dual_bullet.y += dual_bullet.vy;
+            dual_bullet.vy += dual_GRAVITY;
+
+            // 檢查命中目標
+            if (dual_targets.length > 0) {
+                for (let i = 0; i < dual_targets.length; i++) {
+                    const target = dual_targets[i];
+                    
+                    if (
+                        dual_bullet.x > target.x &&
+                        dual_bullet.x < target.x + target.width &&
+                        dual_bullet.y > target.y &&
+                        dual_bullet.y < target.y + target.height
+                    ) {
+                        target.hit = true; 
+                        const hitCorrect = target.isCorrect;
                         
-                        if (externalQuizSet.length > 0) {
-                            shuffleArray(externalQuizSet); // Shuffle questions on load
+                        if (hitCorrect) {
+                            dual_players[dual_bullet.player].score++;
+                            document.getElementById(`score-p${dual_bullet.player}`).textContent = dual_players[dual_bullet.player].score;
+                            document.getElementById('game-status').textContent = `🏆 完美！玩家 ${dual_bullet.player} 擊中正確答案！`;
+                        } else {
+                            document.getElementById('game-status').textContent = `❌ 擊中錯誤答案 "${target.text}"，無得分。`;
                         }
-                        console.log(`Loaded ${externalQuizSet.length} unique quiz questions.`);
-
-                    } catch(e) {
-                        console.error("CRITICAL QUIZ PARSING ERROR:", e);
-                        console.log("Please ensure your quizData strictly follows the format: ID|QUESTION|CORRECT_INDEX|A|B|C|D");
-                        externalQuizSet = [];
-                    }
-                };
-                
-                // --- Game State ---
-                const players = {
-                    p1: { score: 0, x: 0, y: 0, color: '#3b82f6', controls: { up: 'w', down: 's', left: 'a', right: 'd' } },
-                    p2: { score: 0, x: 0, y: 0, color: '#ef4444', controls: { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' } }
-                };
-
-                let quizState = {
-                    question: "Loading...",
-                    answers: ["", "", "", ""],
-                    correctIndex: -1
-                };
-                
-                const keys = {};
-
-                // --- Quiz Generation Logic ---
-                const generateQuiz = () => {
-                    if (externalQuizSet.length === 0) {
-                        quizState.question = "No quiz questions loaded. Check console for errors.";
+                        
+                        dual_bullet = null;
+                        setTimeout(() => dual_switchTurn(), 2000); 
                         return;
                     }
-                    
-                    // If currentQuizIndex is 0 and length is 1, it will load the same question (index 0)
-                    // If currentQuizIndex is 0 and length is > 1, it will load the next question (index 1)
-
-                    const quizItem = externalQuizSet[currentQuizIndex];
-                    
-                    quizState.question = quizItem.question;
-                    quizState.answers = quizItem.answers;
-                    quizState.correctIndex = quizItem.correctIndex;
-                    
-                    // Move to the next question (loops back to 0 when end is reached)
-                    currentQuizIndex = (currentQuizIndex + 1) % externalQuizSet.length;
-                    
-                    console.log(`Now loading Question ID ${quizItem.id}. Next Index: ${currentQuizIndex}. Total Questions: ${externalQuizSet.length}`);
                 }
-
-                // --- Responsiveness and Recalculation ---
-                const resizeCanvas = () => {
-                    const maxContainerWidth = dualGameContainer.parentElement.offsetWidth * 0.95; 
-                    const newWidth = Math.min(maxContainerWidth, 800); 
-                    const newHeight = newWidth * (480 / 800); 
-
-                    canvas.width = newWidth;
-                    canvas.height = newHeight;
-                    
-                    CANVAS_WIDTH = newWidth;
-                    CANVAS_HEIGHT = newHeight;
-                    VIEW_WIDTH = CANVAS_WIDTH / 2;
-                    
-                    // Recalculate size and speed based on new height
-                    const PLAYER_SIZE = CANVAS_HEIGHT * PLAYER_SIZE_RATIO;
-                    PLAYER_SPEED_PIXELS = CANVAS_HEIGHT * 0.008; 
-                    
-                    const answerBoxHeight = CANVAS_HEIGHT * ANSWER_BOX_SIZE_RATIO;
-                    const answerBoxWidth = answerBoxHeight; 
-
-                    ANSWER_SPACING = (CANVAS_HEIGHT - ANSWER_BOX_COUNT * answerBoxHeight) / (ANSWER_BOX_COUNT + 1); 
-
-                    answerBoxes.length = 0;
-                    for(let i = 0; i < ANSWER_BOX_COUNT; i++) {
-                        answerBoxes.push({ 
-                            id: i, 
-                            x: VIEW_WIDTH - answerBoxWidth - (CANVAS_WIDTH * 0.025),
-                            y: ANSWER_SPACING * (i + 1) + answerBoxHeight * i, 
-                            width: answerBoxWidth, 
-                            height: answerBoxHeight 
-                        });
-                    }
-
-                    players.p1.x = VIEW_WIDTH / 2 - PLAYER_SIZE / 2;
-                    players.p1.y = CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2;
-                    players.p2.x = VIEW_WIDTH / 2 - PLAYER_SIZE / 2;
-                    players.p2.y = CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2;
-                };
-
-                // --- Input Handlers (Keyboard) ---
-                const handleKeyDown = (e) => { keys[e.key] = true; };
-                const handleKeyUp = (e) => { keys[e.key] = false; };
-                document.addEventListener('keydown', handleKeyDown);
-                document.addEventListener('keyup', handleKeyUp);
-
-                // --- Input Handlers (Touch/Swipe) ---
-                let touchStart = { x: 0, y: 0 };
-                const SWIPE_THRESHOLD = 20;
-
-                const handleTouchStart = (e) => {
-                    e.preventDefault(); 
-                    const touch = e.touches[0];
-                    touchStart.x = touch.clientX;
-                    touchStart.y = touch.clientY;
-                };
-
-                const handleTouchEnd = (e) => {
-                    e.preventDefault();
-                    const touchEnd = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
-                    const deltaX = touchEnd.x - touchStart.x;
-                    const deltaY = touchEnd.y - touchStart.y;
-                    
-                    const canvasRect = canvas.getBoundingClientRect(); 
-
-                    const touchMidX = (touchStart.x + touchEnd.x) / 2;
-                    const isPlayer1Touch = touchMidX < canvasRect.left + canvasRect.width / 2;
-
-                    const player = isPlayer1Touch ? players.p1 : players.p2;
-                    const controls = player.controls;
-
-                    if (Math.abs(deltaX) > SWIPE_THRESHOLD || Math.abs(deltaY) > SWIPE_THRESHOLD) {
-                        
-                        let keyToPress = null;
-                        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                            keyToPress = deltaX > 0 ? controls.right : controls.left;
-                        } else {
-                            keyToPress = deltaY > 0 ? controls.down : controls.up;
-                        }
-
-                        keys[keyToPress] = true;
-                        setTimeout(() => {
-                            keys[keyToPress] = false;
-                        }, 100); 
-                    }
-                };
-                
-                canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-                canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-
-                // --- Game Logic Functions ---
-                const checkCollision = (player) => {
-                    if (quizState.correctIndex === -1) return;
-
-                    const PLAYER_SIZE = CANVAS_HEIGHT * PLAYER_SIZE_RATIO;
-                    const playerRight = player.x + PLAYER_SIZE;
-                    const playerBottom = player.y + PLAYER_SIZE;
-
-                    for (const box of answerBoxes) {
-                        const boxRight = box.x + box.width;
-                        const boxBottom = box.y + box.height;
-
-                        if (playerRight > box.x && player.x < boxRight &&
-                            playerBottom > box.y && player.y < boxBottom) {
-                            
-                            const isCorrect = box.id === quizState.correctIndex;
-                            
-                            // Reset player position regardless of outcome
-                            player.x = VIEW_WIDTH / 2 - PLAYER_SIZE / 2;
-                            player.y = CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2;
-
-                            if (isCorrect) {
-                                player.score++;
-                                p1ScoreDisplay.textContent = players.p1.score;
-                                p2ScoreDisplay.textContent = players.p2.score;
-                                
-                                // Show temporary feedback message
-                                successMessage = { 
-                                    text: "正確! NEXT QUESTION", 
-                                    color: player.color,
-                                    x: CANVAS_WIDTH / 2, 
-                                    y: CANVAS_HEIGHT / 2 
-                                };
-
-                                setTimeout(() => {
-                                    successMessage = null;
-                                    generateQuiz(); // Generate the next quiz AFTER the message timeout
-                                }, 500); // 0.5 second pause for visual feedback
-                                
-                            } 
-                            break; 
-                        }
-                    }
-                }
-
-                const handleMovementInput = (player, viewBoundary) => {
-                    const controls = player.controls;
-                    const PLAYER_SIZE = CANVAS_HEIGHT * PLAYER_SIZE_RATIO;
-                    let dx = 0, dy = 0;
-
-                    if (keys[controls.up]) dy -= 1;
-                    if (keys[controls.down]) dy += 1;
-                    if (keys[controls.left]) dx -= 1;
-                    if (keys[controls.right]) dx += 1;
-
-                    if (dx !== 0 || dy !== 0) {
-                        const length = Math.sqrt(dx * dx + dy * dy);
-                        if (length > 0) {
-                            player.x += (dx / length) * PLAYER_SPEED_PIXELS;
-                            player.y += (dy / length) * PLAYER_SPEED_PIXELS;
-                        }
-                    }
-
-                    player.x = Math.max(0, Math.min(viewBoundary.width - PLAYER_SIZE, player.x));
-                    player.y = Math.max(0, Math.min(viewBoundary.height - PLAYER_SIZE, player.y));
-                }
-
-                const drawAnswerBox = (box, answerText) => {
-                    ctx.fillStyle = '#fef3c7'; 
-                    ctx.fillRect(box.x, box.y, box.width, box.height);
-                    
-                    ctx.strokeStyle = '#d97706'; 
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-                    ctx.fillStyle = '#1f2937'; 
-                    ctx.font = `${Math.floor(box.height * 0.25)}px Inter, sans-serif`; 
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    
-                    const words = answerText.split(' ');
-                    if (words.length > 2) { 
-                        // Handle multiline text for long answers
-                        const line1 = words.slice(0, Math.ceil(words.length / 2)).join(' ');
-                        const line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
-                        const lineHeight = Math.floor(box.height * 0.25) + 4;
-                        ctx.fillText(line1, box.x + box.width / 2, box.y + box.height / 2 - lineHeight / 2);
-                        ctx.fillText(line2, box.x + box.width / 2, box.y + box.height / 2 + lineHeight / 2);
-                    } else {
-                        ctx.fillText(answerText, box.x + box.width / 2, box.y + box.height / 2);
-                    }
-                }
-
-                const drawPlayer = (player) => {
-                    const PLAYER_SIZE = CANVAS_HEIGHT * PLAYER_SIZE_RATIO;
-                    ctx.fillStyle = player.color;
-                    ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
-                }
-
-                const drawView = (player, viewArea, isPlayer1) => {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.rect(viewArea.x, viewArea.y, viewArea.width, viewArea.height);
-                    ctx.clip();
-
-                    if (!isPlayer1) {
-                        ctx.translate(viewArea.x, 0); 
-                    }
-
-                    // Draw Question (問題)
-                    ctx.fillStyle = '#1f2937'; 
-                    ctx.font = `${Math.floor(CANVAS_HEIGHT * 0.045)}px Inter, sans-serif`; 
-                    ctx.textAlign = 'center';
-                    const questionText = quizState.question;
-                    const words = questionText.split(' ');
-                    const lineHeight = Math.floor(CANVAS_HEIGHT * 0.045) + 5;
-                    
-                    const qX = VIEW_WIDTH / 2;
-                    const qY_base = CANVAS_HEIGHT * 0.083; 
-
-                    if (words.length > 5) { 
-                        let line1 = words.slice(0, Math.ceil(words.length / 2)).join(' ');
-                        let line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
-                        ctx.fillText(line1, qX, qY_base - lineHeight / 2);
-                        ctx.fillText(line2, qX, qY_base + lineHeight / 2);
-                    } else {
-                        ctx.fillText(questionText, qX, qY_base);
-                    }
-
-
-                    // Draw Answer Boxes (答案區)
-                    answerBoxes.forEach((box, index) => {
-                        const answerText = quizState.answers[index];
-                        drawAnswerBox(box, answerText); 
-                    });
-                    
-                    // Draw the Player (玩家)
-                    drawPlayer(player);
-
-                    // Draw the local arena boundary (競技場邊界)
-                    ctx.strokeStyle = player.color;
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(0, 0, VIEW_WIDTH, CANVAS_HEIGHT);
-                    
-                    ctx.restore();
-                }
-
-                // The 'update' function runs game logic
-                const update = () => {
-                    const pBoundary = { width: VIEW_WIDTH, height: CANVAS_HEIGHT };
-                    
-                    handleMovementInput(players.p1, pBoundary);
-                    checkCollision(players.p1);
-
-                    handleMovementInput(players.p2, pBoundary);
-                    checkCollision(players.p2); 
-                }
-
-                // The 'draw' function renders the scene
-                const draw = () => {
-                    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-                    // Draw the dividing line (分隔線)
-                    ctx.strokeStyle = '#1f2937';
-                    ctx.lineWidth = 5;
-                    ctx.beginPath();
-                    ctx.moveTo(VIEW_WIDTH, 0);
-                    ctx.lineTo(VIEW_WIDTH, CANVAS_HEIGHT);
-                    ctx.stroke();
-
-                    // Draw Player 1's View (左半邊)
-                    const view1 = { x: 0, y: 0, width: VIEW_WIDTH, height: CANVAS_HEIGHT };
-                    drawView(players.p1, view1, true);
-
-                    // Draw Player 2's View (右半邊)
-                    const view2 = { x: VIEW_WIDTH, y: 0, width: VIEW_WIDTH, height: CANVAS_HEIGHT };
-                    drawView(players.p2, view2, false);
-
-                    // Draw Success Message (如果存在)
-                    if (successMessage) {
-                        ctx.save();
-                        ctx.fillStyle = successMessage.color;
-                        ctx.font = `${Math.floor(CANVAS_HEIGHT * 0.08)}px Inter, sans-serif`;
-                        ctx.textAlign = 'center';
-                        ctx.fillText(successMessage.text, successMessage.x, successMessage.y);
-                        ctx.restore();
-                    }
-                }
-
-                // --- Game Loop ---
-                const gameLoop = () => {
-                    update();
-                    draw();
-                    requestAnimationFrame(gameLoop);
-                }
-
-                // --- Start Sequence ---
-                parseQuizData();
-                resizeCanvas(); 
-                generateQuiz(); 
-                gameLoop();
-
-                window.addEventListener('resize', resizeCanvas);
             }
 
-            // Add the click handler to the start button
-            startGameButton.addEventListener('click', () => {
-                // 1. Hide the button
-                  //startGameButton.style.display = 'none';
-                  startGameButton.style.display = '';              
-                // 2. Show the game container (and the canvas inside it)
-                dualGameContainer.style.display = 'flex';
-                
-                // 3. Start the logic
-                initializeAndStartGame();
-            });
-        })(); 
-        // --- END OF IIFE ---
+            // 落地或越界處理
+            if (dual_bullet.y + dual_BULLET_RADIUS >= dual_GROUND_Y || dual_bullet.x < -10 || dual_bullet.x > dual_WIDTH + 10) {
+                if (dual_bullet) { 
+                    document.getElementById('game-status').textContent = `玩家 ${dual_currentPlayer} 射失了！`;
+                }
+                dual_bullet = null;
+                setTimeout(() => dual_switchTurn(), 2000); 
+                return;
+            }
+        }
+
+        /**
+         * 主要遊戲迴圈。
+         */
+        function dual_gameLoop() {
+            dualGameCtx.clearRect(0, 0, dual_WIDTH, dual_HEIGHT);
+            
+            dual_drawGround();
+            dual_drawCannon(dual_players[1]);
+            dual_drawCannon(dual_players[2]);
+            dual_drawTargets(); 
+
+            if (dual_bullet) { 
+                dual_updateBullet();
+            }
+            dual_drawBullet();
+
+            if (dual_gameActive) {
+                requestAnimationFrame(dual_gameLoop);
+            }
+        }
 
 
 
 
 
 
-
-
+//================================================================End Cannon Game
 //============================================================End Dual player Game
 //==========================================Random Number
 
@@ -6843,7 +5912,7 @@ document.getElementById('quizDataSource').value=rawHtmlText;
     window.initializeNumbers = function() {
 	let r=parseInt(document.getElementById('maxClassNumber').value);
         	 MAX_NUMBER=r;
-            showModal(r,'');
+           // showModal(r,'');
         availableNumbers = [];
         pickedNumbers = [];
 
@@ -7113,8 +6182,15 @@ document.getElementById('quizDataSource').value=rawHtmlText;
                 }, 3000);
             }
         }
+//================================================   人工語音 =========================
+
+       window.toggleSpeak = function(){
+	speaking=!speaking;
+	if(!speaking){speakBtn.textContent=  '🔈';}else{speakBtn.textContent= '🔇' ;}
+        }
 
         window.speakText = function(textToSpeak) {
+            if(speaking==false){return;}
 		   let seed=Math.floor(Math.random()*2);
 		   let lan=4;
 		if (textToSpeak.charCodeAt() > 255) {
@@ -7142,8 +6218,24 @@ document.getElementById('quizDataSource').value=rawHtmlText;
             } else {
                 alert("Your browser does not support Web Speech API.");
             }
+        event.stopPropagation();
+  event.cancelBubble = true;
 	//Text to speech-----------https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/getVoices
         }
+
+        const synth = window.speechSynthesis;
+       // const statusEl = document.getElementById('status-message');
+
+        window.stopSpeaking = function() {
+            if (synth.speaking || synth.pending) {
+                synth.cancel();
+               // statusEl.textContent = "Status: Speech stopped manually.";
+            } else {
+                // statusEl.textContent = "Status: Not currently speaking.";
+            }
+           // updateButtonState(false);
+        }
+
 
 
 
@@ -7478,7 +6570,7 @@ window.togglePanMode = function() {
     
     if (isPanModeActive) {
         // Activate pan mode
-        btn.textContent = 'Pan Mode: ON';
+        btn.textContent = '🤚: ON';
         btn.classList.replace('bg-blue-600', 'bg-red-600');
         
         // Add listeners only when pan mode is ON
@@ -7497,7 +6589,7 @@ window.togglePanMode = function() {
         
     } else {
         // Deactivate pan mode
-        btn.textContent = 'Toggle Pan Mode';
+        btn.textContent = '🤚';
         btn.classList.replace('bg-red-600', 'bg-blue-600');
         
         // Remove listeners when pan mode is OFF
@@ -7583,7 +6675,7 @@ function stopPan() {
 // Example of your setZoom function (ensure it's in the final script)
 window.setZoom = function(zoomV = null) {
     // ... (rest of the setZoom logic from the previous answer)
-    const bodyStyle = document.getElementById('editor-wrapper');
+    const bodyStyle = document.getElementById('main-container');
     bodyStyle.transform = `scale(${scaleFactor})`;
     bodyStyle.transformOrigin = 'top left'; 
     // ...
@@ -7797,7 +6889,7 @@ window.setZoom = function(zoomV = null) {
          [lastX, lastY] = [x, y];
 
 
-const editor = document.getElementById('editor');
+const editor = document.getElementById('main-container');
 //const editor = document.getElementById('editor-wrapper');
     const container = editor.parentElement; // Assuming the editor is in a scrollable container
 
