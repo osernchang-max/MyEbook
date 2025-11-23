@@ -573,54 +573,45 @@ pointer-events: auto;
          </div>
         <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
 <script>
-    /**
-     * Sets the zoom level on the document body using CSS transform: scale().
-     * @param {number|null} [zoomV=null] - Optional zoom percentage (e.g., 90, 100).
-     */
+ 
     window.setZoom = function(zoomV = null) {
         let scaleFactor; // The unitless float (e.g., 0.9, 1.0)
         
         // 1. Determine the target zoom value
-        if (zoomV !== null) {
-            // Use the value passed from the buttons (e.g., 90, 100)
+        if (zoomV !== null) {            
             scaleFactor = zoomV / 100; 
         } else {
-            // Use the value from the range input (e.g., 5.0 to 20.0, representing 50% to 200%)
-            // Assuming your range values (0.5 to 20) are meant to be multiplied by 10 to get a percentage.
             const rangeValue = parseFloat(document.getElementById('zoom').value);
             // Example: 10 * 10 = 100%. Scale factor = 1.0
             scaleFactor = rangeValue / 10; 
+
         }
 
         // 2. Apply the scaling and origin to the body
         const bodyStyle = document.getElementById('main-container').style;
-
+         document.getElementById('panScale').innerText=scaleFactor;
         // Set the transform for scaling
-        bodyStyle.transform = `scale(${scaleFactor})`;
-        
+                bodyStyle.transform = `scale(${scaleFactor})`;
+         
         // Ensure scaling originates from the top left to align with scroll management
         bodyStyle.transformOrigin = 'top left'; 
         
-        // Optional: Resetting the zoom property since we prefer transform: scale
-        bodyStyle.zoom = '100%'; 
+        // Optional: Resetting the zoom property since we prefer transform: scale------------document.body.style.zoom = zoomV+"%";
+       // bodyStyle.zoom = '100%'; 
+            let rangeScale = parseFloat(document.getElementById('Scale').value);
+           bodyStyle.zoom = `${rangeScale}%`; 
 
-        // Important: You'll likely need to adjust the scroll position here 
-        // to implement the "panning" effect you mentioned earlier.
-        // For now, this just handles the visual zoom.
-// Use this only if the style is NOT set inline (less common for dynamic zooming)
 const computedStyle = window.getComputedStyle(editor);
 const transformValue = computedStyle.getPropertyValue('transform');
 
-// transformValue will be a matrix string, e.g., "matrix(1.5, 0, 0, 1.5, 0, 0)"
-// You'd need a different regex to parse the scale factor from the matrix string.
-// Stick to setting and reading the inline style property (editor.style.transform) for simplicity.
+
     };
 </script>
 
 
 
 <div>
-    🔍
+    🔍<div id="panScale" style="display:inline"></div>
 <button 
     id="pan-toggle-btn" 
     onclick="togglePanMode()" 
@@ -638,14 +629,24 @@ const transformValue = computedStyle.getPropertyValue('transform');
         style="width:40px" 
         oninput="setZoom();" 
     >
-    
+    <input 
+        type="range" 
+        id="Scale" 
+        min="50" 
+        max="150" 
+        step="5" 
+        value="100" 
+        title="Browser Zoom Scale" 
+        style="width:40px" 
+        oninput="setZoom();" 
+    >    
     <button 
-        onclick="window.setZoom(90)" 
+        onclick="document.getElementById('Scale').value='90';window.setZoom(90)" 
         class="px-1 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition duration-150 shadow-md">
         90%
     </button>
     <button 
-        onclick="window.setZoom(100)" 
+        onclick="document.getElementById('Scale').value='100';window.setZoom(100)" 
         class="px-1 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition duration-150 shadow-md">
         100%
     </button>
@@ -819,7 +820,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
 
 
 
-  <div id="toolbar"  style="position:;z-index:50;left:20px;top:88vh;justify-content: center;align-items: center;" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+  <div id="toolbar"  style="position:;z-index:90;left:20px;top:88vh;justify-content: center;align-items: center;" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4">
  
 
 
@@ -842,7 +843,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
 
 
     
-            <button  title="切換編輯工具列" onclick="document.getElementById('styleControls').style.display=(document.getElementById('styleControls').style.display=='none')?'inline':'none';document.getElementById('MyTittle').style.display='';DesignMode=!DesignMode;this.innerText=(DesignMode)?'📝設計模式':'✔️白板模式';window.toggleSpeak();document.getElementById('toolbar').style.position=(document.getElementById('toolbar').style.position='absolute')?'':'absolute';"   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
+            <button  title="切換編輯工具列" onclick="document.getElementById('styleControls').style.display=(document.getElementById('styleControls').style.display=='none')?'inline':'none';document.getElementById('MyTittle').style.display='';DesignMode=!DesignMode;this.innerText=(DesignMode)?'📝設計模式':'✔️白板模式';window.toggleSpeak();;"   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
 
 
 
