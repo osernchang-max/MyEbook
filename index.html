@@ -4219,7 +4219,7 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
     window.getQuizUIHTML = function() {
         const htmlArray = [
             '<div id="quizArea" class="quiz-container flex flex-col items-center justify-center bg-white  rounded-lg ">',
-             '<button style="position:absolute;top:-10px;left:-20px;width:40px;height:40px;z-index:10;border-radius:25px;background-color:red;color:white" onclick="document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display=(document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display==\'none\')?\'\':\'none\';document.getElementById(\'quizToolBar\').style.display=(document.getElementById(\'quizToolBar\').style.display==\'none\')?\'\':\'none\';showModal(\'測驗遊戲按鈕顯示於工具列\',\'\')" >❔</button>',
+             '<button style="position:absolute;top:-10px;left:-20px;width:40px;height:40px;z-index:10;border-radius:25px;background-color:red;color:white" onclick="document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display=(document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display==\'none\')?\'\':\'none\';document.getElementById(\'quizToolBar\').style.display=(document.getElementById(\'quizToolBar\').style.display==\'\')?\'none\':\'\';showModal(\'測驗遊戲按鈕顯示於工具列\',\'\')" >❔</button>',
             // --- 編輯數據模式 (Edit View) ---
             '<div id="edit_view" class="w-full" style="display: none;">',
              '<h3 style="color:yellow;font-size:16pt;padding-left:30px">            編輯測驗題目 (支援試算表貼上)</h3>',
