@@ -1,7 +1,7 @@
 ﻿<html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💡MyEbook</title>
        <script src="https://cdn.tailwindcss.com"></script> 
     <script src="./Canvas_files/saved_resource"></script>
@@ -599,7 +599,8 @@ pointer-events: auto;
         // Optional: Resetting the zoom property since we prefer transform: scale------------document.body.style.zoom = zoomV+"%";
        // bodyStyle.zoom = '100%'; 
             let rangeScale = parseFloat(document.getElementById('Scale').value);
-           bodyStyle.zoom = `${rangeScale}%`; 
+          // bodyStyle.zoom = `${rangeScale}%`; 
+            document.body.style.zoom = `${rangeScale}%`; 
 
 const computedStyle = window.getComputedStyle(editor);
 const transformValue = computedStyle.getPropertyValue('transform');
@@ -843,7 +844,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
 
 
     
-            <button  title="切換編輯工具列" onclick="document.getElementById('styleControls').style.display=(document.getElementById('styleControls').style.display=='none')?'inline':'none';document.getElementById('MyTittle').style.display='';DesignMode=!DesignMode;this.innerText=(DesignMode)?'📝設計模式':'✔️白板模式';window.toggleSpeak();;"   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
+            <button  title="切換編輯工具列" onclick="document.getElementById('styleControls').style.display=(document.getElementById('styleControls').style.display=='none')?'inline':'none';document.getElementById('MyTittle').style.display='';DesignMode=!DesignMode;this.innerText=(DesignMode)?'📝設計模式':'✔️白板模式';window.toggleSpeak();document.getElementById('toolbar').style.position=(document.getElementById('toolbar').style.position='absolute')?'':'absolute';"   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
 
 
 
@@ -3581,9 +3582,9 @@ window.showModal = function(message, type = 'Info',target) {
  * This is where the game scoring logic usually lives.
  * NOTE: The full game logic is inside selectItem, but this is the movement check.
  */
- window.checkOverlap=function(movedElement) {
+ window.zzzzcheckOverlap=function(movedElement) {
     // If you are not in game mode, exit immediately
-    if (gameMode !== true) return; 
+   // if (gameMode !== true) return; 
 
     // Find the target element (assuming it has the ID stored in gameTarget)
     const targetElement = document.getElementById(gameTarget);
@@ -3602,9 +3603,9 @@ window.showModal = function(message, type = 'Info',target) {
         // You might add a visual feedback here, e.g., targetElement.classList.add('highlight-overlap');
         // The actual scoring should probably only happen on click/drop, but a visual check is helpful.
         console.log(`Overlap detected with ${gameTarget}!`);
-                        if(!otherItem.classList.contains('locked') && checkMode==true){
+                        if(!otherItem.classList.contains('locked')){
                             window.handleOverlap(otherItem);//--------------------------------------
-		 targetElement.classList.add('highlight-overlap');	
+		targetElement.classList.add('highlight-overlap');	
 	     }
 
 
@@ -6440,7 +6441,7 @@ document.getElementById('tmBar').style.display='none';
 
         // --- Final Utility Functions (Existing) ---
 
-        window.zzzzcheckOverlap = function(item) {
+        window.checkOverlap = function(item) {
             // *** PASTE YOUR FULL window.checkOverlap FUNCTION BODY HERE ***
             const itemRect = item.getBoundingClientRect();
             const items = document.querySelectorAll('.draggable-image, .floating-div');
@@ -6466,7 +6467,7 @@ document.getElementById('tmBar').style.display='none';
                 otherItem.classList.add('opacity-50', 'animate-bounce');
                 otherItem.classList.toggle('locked');
                 if(otherItem.classList.contains('draggable-image')){
-                    //otherItem.innerHTML="<span style=\"text-align:center;verticle-align:center;color:red\" >答對了~</div>";
+                    otherItem.innerHTML="<span style=\"text-align:center;verticle-align:center;color:red\" >答對了~</div>";
                 }
             }
         }
