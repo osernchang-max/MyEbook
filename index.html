@@ -931,7 +931,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
 
 <button id="textStyle" onclick="" style="border:2px solid black;width:30px;font-size:18px" > T </button> 
 
-<div id="textStyle_menu" style="display:none;position:absolute;top:80vh;left:40px;padding:10px;background:white;border:2px solid gray;border-radius:16px;z-index:31;width:800px;height:60px;" >
+<div id="textStyle_menu" style="display:none;position:absolute;top:40px;left:150px;padding:10px;background:white;border:2px solid gray;border-radius:16px;z-index:31;width:800px;height:60px;" >
 <span  title="關閉" onclick="document.getElementById('textStyle_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;" >🗷</span>
 
  <button id="editToggleBtn"  title="啟用/停用-編輯文字區塊" onclick="window.toggleContentEditable();" disabled class="px-2 py-1 bg-teal-500 text-white font-semibold rounded-lg hover:bg-yellow-500 transition duration-150 shadow-md">編輯文字區塊</button>
@@ -989,7 +989,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
 
 
 <!-- add menu -->
-<div id="add_menu" style="display:none;position:absolute;top:90vh;left:40px;width:98vw;z-index:30" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4 ">
+<div id="add_menu" style="display:none;position:absolute;top:40px;left:800px;width:98vw;z-index:50" class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4 ">
 
 <span  title="關閉" onclick="document.getElementById('add_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;z-index:30" >🗷</span>
 
@@ -1006,7 +1006,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
  
     <button  title="從圖庫插入" onclick="addDivWithImageBackgroundElement();document.all.picker.style.display='';"  style="background:cyan;border-radius:25%" >圖庫</button>
             <!-- NEW: Add Text Element Dropdown -->
-<button onclick="window.handlePaste()" >貼上本機圖片(<1m)</button>
+
 
 <!-- add menu -->
 </div>
@@ -1015,7 +1015,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
 
 <button id="layerControl" onclick="" style="position:" >💳圖層樣式</button>
 
-<div id="layerControl_menu"  style="display:none;position:absolute;z-index:30;top:95vh;left:20px;padding:10px;width:100%px;background:lightgray;border:2px solid gray;border-radius:16px;color:black;font-size:12px;vertical-align:center;opacity:50" >
+<div id="layerControl_menu"  style="display:none;position:absolute;z-index:30;top:80vh;left:20px;padding:10px;width:100%px;background:lightgray;border:2px solid gray;border-radius:16px;color:black;font-size:12px;vertical-align:center;opacity:50" >
 
 <span  title="關閉" onclick="document.getElementById('layerControl_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;" >🗷</span>
 		背景:
@@ -1068,7 +1068,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
 
 <span   id="idop"  onclick=""   class="flex flex-wrap text-s items-center hover:bg-yellow-100 cursor-hand  rounded-lg border border-gray-200 " style="position:relative;width:80px;height:40px;display:inline" >
 		🗃️圖卡設定
-            <span id="idop_menu" style="display:none;position:absolute;left:10px;top:-120px;width:640px;height:120px;font-size:18px;background:white;border:2px solid gray;z-index:30;padding:10px;border-radius:15px">
+            <span id="idop_menu" style="display:none;position:absolute;left:500px;top:-120px;width:640px;height:120px;font-size:18px;background:white;border:2px solid gray;z-index:30;padding:10px;border-radius:15px">
 <span  title="關閉" onclick="document.getElementById('idop_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;" >🗷</span>
 <span style="display:inline;font-color:blue;" >英文名稱:
 <span onclick="window.applyMyInfo();"    class="hover:bg-teal-600 cursor-hand" style="cursor:hand;border:2px solid black;background:yellow" >✔️套用</span>
@@ -1154,7 +1154,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
   <button onclick="FullScreen()"><font size="6" title=="全螢幕">💻</font></button>
 		<button onclick="window.PicNav()">	<font size="6" title=="閃示卡" >🖼️</font></button>       <button onclick="window.textSlider()"><font size="6" title=="動畫" >📽️</font></button>
 <button onclick="window.pickNumber();" style="font-size:12px;border:2px solid gray;border-radius:12px;padding:2px"  id="pickBtn"> 🙋‍♂️</button>
-<button onclick="document.getElementById('picker-wrapper').classList.remove('hidden');" style="font-size:12px;border:2px solid gray;border-radius:12px;padding:2px"  id="rstBtn"> ⚙</button><button onclick="window.insertDice();" style="font-size:25px" > 🎲</button>
+<button onclick="document.getElementById('picker-wrapper').classList.remove('hidden');" style="font-size:12px;border:2px solid gray;border-radius:12px;padding:2px"  id="rstBtn"> 🔢</button><button onclick="window.insertDice();" style="font-size:25px" > 🎲</button>
 <button onclick="window.restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
 <button onclick="window.dartMode();"  id="dartModeBtn" title="遊戲模式" style="font-size:20px" >🎯on</button>
 
@@ -1924,14 +1924,14 @@ function renderPageList() {
 
         // Up Button
         const upButton = document.createElement('button');
-        upButton.textContent = '⬆️';
+        upButton.textContent = '🔺';
         upButton.title = 'Move Up';
         upButton.onclick = (e) => { e.stopPropagation(); window.movePage(page.id, -1); };
         if (index === 0) upButton.disabled = true;
 
         // Down Button
         const downButton = document.createElement('button');
-        downButton.textContent = '⬇️';
+        downButton.textContent = '🔻';
         downButton.title = 'Move Down';
         downButton.onclick = (e) => { e.stopPropagation(); window.movePage(page.id, 1); };
         if (index === pages.length - 1) downButton.disabled = true;
@@ -1939,7 +1939,7 @@ function renderPageList() {
         // Delete Button
         const deleteButton = document.createElement('button');
         deleteButton.textContent = '🗑️';
-        deleteButton.title = 'Delete Page';
+        deleteButton.title = '刪除 Delete Page';
         deleteButton.style.color = 'red';
         deleteButton.onclick = (e) => { e.stopPropagation(); window.deletePage(page.id); };
 
@@ -1947,7 +1947,7 @@ function renderPageList() {
         // duplicate Button
         const duplicateButton = document.createElement('button');
         duplicateButton.textContent = '🗊';
-        duplicateButton.title = 'Delete Page';
+        duplicateButton.title = '再製 duplicate Page';
         duplicateButton.style.color = 'blue';
         duplicateButton.onclick = (e) => { e.stopPropagation(); window.duplicatePage(page.id); };
 
@@ -1957,7 +1957,7 @@ function renderPageList() {
         // Rename Button
         const RnButton = document.createElement('button');
         RnButton.textContent = 'R';
-        RnButton.title = 'Rename Page';
+        RnButton.title = '更名 Rename Page';
         RnButton.style.color = 'green';
         //RnButton.onclick = (e) => { e.stopPropagation(); window.renamePage(page.id,prompt('輸入新名稱', page.name)); };
 RnButton.onclick = (e) => { 
