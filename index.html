@@ -57,7 +57,7 @@ margin: 0;
         #main-container { display: flex; height: calc(90vh - 50px); } 
 
         /* Page Management Sidebar */
-        #page-manager { width: 250px; background-color: #ffffff; padding: 16px; border-right: 1px solid #e5e7eb; box-shadow: 2px 0 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        #page-manager { width: 350px; background-color: #ffffff; padding: 16px; border-right: 1px solid #e5e7eb; box-shadow: 2px 0 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
         #page-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
         #page-list li { padding: 10px; cursor: pointer; border-radius: 6px; margin-bottom: 5px; border: 1px solid transparent; display: flex; justify-content: space-between; align-items: center; }
         #page-list li.active { background-color: #dbeafe; color: #1e40af; font-weight: bold; border-color: #93c5fd; }
@@ -678,7 +678,8 @@ const transformValue = computedStyle.getPropertyValue('transform');
     <div id="main-container">
         
         <div id="page-manager" style="display:" >
-         <button onclick="window.createNewPage()"class="px-1 py-1 bg-blue-500 text-white font-xssemibold rounded-lg hover:bg-blue-600 transition duration-150 shadow-md">新增頁面</button>
+<button onclick="window.addPageAfterActive()" class="px-1 py-1 bg-blue-500 text-white font-xssemibold rounded-lg hover:bg-blue-600 transition duration-150 shadow-md">插入頁面</button>
+         <button onclick="window.createNewPage()"class="hidden px-1 py-1 bg-blue-500 text-white font-xssemibold rounded-lg hover:bg-blue-600 transition duration-150 shadow-md">新增頁面</button>
             <ul id="page-list">
                 </ul>
         </div>
@@ -1157,17 +1158,21 @@ const transformValue = computedStyle.getPropertyValue('transform');
 <button onclick="window.restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
 <button onclick="window.dartMode();"  id="dartModeBtn" title="遊戲模式" style="font-size:20px" >🎯on</button>
 
+<div class="px-2 py-1 bg-blue-200 text-white font-semibold rounded-lg hover:bg-red-200 transition duration-150 shadow-md">
 <button   onclick="window.stopSpeaking();" title="stop speaking">🔳</button>
 
 <span>
 <button" id="speakBtn" style="font-size:20px"  onclick="window.toggleSpeak()" >🔇</button>
 </span>
+</div>
+
+
 <div id="voiceGameControls" class="flex flex-col items-center gap-1 p-1 font-xs bg-yellow-50 rounded-lg shadow-inner"  >
 
 
     <button id="voiceButton" onclick="window.startRandomVoiceGame();document.getElementById('speechResult').style.display='';" 
             title="語音辨識Start Random Voice Recognition Game" 
-            class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition duration-150 shadow-md">
+            class="px-2 py-1 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition duration-150 shadow-md">
         🎙️  ▶️
     </button>
     <div id="OLDspeechResult" class="text-sm font-medium text-gray-500"     ontouchstart="this.style.display='none';" onclick="this.style.display='none';"   style="position:absolute;z-index:50;top:40px;left:100px;width:90%;height:80px;background:white;border-radius:16px;border:2px gray solid;padding:10px;font-size:30px;opacity:0.9;display:none">
@@ -1181,12 +1186,12 @@ const transformValue = computedStyle.getPropertyValue('transform');
 
     <button id="toggleGameModeBtn" onclick="window.toggleGameMode();speakText('get'+window.randomItem());" 
             title="Start Continuous Background Animation" 
-            class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-150 shadow-md">
+            class="px-2 py-1 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-150 shadow-md">
         ▶️ 🎮
     </button>
 <button onclick="window.animateAllRandomly(parseFloat(document.getElementById('goToTime').value))" 
             title="Animate all items to random locations" 
-            class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">
+            class="px-2 py-1 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">
        💢散開
     </button>
 </div>
@@ -1324,7 +1329,7 @@ const transformValue = computedStyle.getPropertyValue('transform');
         const lockToggleBtn = document.getElementById('lockToggleBtn');
 
 	let isPanModeActive = false;
-	 
+	 let acitvePage=null;
  let  myinterval =null;	 
 
 	// Get the element that acts as the scroll container (usually the body)
@@ -1884,6 +1889,104 @@ async function ensureProjectExists() {
     startRealtimeProjectListener(); 
 }
 
+
+function renderPageList() {
+    // CRITICAL: Use the module's existing projectData variable
+    const pages = projectData; 
+    const pageListElement = document.getElementById('page-list'); 
+    
+    // Check for element existence and data integrity
+    if (!pageListElement || !Array.isArray(pages) || pages.length === 0) {
+        if(pageListElement) pageListElement.innerHTML = ''; // Clear if the element exists
+        return;
+    }
+
+    pageListElement.innerHTML = ''; // Clear the existing list
+
+    pages.forEach((page, index) => {
+        const listItem = document.createElement('li');
+        listItem.id = `list-item-${page.id}`;
+        // Use an active class for styling
+        if (page.id === currentPageId) {
+            listItem.classList.add('active');
+		acitvePage=page.id
+        }
+        
+        // --- Page Name Span ---
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = page.name;
+        nameSpan.style.cssText = 'cursor: pointer; flex-grow: 1;';
+        nameSpan.onclick = () => window.switchPage(page.id);
+        
+        // --- Control Container ---
+        const controlContainer = document.createElement('div');
+        controlContainer.style.cssText = 'display: flex; gap: 5px;';
+
+        // Up Button
+        const upButton = document.createElement('button');
+        upButton.textContent = '⬆️';
+        upButton.title = 'Move Up';
+        upButton.onclick = (e) => { e.stopPropagation(); window.movePage(page.id, -1); };
+        if (index === 0) upButton.disabled = true;
+
+        // Down Button
+        const downButton = document.createElement('button');
+        downButton.textContent = '⬇️';
+        downButton.title = 'Move Down';
+        downButton.onclick = (e) => { e.stopPropagation(); window.movePage(page.id, 1); };
+        if (index === pages.length - 1) downButton.disabled = true;
+        
+        // Delete Button
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = '🗑️';
+        deleteButton.title = 'Delete Page';
+        deleteButton.style.color = 'red';
+        deleteButton.onclick = (e) => { e.stopPropagation(); window.deletePage(page.id); };
+
+
+        // duplicate Button
+        const duplicateButton = document.createElement('button');
+        duplicateButton.textContent = '🗊';
+        duplicateButton.title = 'Delete Page';
+        duplicateButton.style.color = 'blue';
+        duplicateButton.onclick = (e) => { e.stopPropagation(); window.duplicatePage(page.id); };
+
+
+
+
+        // Rename Button
+        const RnButton = document.createElement('button');
+        RnButton.textContent = 'R';
+        RnButton.title = 'Rename Page';
+        RnButton.style.color = 'green';
+        //RnButton.onclick = (e) => { e.stopPropagation(); window.renamePage(page.id,prompt('輸入新名稱', page.name)); };
+RnButton.onclick = (e) => { 
+    e.stopPropagation(); 
+    // Execute the prompt when the button is clicked!
+    const newName = prompt('輸入新名稱', page.name); 
+    if (newName !== null) { // Check if the user didn't cancel
+        window.renamePage(page.id, newName); 
+    }
+};
+
+
+        // --- Assemble and Append ---
+        //controlContainer.append(upButton, downButton, deleteButton);
+        controlContainer.append(upButton, downButton, deleteButton, RnButton, duplicateButton);
+        listItem.append(nameSpan, controlContainer);
+        
+        listItem.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 5px;';
+        
+            pageListElement.appendChild(listItem);
+    });
+}
+
+
+
+
+
+
+
         function getCurrentPage() {
             return projectData.find(p => p.id === currentPageId);
         }
@@ -1957,90 +2060,83 @@ function loadPageData(pageId) {
 }
 
 
-function renderPageList() {
-    // CRITICAL: Use the module's existing projectData variable
-    const pages = projectData; 
-    const pageListElement = document.getElementById('page-list'); 
-    
-    // Check for element existence and data integrity
-    if (!pageListElement || !Array.isArray(pages) || pages.length === 0) {
-        if(pageListElement) pageListElement.innerHTML = ''; // Clear if the element exists
+
+        window.getPageIndex=function(pageId) {
+            return projectData.findIndex(p => p.id === pageId);
+        }
+ 
+
+window.addPageAfterActive = function() {
+            const pageName = prompt("Enter new page name:", "New Page");
+            if (!pageName) return;
+
+            const newPageId = `page-${Date.now()}`;
+            const newPage = {
+                id: newPageId,
+                name: pageName,
+                html: `<div style="text-align: center; padding: 20px;" class="floating-div"><h1>${pageName}</h1><p>Let's learn!</p></div><div id="draggable-image" style="width:200px;height:200px;background-image(url('https://classroomclipart.com/image/content7/60315/thumb.gif');background-size:contain;z-index:10" ></div> `,
+                drawingData: null
+            };
+
+           // 1. Find the index of the active page
+            const activeIndex = currentPageId ? getPageIndex(currentPageId) : -1;
+
+            // 2. Insert the new page *after* the active one, or at the end if no active page
+            if (activeIndex !== -1) {
+                projectData.splice(activeIndex + 1, 0, newPage);
+            } else {
+                projectData.push(newPage);
+            }
+
+            // 3. Switch to the new page
+            saveCurrentPageData(); // Save the page we are leaving (or the one before the insertion point)
+            currentPageId = newPageId;
+            loadPageData(newPageId); // Load the new blank page
+            saveProject();
+            renderPageList();
+}
+
+/** Duplicates a page and inserts the copy right after the original. */
+window.duplicatePage = function(pageId) {
+    // 1. Find the index of the page to duplicate
+    const oldIndex = projectData.findIndex(p => p.id === pageId);
+
+    if (oldIndex === -1) {
+        console.error(`Page with ID ${pageId} not found.`);
         return;
     }
 
-    pageListElement.innerHTML = ''; // Clear the existing list
+    // 2. Get the page data
+    const pageToDuplicate = projectData[oldIndex];
 
-    pages.forEach((page, index) => {
-        const listItem = document.createElement('li');
-        listItem.id = `list-item-${page.id}`;
-        // Use an active class for styling
-        if (page.id === currentPageId) {
-            listItem.classList.add('active');
-        }
-        
-        // --- Page Name Span ---
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = page.name;
-        nameSpan.style.cssText = 'cursor: pointer; flex-grow: 1;';
-        nameSpan.onclick = () => window.switchPage(page.id);
-        
-        // --- Control Container ---
-        const controlContainer = document.createElement('div');
-        controlContainer.style.cssText = 'display: flex; gap: 5px;';
+    // 3. Create a deep copy of the page data.
+    // We use JSON methods for a simple deep clone, assuming page data is safe to stringify.
+    const newPage = JSON.parse(JSON.stringify(pageToDuplicate));
 
-        // Up Button
-        const upButton = document.createElement('button');
-        upButton.textContent = '⬆️';
-        upButton.title = 'Move Up';
-        upButton.onclick = (e) => { e.stopPropagation(); window.movePage(page.id, -1); };
-        if (index === 0) upButton.disabled = true;
-
-        // Down Button
-        const downButton = document.createElement('button');
-        downButton.textContent = '⬇️';
-        downButton.title = 'Move Down';
-        downButton.onclick = (e) => { e.stopPropagation(); window.movePage(page.id, 1); };
-        if (index === pages.length - 1) downButton.disabled = true;
-        
-        // Delete Button
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = '🗑️';
-        deleteButton.title = 'Delete Page';
-        deleteButton.style.color = 'red';
-        deleteButton.onclick = (e) => { e.stopPropagation(); window.deletePage(page.id); };
-
-
-        // Rename Button
-        const RnButton = document.createElement('button');
-        RnButton.textContent = 'R';
-        RnButton.title = 'Rename Page';
-        RnButton.style.color = 'red';
-        //RnButton.onclick = (e) => { e.stopPropagation(); window.renamePage(page.id,prompt('輸入新名稱', page.name)); };
-RnButton.onclick = (e) => { 
-    e.stopPropagation(); 
-    // Execute the prompt when the button is clicked!
-    const newName = prompt('輸入新名稱', page.name); 
-    if (newName !== null) { // Check if the user didn't cancel
-        window.renamePage(page.id, newName); 
+    // 4. Generate a new unique ID for the duplicated page
+    // A simple method is to append ' Copy' or a timestamp, but here we use a simple counter/suffix.
+    let newId = `${pageToDuplicate.id} Copy`;
+    let suffix = 1;
+    // Ensure the new ID is unique
+    while (projectData.some(p => p.id === newId)) {
+        newId = `${pageToDuplicate.id} Copy ${suffix++}`;
     }
-};
 
+    newPage.id = newId;
 
-        // --- Assemble and Append ---
-        //controlContainer.append(upButton, downButton, deleteButton);
-        controlContainer.append(upButton, downButton, deleteButton, RnButton);
-        listItem.append(nameSpan, controlContainer);
-        
-        listItem.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 5px;';
-        
-            pageListElement.appendChild(listItem);
-    });
+    // Optional: Reset any data that shouldn't be copied (e.g., last modified time)
+    // newPage.lastModified = new Date().toISOString(); 
+
+    // 5. Insert the new page right after the original page's index
+    const newIndex = oldIndex + 1;
+    projectData.splice(newIndex, 0, newPage);
+
+    // 6. Re-render the page list and save the project to the database
+    renderPageList();
+    window.saveProject();
+
+    console.log(`Duplicated page ${pageId} to ${newPage.id}`);
 }
- 
-
-
-
-
 
 
         
@@ -4220,13 +4316,13 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
      */
     window.getQuizUIHTML = function() {
         const htmlArray = [
-            '<div id="quizArea" class="quiz-container flex flex-col items-center justify-center bg-white  rounded-lg ">',
+            '<div id="quizArea" class="quiz-container flex flex-col items-center justify-center bg-white  rounded-lg " style="z-index:50" >',
              '<button style="position:absolute;top:-10px;left:-20px;width:40px;height:40px;z-index:10;border-radius:25px;background-color:red;color:white" onclick="document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display=(document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display==\'none\')?\'\':\'none\';document.getElementById(\'quizToolBar\').style.display=(document.getElementById(\'quizToolBar\').style.display==\'\')?\'none\':\'\';showModal(\'測驗遊戲按鈕顯示於工具列\',\'\')" >❔</button>',
             // --- 編輯數據模式 (Edit View) ---
             '<div id="edit_view" class="w-full" style="display: none;">',
-             '<h3 style="color:yellow;font-size:16pt;padding-left:30px">            編輯測驗題目 (支援試算表貼上)</h3>',
+             '<h2 style="color:orange;font-size:16pt;padding-left:30px">            編輯測驗題目 </h2>',
             // 修正：答案索引提示為 1-4
-            '<p class="text-sm text-gray-600 mb-3 text-left font-bold"> 題號|問題(含圖片)|正確答案索引(1-4)|選項A|選項B|選項C|選項D</p>',
+            '<p class="text-sm text-gray-600 mb-3 text-left font-bold"> 題號|問題(含圖片)|正確答案索引(1-4)|選項A|選項B|選項C|選項D (換行:shift+Enter，支援試算表貼上)</p>',
             
             // 新增按鈕群組
             '<div class="flex space-x-2 mb-3">',
