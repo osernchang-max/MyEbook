@@ -92,7 +92,7 @@ margin: 0;
 	justify-content: center;align-items: center;
         }
         /* Toolbar */
-        #main-toolbar { padding:5px; background-color: mintcream; border-bottom: 1px solid #ccc; display: flex; gap: 10px; align-items: center; }
+       /* #main-toolbar { padding:5px; background-color: mintcream; display: flex;border-bottom: 1px solid #ccc;  gap: 10px; align-items: center; }*/
         #currentProjectDisplay { font-weight: bold; padding: 0 10px; background: #fff; border-radius: 4px; }
 
 
@@ -433,11 +433,11 @@ details[open] > ul {
             
             <!-- 遊戲狀態/測驗區 (僅顯示文字) -->
             <div id="quiz-panel" class="w-full bg-yellow-900/50 p-4 rounded-lg mb-4 border border-yellow-500 transition duration-300 min-h-[50px]">                
-                <p id="question-text" class="text-xlg font-medium text-white text-center"></p>
+                <p id="question-text" class="text-xlg font-medium text-white text-center" style="font-size:35px" ></p>
             </div>
 
-            <!-- Canvas for the Game Area -->
-            <canvas id="game-canvas" width="800" height="450"></canvas>
+            <!-- Canvas for the Game Area width="800" height="450"-->
+            <canvas id="game-canvas" width="1280" height="600"></canvas>
             
             <!-- Controls Section -->
             <div class="w-full flex justify-between space-x-4 mt-6">
@@ -594,18 +594,18 @@ details[open] > ul {
 
 
 <!--≡main toolbar area-->
-    <div id="main-toolbar">
+    <div id="main-toolbar" >
 
  
 
 
 
- <button style="background-color:lightcyan;border-radius:8px;padding:8px;box-shadow:1px 1px gray" onclick="document.getElementById('page-manager').style.display=(document.getElementById('page-manager').style.display=='none')?'':'none';document.getElementById('project-manager').style.display=(document.getElementById('project-manager').style.display=='none')?'':'none';">
+ <button style="background-color:lime;border-radius:8px;padding:8px;box-shadow:1px 1px gray" onclick="document.getElementById('page-manager').style.display=(document.getElementById('page-manager').style.display=='none')?'':'none';document.getElementById('project-manager').style.display=(document.getElementById('project-manager').style.display=='none')?'':'none';">
   pages</button>
 
 
 
-<details style="background-color:lightcyan;width:100px;box-shadow:1px 1px gray">
+<details style="background-color:yellow;width:100px;box-shadow:1px 1px gray">
   <summary>Project</summary>
   <ul>
     <li><button onclick="window.saveProject()" title="Save to Cloud" >💾儲存雲端</button></li>
@@ -1068,7 +1068,7 @@ details[open] > ul {
 
 
     
-            <button  title="切換編輯工具列" onclick="document.getElementById('styleControls').style.display=(document.getElementById('styleControls').style.display=='none')?'inline':'none';document.getElementById('MyTittle').style.display='';DesignMode=!DesignMode;this.innerText=(DesignMode)?'📝設計模式':'✔️白板模式';window.toggleSpeak();document.getElementById('toolbar').style.position=(document.getElementById('toolbar').style.position='absolute')?'':'absolute';"   style="display:inline;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
+            <button  title="切換編輯工具列" onclick="document.getElementById('styleControls').style.display=(document.getElementById('styleControls').style.display=='none')?'inline':'none';document.getElementById('MyTittle').style.display='';DesignMode=!DesignMode;this.innerText=(DesignMode)?'📝設計模式':'✔️白板模式';window.toggleSpeak();document.getElementById('toolbar').style.position=(document.getElementById('toolbar').style.position='absolute')?'':'absolute';"   style="display:none;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
 
 
 
@@ -1098,7 +1098,7 @@ details[open] > ul {
                     <label for="pen-color" class="flex items-center ring-2 ring-gray-300 rounded-full transition duration-200">
                         <input type="color" id="pen-color" value="#FF0000" class="w-8 h-8 rounded-full border-none p-0 cursor-pointer">
                     </label>
-             <span onclick="window.setPenColor('black')" style="color:black;padding:1px;font-size:30px">■</span><span onclick="window.setPenColor('blue')" style="color:blue;padding:1px;font-size:30px">■</span><span onclick="window.setPenColor('green')" style="color:green;padding:1px;font-size:30px">■</span>
+             <span onclick="window.setPenColor('black')" style="color:black;padding:1px;font-size:30px">■</span><span onclick="window.setPenColor('blue')" style="color:blue;padding:1px;font-size:30px">■</span><span onclick="window.setPenColor('green')" style="color:green;padding:1px;font-size:30px">■</span><span onclick="window.setPenColor('red')" style="color:green;padding:1px;font-size:30px">■</span>
                 
                 <!-- Size and Action Buttons -->
                 <div class="flex items-center space-x-3">
@@ -1149,20 +1149,22 @@ details[open] > ul {
 <button id="toggleQuizBtn" onclick="window.toggleGameTheme('slasher');window.QS_launchGame(document.getElementById('quizArea'),'slasher');window.QS_parseAndLoadQuiz(document.getElementById('quizArea'),'slasher');" title="切水果" >🎈</button>
 <button id="startGameButton" title="雙打測驗" onclick="window.toggleGameTheme('dual');">🤼</button>
 </div>
-  <button onclick="FullScreen()"><font size="6" title=="全螢幕">💻</font></button>
+  <button onclick="window.FullScreen();"  title="全螢幕"  ><font size="6" title=="閃示卡" > 💻 </font></button>
   <button onclick="window.PicNav()">	<font size="6" title=="閃示卡" >🖼️</font></button>
        <button onclick="window.textSlider()"><font size="6" title=="動畫" >📽️</font></button>
         <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
          <button onclick="document.getElementById('teamBoard').style.display=(document.getElementById('teamBoard').style.display=='none')?'':'none';" title="showScoreBoard"  >👨‍👨‍👧‍👧</button>
          </div>
 
-<button onclick="window.pickNumber();" style="font-size:12px;border:2px solid gray;border-radius:12px;padding:2px"  id="pickBtn"> 🙋‍♂️</button>
+<button onclick="window.pickNumber();" style="font-size:20px;border-radius:6px;padding:2px"  id="pickBtn"> 🙋‍♂️</button>
 
 
-<button onclick="document.getElementById('picker-wrapper').classList.remove('hidden');" style="font-size:12px;border:2px solid gray;border-radius:12px;padding:2px"  id="rstBtn"> 🔢</button>
+<button onclick="document.getElementById('picker-wrapper').classList.remove('hidden');" style="font-size:20px;border-radius:6px;padding:2px"  id="rstBtn"> 🔢</button>
 <button onclick="window.insertDice();" style="font-size:25px" > 🎲</button>
 <button onclick="window.restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
-<button onclick="window.dartMode();"  id="dartModeBtn" title="遊戲模式" style="font-size:20px" >🎯on</button>
+
+<button onclick="window.dartMode();"  id="dartModeBtn" title="遊戲模式" style="font-size:20px;background-color:cyan;border-radius:8px;padding:2px"  >🎯on</button>
+
 
 <div class="px-2 py-1 bg-blue-200 text-white font-semibold rounded-lg hover:bg-red-200 transition duration-150 shadow-md">
 <button   onclick="window.stopSpeaking();" title="stop speaking">🔳</button>
@@ -1334,8 +1336,8 @@ details[open] > ul {
 
 	let isPanModeActive = false;
 	 let acitvePage=null;
- let  myinterval =null;	 
-
+            let  myinterval =null;	 
+           let isFullScreen =false;
 	// Get the element that acts as the scroll container (usually the body)
 	const scrollContainer = document.body;
 
@@ -5718,8 +5720,8 @@ window.QS_startQuiz;
             const question = dual_QUIZ_DATA[questionIndex];
             dual_targets = []; // 每次設置新問題時都清空
             
-            const TARGET_WIDTH = 220;
-            const TARGET_HEIGHT = 30;
+            const TARGET_WIDTH = 360;
+            const TARGET_HEIGHT = 90;
             const SPACING = 15;
             
             dual_currentQuizCorrectIndex = question.correctIndex; 
@@ -5751,7 +5753,7 @@ window.QS_startQuiz;
                 dualGameCtx.fillRect(target.x, target.y, target.width, target.height);
                 
                 dualGameCtx.fillStyle = target.hit ? 'green' : 'black';
-                dualGameCtx.font = '12px Inter';
+                dualGameCtx.font = '30px Inter';
                 dualGameCtx.textAlign = 'center';
                 dualGameCtx.textBaseline = 'middle';
                 dualGameCtx.fillText(target.text, target.x + target.width / 2, target.y + target.height / 2);
@@ -6597,36 +6599,47 @@ document.getElementById('tmBar').style.display='none';
     }
 
 //========================================================全螢幕相關處理================[involves draw(e)]======================================
-let isFullScreen =false;
+                //let isFullScreen =false;
 
  window.FullScreen=function(){
    isFullScreen = !isFullScreen;
-if(isFullScreen){
+
+   if(isFullScreen){
 	let element = document.body; // Or any other element
-	//let element = document.getElementById('screen'); // Or any other element
-element.requestFullscreen()
-  .then(() => {
-    console.log('Fullscreen mode entered successfully.');
-  })
-  .catch((error) => {
-    console.error('Error entering fullscreen mode:', error);
-  });
+	//let element = document.getElementById('screen'); // Or any other element main-toolbar
+
+             element.requestFullscreen()
+
+            .then(() => {
+                   console.log('Fullscreen mode entered successfully.');
+document.getElementById('main-toolbar').classList.add('hidden');
+//document.getElementById('page-manager').classList.add('hidden');
+document.getElementById('page-manager').style.display='none';
+                 })
+                  .catch((error) => {
+                console.error('Error entering fullscreen mode:', error);
+                 });
 
   }
   else
   {
 	
 	document.exitFullscreen()
-  .then(() => {
-    console.log('Fullscreen mode exited successfully.');
-  })
-  .catch((error) => {
-    console.error('Error exiting fullscreen mode:', error);
-  });
 
-
+                 .then(() => {
+                        console.log('Fullscreen mode exited successfully.');
+document.getElementById('main-toolbar').classList.remove('hidden');
+//document.getElementById('page-manager').classList.remove('hidden');
+document.getElementById('page-manager').style.display='';
+                                  })
+                  .catch((error) => {
+                       console.error('Error exiting fullscreen mode:', error);
+                    });
     }
+
 }
+
+
 
 
 function panEditor(container, editor, deltaX, deltaY, zoomFactor) {
