@@ -92,7 +92,7 @@ margin: 0;
 	justify-content: center;align-items: center;
         }
         /* Toolbar */
-       /* #main-toolbar { padding:5px; background-color: mintcream; display: flex;border-bottom: 1px solid #ccc;  gap: 10px; align-items: center; }*/
+         #main-toolbar { padding:5px; background-color: mintcream; display: flex;border-bottom: 1px solid #ccc;  gap: 10px; align-items: center; } 
         #currentProjectDisplay { font-weight: bold; padding: 0 10px; background: #fff; border-radius: 4px; }
 
 
@@ -1068,9 +1068,9 @@ details[open] > ul {
 
 
     
-            <button  title="切換編輯工具列" onclick="document.getElementById('styleControls').style.display=(document.getElementById('styleControls').style.display=='none')?'inline':'none';document.getElementById('MyTittle').style.display='';DesignMode=!DesignMode;this.innerText=(DesignMode)?'📝設計模式':'✔️白板模式';window.toggleSpeak();document.getElementById('toolbar').style.position=(document.getElementById('toolbar').style.position='absolute')?'':'absolute';"   style="display:none;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
+            <button  title="切換編輯工具列" onclick="window.DesignMode=!window.DesignMode;this.textContent=(window.DesignMode)?'📝設計模式':'✔️白板模式';window.toggleSpeak();document.getElementById('toolbar').style.position=(document.getElementById('toolbar').style.position='absolute')?'':'absolute';"   style="display:;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
 
-
+ <button  title="切換編輯工具列" onclick="window.checkMode=!window.checkMode;this.textContent=(window.checkMode)?'配對模式':'滑鼠模式';" >[滑鼠模式]</button>
 
 
            <!-- Drawing Controls -->
@@ -1321,7 +1321,7 @@ details[open] > ul {
         let gameMode = false;
         let score = 0;
         let quizCount = 0;
-        let checkMode = true; 
+        let checkMode = false; 
         let gameTimerInterval = null;
         const GAME_DURATION_SECONDS = 60;
         let recognition = null; 
@@ -3253,7 +3253,9 @@ window.handleMove=function(e){
                 const newTop = startTop + (clientY - startY);
                 activeItem.style.left = `${newLeft}px`;
                 activeItem.style.top = `${newTop}px`;
+	if(window.checkMode){
 	  window.checkOverlap(activeItem); 
+	}
              //======================================  一碰到就有反應 
 
             }
@@ -6556,8 +6558,8 @@ document.getElementById('tmBar').style.display='none';
                     const otherRect = otherItem.getBoundingClientRect();
                     if (!(itemRect.right < otherRect.left || itemRect.left > otherRect.right || 
                           itemRect.bottom < otherRect.top || itemRect.top > otherRect.bottom)) {
-                        console.log('Overlap detected!');
-                        if(!otherItem.classList.contains('locked') && checkMode==true){
+                        //console.log('Overlap detected!');
+                        if(!otherItem.classList.contains('locked') && window.checkMode==true){
                             window.handleOverlap(otherItem);
                         }
                     }
@@ -6612,9 +6614,12 @@ document.getElementById('tmBar').style.display='none';
 
             .then(() => {
                    console.log('Fullscreen mode entered successfully.');
-document.getElementById('main-toolbar').classList.add('hidden');
-//document.getElementById('page-manager').classList.add('hidden');
-document.getElementById('page-manager').style.display='none';
+		if(!window.DesignMode){
+		//document.getElementById('main-toolbar').classList.add('hidden');
+		//document.getElementById('page-manager').classList.add('hidden');
+		document.getElementById('main-toolbar').style.display='none';
+		document.getElementById('page-manager').style.display='none';
+		}
                  })
                   .catch((error) => {
                 console.error('Error entering fullscreen mode:', error);
@@ -6628,9 +6633,12 @@ document.getElementById('page-manager').style.display='none';
 
                  .then(() => {
                         console.log('Fullscreen mode exited successfully.');
-document.getElementById('main-toolbar').classList.remove('hidden');
-//document.getElementById('page-manager').classList.remove('hidden');
-document.getElementById('page-manager').style.display='';
+		         if(!window.DesignMode){
+		          //document.getElementById('main-toolbar').classList.remove('hidden');
+		          //document.getElementById('page-manager').classList.remove('hidden');
+		         document.getElementById('main-toolbar').style.display='';
+		         document.getElementById('page-manager').style.display='';
+		         }
                                   })
                   .catch((error) => {
                        console.error('Error exiting fullscreen mode:', error);
