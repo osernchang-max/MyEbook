@@ -778,11 +778,15 @@ details[open] > ul {
 <button  title="用網址貼上網頁框" onclick="window.insertCode('iframe')" class="px-2 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-teal-200 transition duration-150 shadow-md"  >➕內文網頁框</button>
 
     <button  title="從圖庫插入" onclick="addDivWithImageBackgroundElement();document.all.picker.style.display='';"  style="background:cyan;border-radius:25%" >圖庫</button>
+
+
             <!-- NEW: Add Text Element Dropdown -->
+
+
 <!--Start🗃️閃示卡設定-->
 <div   id="idop"  onclick=""   class="flex flex-wrap text-s justify-center items-center hover:bg-yellow-100 cursor-hand  rounded-lg border border-gray-200 " style="display:inline;position:relative;width:100px;height:40px;display:inline" >
 		🗃️圖卡設定
-           <span id="idop_menu" style="display:none;position:absolute;top:20px;left:-500px;width:800px; font-size:18px;background:white;border:2px solid gray;z-index:30;padding:10px;border-radius:15px">
+           <span id="idop_menu" style="display:none;position:absolute;top:-60px;left:20px;width:700px; font-size:18px;background:white;border:2px solid gray;z-index:30;padding:10px;border-radius:15px">
 <span  title="關閉" onclick="document.getElementById('idop_menu').style.display='none';"  style="color:gray;cursor:hand;font-size:26px;font-weight:bolder;margin-left:10px;font-size:20px;" >🗷</span>
 <span style="display:inline;font-color:blue;" >英文名稱:
 <span onclick="window.applyMyInfo();"    class="hover:bg-teal-600 cursor-hand" style="cursor:hand;border:2px solid black;background:yellow" >✔️套用</span>
@@ -1142,11 +1146,13 @@ details[open] > ul {
   <button onclick="FullScreen()"><font size="6" title=="全螢幕">💻</font></button>
   <button onclick="window.PicNav()">	<font size="6" title=="閃示卡" >🖼️</font></button>
        <button onclick="window.textSlider()"><font size="6" title=="動畫" >📽️</font></button>
-<button onclick="window.pickNumber();" style="font-size:12px;border:2px solid gray;border-radius:12px;padding:2px"  id="pickBtn"> 🙋‍♂️</button>
-
         <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
          <button onclick="document.getElementById('teamBoard').style.display=(document.getElementById('teamBoard').style.display=='none')?'':'none';" title="showScoreBoard"  >👨‍👨‍👧‍👧</button>
          </div>
+
+<button onclick="window.pickNumber();" style="font-size:12px;border:2px solid gray;border-radius:12px;padding:2px"  id="pickBtn"> 🙋‍♂️</button>
+
+
 <button onclick="document.getElementById('picker-wrapper').classList.remove('hidden');" style="font-size:12px;border:2px solid gray;border-radius:12px;padding:2px"  id="rstBtn"> 🔢</button>
 <button onclick="window.insertDice();" style="font-size:25px" > 🎲</button>
 <button onclick="window.restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
