@@ -294,6 +294,7 @@ details > ul {
 
 details[open] > ul {
   display: block;
+
 }
     </style>
 </head>
@@ -596,15 +597,17 @@ details[open] > ul {
 
  
 
+
+
+ <button style="background-color:lightcyan;border-radius:8px;padding:8px;box-shadow:1px 1px gray" onclick="document.getElementById('page-manager').style.display=(document.getElementById('page-manager').style.display=='none')?'':'none';document.getElementById('project-manager').style.display=(document.getElementById('project-manager').style.display=='none')?'':'none';">
+  pages</button>
+
        <div id="project-manager" style="display:" >
              <span id="currentProjectDisplay">classroom_master_file</span>  
 
        </div>
 
- <button style="background-color:lavender;border-radius:8px;padding:8px" onclick="document.getElementById('page-manager').style.display=(document.getElementById('page-manager').style.display=='none')?'':'none';document.getElementById('project-manager').style.display=(document.getElementById('project-manager').style.display=='none')?'':'none';">
-  pages</button>
-
-<details style="background-color:cyan;width:100px">
+<details style="background-color:lightcyan;width:100px;box-shadow:1px 1px gray">
   <summary>Project</summary>
   <ul>
     <li><button onclick="window.saveProject()" title="Save to Cloud" >💾儲存雲端</button></li>
@@ -772,7 +775,7 @@ details[open] > ul {
 
 <button  title="浮動圖片" onclick="window.addDivWithImageBackgroundElement()" class="px-2 py-1 bg-teal-100 text-white font-semibold rounded-lg hover:bg-teal-200 transition duration-150 shadow-md" style="background:darkblue;">➕浮動圖片</button>
 <button  title="用網址貼上內文圖片" onclick="window.insertCode('img');" class="px-2 py-1 bg-green-500 text-white font-semibold rounded-lg hover:bg-teal-200 transition duration-150 shadow-md"  >➕內文圖片</button>           
-<button  title="用網址貼上網頁框" onclick="window.insertCode('iframe')" class="px-2 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-teal-200 transition duration-150 shadow-md"  >➕網頁框</button>
+<button  title="用網址貼上網頁框" onclick="window.insertCode('iframe')" class="px-2 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-teal-200 transition duration-150 shadow-md"  >➕內文網頁框</button>
 
     <button  title="從圖庫插入" onclick="addDivWithImageBackgroundElement();document.all.picker.style.display='';"  style="background:cyan;border-radius:25%" >圖庫</button>
             <!-- NEW: Add Text Element Dropdown -->
@@ -2903,7 +2906,8 @@ window.swapImg=function(targetElement){
                 if(url){ document.getElementById('main').style.backgroundImage='url('+prompt('貼上底圖網址')+')';}
                 //if(url !==null){ document.getElementById('main').style.backgroundImage=`url('${urlx}')`;}
                 bg.id='main';
-	editor.appendChild(bg);
+	editor.prepend(bg);
+	//editor.appendChild(bg);
  
            }
         }
