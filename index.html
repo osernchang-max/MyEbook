@@ -3508,7 +3508,7 @@ window.rotateElement = function(degrees) {
 
             // 檢查是否超過滑動閾值
             if (Math.abs(diffX) > SWIPE_THRESHOLD) {
-                if (diffX >300) {
+                if (diffX >600) {
                     // 向右滑動 (X 增加) -> 切換到下一頁
                     window.goToNextPage();
                 } else {
