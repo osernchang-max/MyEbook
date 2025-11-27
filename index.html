@@ -4639,7 +4639,15 @@ window.zzzzzzzzzzinitElementForMovement =function(el) {
 
          document.getElementById('quizData').innerText=quizSource.innerText;
 	//alert('new---textarea---'+document.getElementById('quizData').innerText);
- document.getElementById('question-bank-input').innerText=document.getElementById('quizData').innerText;
+
+let cleanQuizText = document.getElementById('quizData').innerHTML.replace(/<br\s*\/?>/gi, '\n'); 
+        
+
+ //document.getElementById('question-bank-input').value=document.getElementById('quizData').innerHTML;
+ document.getElementById('question-bank-input').value=cleanQuizText;
+
+
+ //document.getElementById('question-bank-input').innerText=document.getElementById('quizData').innerText;
  //alert('source:-------'+document.getElementById('quizData').innerText);
 // alert('target---'+document.getElementById('question-bank-input').innerText);
   
@@ -7223,7 +7231,7 @@ const toggleQuizBtn = document.getElementById('toggleQuizBtn');
       //----------const toggleQuizBtn = document.getElementById('toggleQuizBtn');
       toggleQuizBtn.addEventListener('click', function() {
            //alert('I got you--------------------------');
-        const text = document.getElementById('quizData').innerText;
+        const text = document.getElementById('quizData').innerHTML;
         loadQuestionBankFromText(text);
         //questionBankPanel.style.display = "none";
       });
@@ -7233,7 +7241,14 @@ const toggleQuizBtn = document.getElementById('toggleQuizBtn');
       // *** 修改後的題庫解析函數toggleQuizBtn ***
       function loadQuestionBankFromText(text) {
 //alert('---'+document.getElementById('quizData').innerText);
-        const lines = text.split(/\r?\n/);
+
+let cleanText = text.replace(/<br\s*\/?>/gi, '\n'); 
+        
+        // Step 2: 使用標準換行符號分割行
+        const lines = cleanText.split(/\r?\n/);
+
+
+ 
         const newData = [];
         lines.forEach(line => {
           line = line.trim();
