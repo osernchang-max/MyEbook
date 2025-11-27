@@ -7232,10 +7232,11 @@ const toggleQuizBtn = document.getElementById('toggleQuizBtn');
       toggleQuizBtn.addEventListener('click', function() {
            //alert('I got you--------------------------');
         const text = document.getElementById('quizData').innerHTML;
-        loadQuestionBankFromText(text);
+        let cleanText = text.replace(/<br\s*\/?>/gi, '\n'); 
+        loadQuestionBankFromText(cleanText);
         //questionBankPanel.style.display = "none";
       });
-
+               
 
 
       // *** 修改後的題庫解析函數toggleQuizBtn ***
