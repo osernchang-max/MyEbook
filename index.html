@@ -1,4 +1,5 @@
 ﻿
+
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -3937,19 +3938,42 @@ window.rotateElement = function(degrees) {
 
 
 // ---  Gesture Handling Functions ---
+// --- 關鍵常數定義 ---
+// 1. 動態閾值: 水平移動必須超過螢幕寬度的 20% (0.2) 才算有效滑動。
+//    如果 1/3 (約 33%) 太敏感，建議降低到 15% 到 20% 之間。
+const SWIPE_THRESHOLD_FACTOR = 0.20; 
 
+// 2. 方向性主導閾值: 水平移動必須是垂直移動的 3 倍以上，才視為換頁手勢。
+//    這對於區分繪圖筆劃和真正的水平滑動非常重要。
+const SWIPE_DOMINANCE_THRESHOLD = 3.0;
+
+// 全域狀態變數 (假設已在其他地方定義)
+  touchStartX = 0;
+ touchStartY = 0;
+ isSwiping = false;
+// 取得動態滑動閾值
+function getSwipeThreshold() {
+    // 取得當前視窗的寬度，並乘以預設比例 (例如 20%)
+    return window.innerWidth * SWIPE_THRESHOLD_FACTOR;
+}
+// --- 修正後的 Gesture Handling Functions ---
      window.handleGestureStart=function(e) {
-            // 只有在 'Select/Move' 模式下，且沒有選中任何元素時，才啟用滑動
-            if (currentTool !== null || activeItem !== null) return;
-            
-            // 確保只處理單點觸摸或滑鼠點擊
-            const clientX = e.clientX || e.touches[0].clientX;
-            const clientY = e.clientY || e.touches[0].clientY;
+    // === 修正點 1：強制檢查工具狀態 ===
+    // 這是防止繪圖誤觸的關鍵：如果 currentTool 不為空，代表用戶正在使用繪圖工具，應直接返回。
+    // if (currentTool !== null || activeItem !== null) return;
+    // 假設您的繪圖工具模式是 'Draw' 或類似名稱，請確保此處邏輯能正確排除繪圖模式。
+    
+    // 確保只處理單點觸摸或滑鼠點擊
+    const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : e.clientY);
 
-            touchStartX = clientX;
-            touchStartY = clientY;
-            isSwiping = true;
-        }
+    // 檢查 clientX 或 clientY 是否為有效數字 (防止滑鼠或觸控事件物件結構不一致導致的錯誤)
+    if (typeof clientX !== 'number' || typeof clientY !== 'number') return; 
+
+    touchStartX = clientX;
+    touchStartY = clientY;
+    isSwiping = true;
+}
 
         window.handleGestureMove=function(e) {
             if (!isSwiping) return;
@@ -3961,36 +3985,71 @@ window.rotateElement = function(degrees) {
             const diffY = clientY - touchStartY;
             
             // 優先考慮水平滑動，並防止頁面垂直滾動被鎖定
-            if (Math.abs(diffX) > 800 || Math.abs(diffY) > 800) {
-                // 如果水平移動明顯大於垂直移動，則阻止瀏覽器預設行為
-                if (Math.abs(diffX) > Math.abs(diffY)) {
-                    e.preventDefault(); 
-                }
-            }
+
+    // **修正點 1：防止瀏覽器在水平滑動時進行垂直滾動**
+    // 只要水平移動開始累積（例如超過 5 像素），並且水平移動大於垂直移動，
+    // 就應該阻止預設行為 (e.preventDefault)，以確保手勢是為了換頁。
+    if (Math.abs(diffX) > 5 && Math.abs(diffX) > Math.abs(diffY)) {
+        e.preventDefault(); 
+    }
+    
+    // 您的原始程式碼中 `if (Math.abs(diffX) > 1000 || Math.abs(diffY) > 1000)`
+    // 已被移除，因為 1000 像素的檢查不合理。
         }
 
-      window.handleGestureEnd=function(e) {
-            if (!isSwiping) return;
-            
-            const clientX = e.clientX || e.changedTouches[0].clientX;
-            // 不需要 finalY，因為我們只關心水平移動
-            
-            const diffX = clientX - touchStartX;
-            isSwiping = false;
+window.handleGestureMove = function(e) {
+    if (!isSwiping) return;
 
-            // 檢查是否超過滑動閾值
-            if (Math.abs(diffX) > SWIPE_THRESHOLD) {
-                if (diffX >800) {
-                    // 向右滑動 (X 增加) -> 切換到下一頁
-                    window.goToNextPage();
-                } else {
-                    // 向左滑動 (X 減少) -> 切換到上一頁
-                    window.goToPreviousPage();
-                }
+    const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : e.clientY);
+    
+    // 檢查 clientX 或 clientY 是否為有效數字 (防止滑鼠或觸控事件物件結構不一致導致的錯誤)
+    if (typeof clientX !== 'number' || typeof clientY !== 'number') return; 
+
+    const diffX = clientX - touchStartX;
+    const diffY = clientY - touchStartY;
+    
+    // 只要水平移動開始累積（例如超過 5 像素），並且水平移動大於垂直移動，
+    // 就應該阻止預設行為 (e.preventDefault)，以確保手勢是為了換頁。
+    if (Math.abs(diffX) > 5 && Math.abs(diffX) > Math.abs(diffY)) {
+        e.preventDefault(); 
+    }
+}
+
+window.handleGestureEnd = function(e) {
+    if (!isSwiping) return;
+    
+    const clientX = e.clientX || (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : e.clientX);
+    const clientY = e.clientY || (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : e.clientY);
+    
+    // 檢查 clientX 或 clientY 是否為有效數字
+    if (typeof clientX !== 'number' || typeof clientY !== 'number') {
+        isSwiping = false;
+        return; 
+    }
+
+    const diffX = clientX - touchStartX;
+    const diffY = clientY - touchStartY; 
+    isSwiping = false;
+
+    const dynamicThreshold = getSwipeThreshold(); // 取得動態閾值
+
+    // 1. 檢查是否超過滑動距離閾值
+    if (Math.abs(diffX) > dynamicThreshold) {
+        
+        // 2. 檢查方向性主導：水平移動必須比垂直移動大 N 倍 (N=3.0)
+        if (Math.abs(diffX) > Math.abs(diffY) * SWIPE_DOMINANCE_THRESHOLD) {
+            
+            if (diffX > 0) {
+                // 向右滑動 (X 增加) -> 切換到下一頁
+                window.goToNextPage();
+            } else {
+                // 向左滑動 (X 減少) -> 切換到上一頁
+                window.goToPreviousPage();
             }
         }
-
-
+    }
+}
 
 // --- NEW: Page Navigation Functions ---
 
