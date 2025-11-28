@@ -880,7 +880,7 @@ align-items: center;
     <div class="question-controls">
       <div class="controls-left">
         <button id="next-question" class="next-button">下一題</button>
-        <button id="toggle-font" class="font-toggle-button">切換注音字體</button>
+        <button id="toggle-font" class="hidden font-toggle-button">切換注音字體</button>
         <button id="speed-toggle" class="speed-toggle-button">速度快</button>
       </div>
       <div class="question-number" id="question-number">第 1 題 / 4 題</div>
@@ -4785,7 +4785,7 @@ let cleanQuizText = document.getElementById('quizData').innerHTML.replace(/<br\s
             "    <button onclick=\"window.parsePsvAndLoadQuiz(this.closest('#quizArea'))\" class=\"w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700\">載入並開始測驗</button>",
   '<div class="flex space-x-2 mb-3">',
 //" <button onclick=\"window.toggleGameTheme('quiz');\">❓</button>",
-"<button id=\"toggleQuizBtn\"  title=\"打氣球測驗\" class=\"flex-1 px-2 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition duration-150\" onclick=\"window.toggleGameTheme('slasher');window.QS_launchGame(document.getElementById('quizArea'),'slasher');window.QS_parseAndLoadQuiz(document.getElementById('quizArea'),'slasher');\"   >🎈打氣球遊戲</button>",
+"<button id=\"toggleQuizBtn\"  title=\"切水果測驗(請按工具列的)\" class=\"flex-1 px-2 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition duration-150\" onclick=\"window.toggleGameTheme('slasher');window.QS_launchGame(document.getElementById('quizArea'),'slasher');window.QS_parseAndLoadQuiz(document.getElementById('quizArea'),'slasher');\"   >🎈打氣球遊戲</button>",
 "<button id=\"startGameButton\" title=\"雙打測驗\" class=\"flex-1 px-2 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition duration-150\" onclick=\"window.toggleGameTheme('dual');\">🤼雙打射擊</button>", 
             '</div>',
 
@@ -7131,6 +7131,7 @@ const toggleQuizBtn = document.getElementById('toggleQuizBtn');
       const wrongSound = document.getElementById('wrong-sound');
       const sliceSound = document.getElementById('slice-sound');
       const bgm = document.getElementById('bgm');
+	bgm.muted=bgm.muted;
       const volumeControl = document.getElementById('volume-control');
       const volumeOn = document.getElementById('volume-on');
       const volumeOff = document.getElementById('volume-off');
