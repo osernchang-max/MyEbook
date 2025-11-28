@@ -1059,12 +1059,12 @@ align-items: center;
 
 
 
- <button style="background-color:lime;border-radius:8px;padding:8px;box-shadow:1px 1px gray" onclick="document.getElementById('page-manager').style.display=(document.getElementById('page-manager').style.display=='none')?'':'none';document.getElementById('project-manager').style.display=(document.getElementById('project-manager').style.display=='none')?'':'none';">
+ <button style="background-color:lightblue;border-radius:8px;padding:8px;box-shadow:1px 1px gray" onclick="document.getElementById('page-manager').style.display=(document.getElementById('page-manager').style.display=='none')?'':'none';document.getElementById('project-manager').style.display=(document.getElementById('project-manager').style.display=='none')?'':'none';">
   pages</button>
 
 
 
-<details style="background-color:yellow;width:100px;box-shadow:1px 1px gray">
+<details style="background-color:lightcyan;width:100px;box-shadow:1px 1px gray">
   <summary>Project</summary>
   <ul>
     <li><button onclick="window.saveProject()" title="Save to Cloud" >💾儲存雲端</button></li>
@@ -1075,11 +1075,11 @@ align-items: center;
     <li><button onclick="document.all.codeArea.style.display='';document.getElementById('htmlPageCode').value=editor.innerHTML;" title="Coding"  >✍編輯原始碼</button></li>
   </ul>
 </details>
-<button onclick="window.renderAllProjectsList()" title=" Switch/Create Project"  style="display:inline;font-size:15px;width:60px" class=" gap-2 p-2 rounded-lg border border-gray-200 " >📂</button>
-  <button id="add"  title="插入" onclick="document.getElementById('Scale').value='95';window.setZoom(95)"   style="display:inline;font-size:15px;width:90px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">➕🖼️</button>
-<button id="layerControl" onclick="document.getElementById('Scale').value='95';window.setZoom(95)" style="width:90px; "  class=" gap-2 p-2 rounded-lg border border-gray-200 ">🌈樣式</button>	
+<button onclick="window.renderAllProjectsList()" title=" Switch/Create Project"  style="display:inline;font-size:15px;width:60px" class=" gap-2 p-2 rounded-lg border border-gray-400 " >📂</button>
+<button id="add"  title="插入" onclick="document.getElementById('Scale').value='95';window.setZoom(95)"   style="display:inline;font-size:15px;width:90px" class=" gap-2 p-2 rounded-lg border border-gray-400 ">➕🖼️</button>
+<button id="layerControl" onclick="document.getElementById('Scale').value='95';window.setZoom(95)" style="width:90px; "  class=" gap-2 p-2 rounded-lg border border-gray-400 ">🌈樣式</button>	
 <span style="display:inline">
-            <select id="addElementType" onchange="window.addNewTextElement(this.value)"  class="px-1 py-1 h-10 bg-blue-500 text-white font-xssemibold rounded-lg hover:bg-blue-600 transition duration-150 shadow-md cursor-pointer">
+            <select id="addElementType" onchange="window.addNewTextElement(this.value)"  class="px-1 py-1 h-10 bg-blue-200 text-black font-xssemibold rounded-lg  border border-gray-400 hover:bg-green-200 transition duration-150 shadow-md cursor-pointer">
                 <option value="" disabled selected class="bg-gray-700 text-white">➕插入文字</option>
                 <option value="P" class="bg-white text-gray-800">一般文字</option>
                 <option value="H1" class="bg-white text-gray-800">黑框字</option>
@@ -1094,7 +1094,7 @@ align-items: center;
                 <option value="Quiz" class="bg-white text-gray-800" >測驗題庫</option>
             </select></span>
 <!--文字編輯列-->
-<button id="textStyle" onclick="" style="border:2px solid black;width:30px;font-size:18px" >🗛</button> 
+<button id="textStyle" onclick="" style="border:2px solid gray;padding:4px; width:40px;font-size:18px;border-radius:8px" >🗛</button> 
 
 <div id="textStyle_menu" style="display:none;align-items: center;padding:4px;background:mintcream;border:1px solid gray;border-radius:8px;z-index:31;height:40px;" >
 <span  title="關閉" onclick="document.getElementById('textStyle_menu').style.display='none';"  style="color:gray;cursor:hand;font-weight:bolder;margin-right:5px;margin-left:5px;font-size:20px;" >🗷</span>
@@ -1103,7 +1103,11 @@ align-items: center;
                 <button onclick="runTextCommand('bold')" title="粗體" class="px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">B</button>
                 <button onclick="runTextCommand('italic')" title="斜體" class="px-3 py-1 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">I</button>
                 <button onclick="runTextCommand('underline')" title="底線" class="px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">U</button>
-                
+                <button onclick="runTextCommand('indent')" title="縮排" class="px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">↦</button>   
+                <button onclick="runTextCommand('insertOrderedList');document.execCommand('insertOrderedList', false, null)" title="編號" class="px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">
+                    <img src="https://icons.veryicon.com/png/o/miscellaneous/text-editing-icon/ordered-list-2.png" width="20" height="20" ></button>
+                <button onclick="runTextCommand('insertUnorderedList')" title="編號" class="px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">
+                    <img src="https://static.vecteezy.com/system/resources/thumbnails/046/418/566/small/list-icon-symbol-design-illustration-vector.jpg" width="20" height="20" ></button>               
                 <!-- formatBlock dropdown removed -->
                 
                 <input type="color" id="fontColor" onchange="setFontColor()"  onblur="setFontColor()" title="文字色彩" value="#1f2937" class="h-8 w-10 border-none">
@@ -3558,7 +3562,16 @@ window.selectItem = function(item) {
             }
         }
 
+      // 鍵盤刪除物件
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Delete') {
+        //console.log('Delete key pressed (using event.key)');
+      if(activeItem.getAttribute('contenteditable')=='false'){
+        window.deleteSelectedItem();
+        }
+    }
 
+});
 
 
 
@@ -3948,7 +3961,7 @@ window.rotateElement = function(degrees) {
             const diffY = clientY - touchStartY;
             
             // 優先考慮水平滑動，並防止頁面垂直滾動被鎖定
-            if (Math.abs(diffX) > 300 || Math.abs(diffY) > 300) {
+            if (Math.abs(diffX) > 800 || Math.abs(diffY) > 800) {
                 // 如果水平移動明顯大於垂直移動，則阻止瀏覽器預設行為
                 if (Math.abs(diffX) > Math.abs(diffY)) {
                     e.preventDefault(); 
@@ -3967,7 +3980,7 @@ window.rotateElement = function(degrees) {
 
             // 檢查是否超過滑動閾值
             if (Math.abs(diffX) > SWIPE_THRESHOLD) {
-                if (diffX >600) {
+                if (diffX >800) {
                     // 向右滑動 (X 增加) -> 切換到下一頁
                     window.goToNextPage();
                 } else {
@@ -7159,9 +7172,16 @@ const toggleQuizBtn = document.getElementById('toggleQuizBtn');
         const randomIndex = Math.floor(Math.random() * bgmList.length);
         bgm.src = bgmList[randomIndex];
         bgm.volume = 0.3;
+	// 預設將 BGM 靜音
+        bgm.muted = true;
+	// 嘗試載入並播放 (但會是靜音的)，解決部分瀏覽器限制
         bgm.play().catch(e => {
-          console.log("自動播放被阻擋，請用戶點擊畫面後再播放", e);
+          console.log("音效載入中，等待使用者點擊以解除播放限制", e);
         });
+        
+        // 更新音量圖示為靜音
+        volumeOn.style.display = 'none';
+        volumeOff.style.display = 'block';
       }
       
       // 控制背景音效靜音
