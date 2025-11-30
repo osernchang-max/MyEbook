@@ -24,7 +24,7 @@ margin: 0;
     border: none;
     /* Also ensure it is positioned relative for context */
     position: relative;}
-        #editor { height: 100%; width: 100%; border: 0px solid #e5e7eb; background-color: #ffffff; position: relative; overflow: hidden; touch-action: none; cursor: default;transform-origin: top left; }
+        #editor { height: 100%; width: 140%; border: 0px solid #e5e7eb; background-color: #ffffff; position: relative; overflow: hidden; touch-action: none; cursor: default;transform-origin: top left; }
         
         /* Drawing Canvas */
         #drawingCanvas { position: absolute; top: 0; left: 0; z-index: 15; pointer-events: none; }
@@ -1078,6 +1078,8 @@ align-items: center;
 </details>
 <button onclick="window.renderAllProjectsList()" title=" Switch/Create Project"  style="display:inline;font-size:15px;width:60px" class=" gap-2 p-2 rounded-lg border border-gray-400 " >📂</button>
 <button id="add"  title="插入" onclick="document.getElementById('Scale').value='95';window.setZoom(95)"   style="display:inline;font-size:15px;width:90px" class=" gap-2 p-2 rounded-lg border border-gray-400 ">➕🖼️</button>
+            <button id="lockToggleBtn" onclick="window.toggleLock()"  title="固定或解鎖位置" class="px-2 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition duration-150 shadow-md">🔒</button>
+
 <button id="layerControl" onclick="document.getElementById('Scale').value='95';window.setZoom(95)" style="width:90px; "  class=" gap-2 p-2 rounded-lg border border-gray-400 ">🌈樣式</button>	
 <span style="display:inline">
             <select id="addElementType" onchange="window.addNewTextElement(this.value)"  class="px-1 py-1 h-10 bg-blue-200 text-black font-xssemibold rounded-lg  border border-gray-400 hover:bg-green-200 transition duration-150 shadow-md cursor-pointer">
@@ -1338,7 +1340,6 @@ align-items: center;
             <button onclick="window.bringForward()" title="上移圖層" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">⇧</button>
             <button onclick="window.sendBackward()" title="下移圖層" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">⇩</button>
 <!-- Page Navigator -->
-            <button id="lockToggleBtn" onclick="window.toggleLock()"  title="固定或解鎖位置" class="px-2 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition duration-150 shadow-md">🔏固定/浮動🔒</button>
 
 <select id="addAnimateType" onchange="window.toggleAnimate(this.value)"  class="px-1 py-1 bg-blue-500 text-white font-xssemibold rounded-lg hover:bg-blue-600 transition duration-150 shadow-md cursor-pointer" style="display:inline;width:">
                 <option value="" disabled selected class="bg-gray-700 text-white">動畫</option>
@@ -1532,9 +1533,8 @@ align-items: center;
 
 
     
-            <button  title="切換編輯工具列" onclick="window.DesignMode=!window.DesignMode;this.textContent=(window.DesignMode)?'📝設計模式':'✔️白板模式';window.toggleSpeak();document.getElementById('toolbar').style.position=(document.getElementById('toolbar').style.position='absolute')?'':'absolute';"   style="display:;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
-
- <button  title="切換編輯工具列" onclick="window.checkMode=!window.checkMode;this.textContent=(window.checkMode)?'配對模式':'滑鼠模式';" >[滑鼠模式]</button>
+            <button   title="切換編輯工具列" onclick="window.DesignMode=!window.DesignMode;this.textContent=(window.DesignMode)?'📝設計模式':'✔️白板模式';window.toggleSpeak();document.getElementById('toolbar').style.position=(document.getElementById('toolbar').style.position='absolute')?'':'absolute';"   style="display:;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
+  <button onclick="window.FullScreen();"  title="全螢幕"  ><font size="6" title=="閃示卡" > 💻 </font></button>
 
 
            <!-- Drawing Controls -->
@@ -1613,7 +1613,7 @@ align-items: center;
 <button id="toggleQuizBtn" onclick="window.toggleGameTheme('slasher');window.QS_launchGame(document.getElementById('quizArea'),'slasher');window.QS_parseAndLoadQuiz(document.getElementById('quizArea'),'slasher');" title="切水果" >🎈</button>
 <button id="startGameButton" title="雙打測驗" onclick="window.toggleGameTheme('dual');">🤼</button>
 </div>
-  <button onclick="window.FullScreen();"  title="全螢幕"  ><font size="6" title=="閃示卡" > 💻 </font></button>
+
   <button onclick="window.PicNav()">	<font size="6" title=="閃示卡" >🖼️</font></button>
        <button onclick="window.textSlider()"><font size="6" title=="動畫" >📽️</font></button>
         <div style="border-left: 1px solid #ccc; margin: 0 5px; padding-left: 10px;">
@@ -1628,6 +1628,7 @@ align-items: center;
 <button onclick="window.restore();"  title=="還原頁面" style="font-size:25px" >♻</button>
 
 <button onclick="window.dartMode();"  id="dartModeBtn" title="遊戲模式" style="font-size:20px;background-color:cyan;border-radius:8px;padding:2px"  >🎯on</button>
+ <button  id="matchBtn" title="切換配對模式" onclick="window.checkMode=!window.checkMode;this.textContent=(window.checkMode)?'🖱️':' 🎎';" > 🎎</button>
 
 
 <div class="px-2 py-1 bg-blue-200 text-white font-semibold rounded-lg hover:bg-red-200 transition duration-150 shadow-md">
@@ -1804,7 +1805,7 @@ align-items: center;
            let isFullScreen =false;
 	// Get the element that acts as the scroll container (usually the body)
 	const scrollContainer = document.body;
-
+            let matchList=[];
 
 // --- NEW: Gesture State Variables ---
         let touchStartX = 0;
@@ -3726,10 +3727,7 @@ window.handleMove=function(e){
                 const newTop = startTop + (clientY - startY);
                 activeItem.style.left = `${newLeft}px`;
                 activeItem.style.top = `${newTop}px`;
-	if(window.checkMode){
-	  window.checkOverlap(activeItem); 
-	}
-             //======================================  一碰到就有反應 
+
 
             }
             e.preventDefault();
@@ -3741,7 +3739,10 @@ window.handleMove=function(e){
     }
     isDragging = false; 
     isResizing = false; 
-
+	 //if(window.checkMode){
+	  window.checkOverlap(activeItem); 
+	// }
+             //======================================  一碰到就有反應 
 }
 
 
@@ -3941,7 +3942,7 @@ window.rotateElement = function(degrees) {
 // --- 關鍵常數定義 ---
 // 1. 動態閾值: 水平移動必須超過螢幕寬度的 20% (0.2) 才算有效滑動。
 //    如果 1/3 (約 33%) 太敏感，建議降低到 15% 到 20% 之間。
-const SWIPE_THRESHOLD_FACTOR = 0.20; 
+const SWIPE_THRESHOLD_FACTOR = 0.3; 
 
 // 2. 方向性主導閾值: 水平移動必須是垂直移動的 3 倍以上，才視為換頁手勢。
 //    這對於區分繪圖筆劃和真正的水平滑動非常重要。
@@ -6455,25 +6456,46 @@ document.getElementById('tmBar').style.display='none';
                     if (!(itemRect.right < otherRect.left || itemRect.left > otherRect.right || 
                           itemRect.bottom < otherRect.top || itemRect.top > otherRect.bottom)) {
                         //console.log('Overlap detected!');
-                        if(!otherItem.classList.contains('locked') && window.checkMode==true){
-                            window.handleOverlap(otherItem);
+                        if(!otherItem.classList.contains('locked')){
+	            
+                                window.handleOverlap(otherItem);
+                              
                         }
+
                     }
                 }
             });
         }
 
         window.handleOverlap = function(otherItem) {
-            // *** PASTE YOUR FULL window.handleOverlap FUNCTION BODY HERE ***
             let ch=activeItem.id+"-a";
             if(otherItem.id==ch){
+                if(!window.checkMode){  matchList.push(otherItem);showModal(matchList.length,'');}
+                else{
                 otherItem.classList.add('opacity-50', 'animate-bounce');
                 otherItem.classList.toggle('locked');
-                if(otherItem.classList.contains('draggable-image')){
-                    otherItem.innerHTML="<span style=\"text-align:center;verticle-align:center;color:red\" >答對了~</div>";
-                }
+                         if(otherItem.classList.contains('draggable-image')){
+                             otherItem.innerHTML="<span style=\"text-align:center;verticle-align:center;color:red\" >答對了~</div>";
+                         }
+                 }
+ 
             }
         }
+const matchBtn=document.getElementById('matchBtn');
+matchBtn.addEventListener('click', (e) => {
+
+          //配對模式按下後將答對的物件加上動畫
+          // alert(matchList[0].id);
+         for(let m=0;m<matchList.length;m++){
+             // alert(matchList[m].id);
+             matchList[m].classList.add('animate-bounce');
+          }
+          matchList=[];
+          if(!window.checkMode){window.restore();}
+}
+
+);
+
 
         window.updateBackground = function() {
             // *** PASTE YOUR FULL window.updateBackground FUNCTION BODY HERE ***
