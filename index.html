@@ -1534,7 +1534,7 @@ align-items: center;
 
     
             <button   title="切換編輯工具列" onclick="window.DesignMode=!window.DesignMode;this.textContent=(window.DesignMode)?'📝設計模式':'✔️白板模式';window.toggleSpeak();document.getElementById('toolbar').style.position=(document.getElementById('toolbar').style.position='absolute')?'':'absolute';"   style="display:;font-size:15px" class=" gap-2 p-2 rounded-lg border border-gray-200 ">✔️白板模式</button>
-  <button onclick="window.FullScreen();"  title="全螢幕"  ><font size="6" title=="閃示卡" > 💻 </font></button>
+  <button onclick="window.FullScreen();"  title="全螢幕"  ><font size="6" title=="全螢幕" > 💻 </font></button>
 
 
            <!-- Drawing Controls -->
@@ -1806,6 +1806,9 @@ align-items: center;
 	// Get the element that acts as the scroll container (usually the body)
 	const scrollContainer = document.body;
             let matchList=[];
+/* Global variables for speech synthesis */
+            const synth = window.speechSynthesis;
+           let availableVoices = [];
 
 // --- NEW: Gesture State Variables ---
         let touchStartX = 0;
@@ -3086,7 +3089,7 @@ window.addDivWithImageBackgroundElement = function() {
        const imgpool=event.srcElement.querySelectorAll("img");
 	if(DesignMode){
 	activeItem.getElementsByTagName("span")[0].style.display='';
-		event.srcElement.setAttribute('contentEditable','true');
+		//event.srcElement.setAttribute('contentEditable','true');
 		//showModal(imgpool.length,'');
 		
 	        if(imgpool){
@@ -3096,7 +3099,7 @@ window.addDivWithImageBackgroundElement = function() {
                 }
 	}else{
 	activeItem.getElementsByTagName("span")[0].style.display='none';
-		activeItem.setAttribute('contentEditable','false');
+		//activeItem.setAttribute('contentEditable','false');
 
 	        if(imgpool){
 		 if(imgpool.length>3){activeItem.style.transform = 'translateY(-250px)';}		
@@ -6125,6 +6128,7 @@ document.getElementById('quizDataSource').value=rawHtmlText;
                 document.getElementById('Flashcards').remove();
             }
             window.showPic('Previous');
+document.activeElement.blur();
         }
 
         let flag=true;
@@ -6173,6 +6177,7 @@ document.getElementById('quizDataSource').value=rawHtmlText;
                 window.speakText(items[counter].id); 
 	} 
             }
+document.activeElement.blur();
         }
 
         window.exitFlash = function(){
@@ -6205,51 +6210,98 @@ document.getElementById('quizDataSource').value=rawHtmlText;
 	if(!speaking){speakBtn.textContent=  '🔈';}else{speakBtn.textContent= '🔇' ;}
         }
 
-        window.speakText = function(textToSpeak) {
-            if(speaking==false){return;}
-		   let seed=Math.floor(Math.random()*2);
-		   let lan=4;
-		if (textToSpeak.charCodeAt() > 255) {
 
-		   //showModal('Chinese',seed);
+/* Global variables for speech synthesis */
+// const synth = window.speechSynthesis;
+//let availableVoices = [];
 
-		   lan=seed;
-		}else{
-		  if(textToSpeak.substring(0,1)=='*'){lan=5}else{lan=4;}
-		  //lan=4;
-		}
-            if ('speechSynthesis' in window) {
-                //const textToSpeak = document.getElementById('textInput').value;
-                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+// --- 1. Voice Loading Handler ---
+// This is the CRITICAL part for iOS/Safari compatibility.
+// It waits until the voices are fully loaded by the browser.
+function populateVoices() {
+    availableVoices = synth.getVoices();
+    // Optional: Log the available voices to help with debugging voice indices
+    // console.log("Voices loaded:", availableVoices.map(v => `${v.name} (${v.lang})`));
+}
 
-                // Optional: Customize properties   5:en-US   female    6:UK-GB Female 7 :en-UK-GB-Male   1國女~2國男:zh-TW
-                utterance.lang = 'en-US';
-                utterance.pitch = 1;
-                utterance.rate = 0.8;
-                utterance.volume = 1;
-		// To select a specific voice:
-		  const voices = speechSynthesis.getVoices();
- 		 utterance.voice = voices[lan]; // Choose a voice from the available list   4:en-US   female 5:en-GB  male 5:en-GB   1~3:zh-TW
-                speechSynthesis.speak(utterance);
-            } else {
-                alert("Your browser does not support Web Speech API.");
-            }
- 
-	//Text to speech-----------https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/getVoices
+// Attach the event listener. This is necessary because getVoices() 
+// returns an empty array until this event fires.
+if (synth.onvoiceschanged !== undefined) {
+    synth.onvoiceschanged = populateVoices;
+}
+
+// Call it once immediately, in case the voices are already loaded 
+// (which often happens on Windows/Chrome).
+populateVoices();
+
+// --- 2. Corrected speakText Function ---
+window.speakText = function(textToSpeak) {
+    // Assuming 'speaking' is a global boolean you define elsewhere
+    if (speaking == false || !('speechSynthesis' in window)) {
+        return;
+    }
+
+    // Use availableVoices array which is populated by the event listener
+    const voices = availableVoices;
+    
+    // Fallback in case voices are still not loaded or the device has none
+    if (voices.length === 0) {
+        // You might want to use a simple text-to-speech fallback or alert here
+        console.warn("Speech voices not yet loaded or unavailable.");
+        // Try to speak without specifying a voice, which may use the default
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8;
+        synth.speak(utterance);
+        return;
+    }
+    
+    // --- Voice Selection Logic (Retained from your original code) ---
+    let lan = 4;
+    let seed = Math.floor(Math.random() * 2);
+
+    // Check for non-Latin characters (e.g., Chinese)
+    if (textToSpeak.charCodeAt(0) > 255) {
+        // Using seed for Chinese voices (assuming 0, 1, or 2 are valid indices)
+        lan = seed; 
+    } else {
+        // English voices
+        if (textToSpeak.substring(0, 1) == '*') {
+            lan = 5; // e.g., a specific English voice
+        } else {
+            lan = 4; // e.g., default English voice
         }
+    }
+    
+    // Ensure the index is valid for the available voices array
+    if (lan >= voices.length) {
+        lan = 0; // Fallback to the first available voice
+    }
+    // --- End Voice Selection Logic ---
 
-        const synth = window.speechSynthesis;
-       // const statusEl = document.getElementById('status-message');
+    // Create and speak the utterance
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.voice = voices[lan]; 
+    utterance.lang = utterance.voice ? utterance.voice.lang : 'en-US'; // Use voice's language
+    utterance.pitch = 1;
+    utterance.rate = 0.8;
+    utterance.volume = 1;
 
-        window.stopSpeaking = function() {
-            if (synth.speaking || synth.pending) {
-                synth.cancel();
-               // statusEl.textContent = "Status: Speech stopped manually.";
-            } else {
-                // statusEl.textContent = "Status: Not currently speaking.";
-            }
-           // updateButtonState(false);
-        }
+    synth.speak(utterance);
+}
+
+// --- 3. stopSpeaking Function (Unchanged, but included for completeness) ---
+window.stopSpeaking = function() {
+    if (synth.speaking || synth.pending) {
+        synth.cancel();
+    }
+}
+
+
+
+
+
+
 
 
 
