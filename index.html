@@ -3942,7 +3942,7 @@ window.rotateElement = function(degrees) {
 // --- 關鍵常數定義 ---
 // 1. 動態閾值: 水平移動必須超過螢幕寬度的 20% (0.2) 才算有效滑動。
 //    如果 1/3 (約 33%) 太敏感，建議降低到 15% 到 20% 之間。
-const SWIPE_THRESHOLD_FACTOR = 0.3; 
+const SWIPE_THRESHOLD_FACTOR = 0.5; 
 
 // 2. 方向性主導閾值: 水平移動必須是垂直移動的 3 倍以上，才視為換頁手勢。
 //    這對於區分繪圖筆劃和真正的水平滑動非常重要。
