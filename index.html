@@ -1,7 +1,4 @@
-﻿
-
-
-<html lang="en">
+﻿<html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4813,11 +4810,8 @@ let cleanQuizText = document.getElementById('quizData').innerHTML.replace(/<br\s
             }
             // ... 您的拖動邏輯 ...
         });
-    };
 
-
-    window.initElement = function(element) {
-        element.addEventListener('touchstart', (e) => {
+       element.addEventListener('touchstart', (e) => {
             const isInteractive = e.target.closest('#quizData') || e.target.closest('.option-button') || e.target.closest('button');
             if (isInteractive) {
                 element.style.cursor = 'default';
@@ -4827,7 +4821,11 @@ let cleanQuizText = document.getElementById('quizData').innerHTML.replace(/<br\s
             }
             // ... 您的拖動邏輯 ...
         });
+
+
     };
+
+
 
 
 
@@ -4844,7 +4842,7 @@ let cleanQuizText = document.getElementById('quizData').innerHTML.replace(/<br\s
     window.getQuizUIHTML = function() {
         const htmlArray = [
             '<div id="quizArea" class="quiz-container flex flex-col items-center justify-center bg-white  rounded-lg " style="z-index:50" >',
-             '<button style="position:absolute;top:-10px;left:-20px;width:40px;height:40px;z-index:10;border-radius:25px;background-color:red;color:white" onclick="document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display=(document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display==\'none\')?\'\':\'none\';document.getElementById(\'quizToolBar\').style.display=(document.getElementById(\'quizToolBar\').style.display==\'\')?\'none\':\'\';showModal(\'測驗遊戲按鈕顯示於工具列\',\'\')" >❔</button>',
+             '<button style="position:absolute;top:-10px;left:-20px;width:40px;height:40px;z-index:10;border-radius:25px;background-color:red;color:white" onclick="document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display=(document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display==\'none\')?\'\':\'none\';document.getElementById(\'quizToolBar\').style.display=(document.getElementById(\'quizToolBar\').style.display==\'\')?\'none\':\'\';showModal(\'測驗遊戲按鈕顯示於工具列\',\'\')"  ontouchstart="document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display=(document.getElementById(\'editor\').querySelector(\'#edit_view\').style.display==\'none\')?\'\':\'none\';document.getElementById(\'quizToolBar\').style.display=(document.getElementById(\'quizToolBar\').style.display==\'\')?\'none\':\'\';showModal(\'測驗遊戲按鈕顯示於工具列\',\'\')">❔</button>',
             // --- 編輯數據模式 (Edit View) ---
             '<div id="edit_view" class="w-full" style="display: none;">',
              '<h2 style="color:orange;font-size:16pt;padding-left:30px">            編輯測驗題目 </h2>',
@@ -4871,11 +4869,7 @@ let cleanQuizText = document.getElementById('quizData').innerHTML.replace(/<br\s
             '</div>',
             
             "    <button onclick=\"window.parsePsvAndLoadQuiz(this.closest('#quizArea'))\" ontouchstart=\"window.parsePsvAndLoadQuiz(this.closest('#quizArea'))\" class=\"w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700\">載入並開始測驗</button>",
-  '<div class="flex space-x-2 mb-3">',
-//" <button onclick=\"window.toggleGameTheme('quiz');\">❓</button>",
-"<button id=\"toggleQuizBtn\"  title=\"切水果測驗(請按工具列的)\" class=\"flex-1 px-2 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition duration-150\" onclick=\"window.toggleGameTheme('slasher');window.QS_launchGame(document.getElementById('quizArea'),'slasher');window.QS_parseAndLoadQuiz(document.getElementById('quizArea'),'slasher');\"   >🎈打氣球遊戲</button>",
-"<button id=\"startGameButton\" title=\"雙打測驗\" class=\"flex-1 px-2 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition duration-150\" onclick=\"window.toggleGameTheme('dual');\">🤼雙打射擊</button>", 
-            '</div>',
+
 
           
             '<p id="errorMsg" class="text-red-500 mt-3 hidden">數據格式錯誤。</p>',
@@ -4894,13 +4888,13 @@ let cleanQuizText = document.getElementById('quizData').innerHTML.replace(/<br\s
 
             '<div class="bg-blue-50 p-6 rounded-lg mb-6 shadow-md min-h-[150px] flex flex-col justify-center text-left">',
             '<div class="flex justify-between items-start mb-2">',
-            '<p class="text-xl font-medium text-gray-800" id="questionText"   style="font-size:45px" >點擊「編輯數據」按鈕載入測驗</p>',
+            '<p class="text-xl font-medium text-gray-800" id="questionText"   style="font-size:2em" >點擊「編輯數據」按鈕載入測驗</p>',
             " <button onclick=\"window.speakQuestion(this.closest('#quizArea'))\"  ontouchstart=\"window.speakQuestion(this.closest('#quizArea'))\" class=\"text-2xl ml-3 text-blue-500 hover:text-blue-700 transition\">🔊</button>",
 
             '</div>',
             '</div>',
 
-            '<div id="optionsContainer" class="space-y-3" style="font-size:35px" ></div>',
+            '<div id="optionsContainer" class="space-y-3" style="font-size:3em" ></div>',
             
             '<div class="mt-6 flex justify-between space-x-4">',
             " <button id=\"editButton\" onclick=\"window.toggleEditMode(this.closest('#quizArea'), true)\"   ontouchstart=\"window.toggleEditMode(this.closest('#quizArea'), true)\" class=\"px-4 py-2 text-md font-semibold text-white bg-gray-600 rounded-xl hover:bg-gray-700 transition duration-150\">編輯數據</button>",
@@ -5238,7 +5232,7 @@ document.getElementById('quizArea').querySelector('#quizData').innerText=quizDat
             button.innerHTML = renderedOption;
             
             button.onclick = () => window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);
-            
+           button.ontouchstart = () => window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);            
             if (optionsContainer) optionsContainer.appendChild(button);
         });
 
