@@ -4816,7 +4816,18 @@ let cleanQuizText = document.getElementById('quizData').innerHTML.replace(/<br\s
     };
 
 
-
+    window.initElement = function(element) {
+        element.addEventListener('touchstart', (e) => {
+            const isInteractive = e.target.closest('#quizData') || e.target.closest('.option-button') || e.target.closest('button');
+            if (isInteractive) {
+                element.style.cursor = 'default';
+                return;
+            } else {
+                 element.style.cursor = 'grab';
+            }
+            // ... 您的拖動邏輯 ...
+        });
+    };
 
 
 
@@ -4859,7 +4870,7 @@ let cleanQuizText = document.getElementById('quizData').innerHTML.replace(/<br\s
             "<br>3|Where's my bag？<img src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZf50Vs-UpWo_OfaGbqQbe_a1rhdfQ9zMqeg&s' style='max-height: 50px; display: inline-block; border-radius: 4px; vertical-align: middle;'>|2|on the desk|on the bed|in the box|under the table",
             '</div>',
             
-            "    <button onclick=\"window.parsePsvAndLoadQuiz(this.closest('#quizArea'))\" class=\"w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700\">載入並開始測驗</button>",
+            "    <button onclick=\"window.parsePsvAndLoadQuiz(this.closest('#quizArea'))\" ontouchstart=\"window.parsePsvAndLoadQuiz(this.closest('#quizArea'))\" class=\"w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700\">載入並開始測驗</button>",
   '<div class="flex space-x-2 mb-3">',
 //" <button onclick=\"window.toggleGameTheme('quiz');\">❓</button>",
 "<button id=\"toggleQuizBtn\"  title=\"切水果測驗(請按工具列的)\" class=\"flex-1 px-2 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition duration-150\" onclick=\"window.toggleGameTheme('slasher');window.QS_launchGame(document.getElementById('quizArea'),'slasher');window.QS_parseAndLoadQuiz(document.getElementById('quizArea'),'slasher');\"   >🎈打氣球遊戲</button>",
@@ -4884,7 +4895,7 @@ let cleanQuizText = document.getElementById('quizData').innerHTML.replace(/<br\s
             '<div class="bg-blue-50 p-6 rounded-lg mb-6 shadow-md min-h-[150px] flex flex-col justify-center text-left">',
             '<div class="flex justify-between items-start mb-2">',
             '<p class="text-xl font-medium text-gray-800" id="questionText"   style="font-size:45px" >點擊「編輯數據」按鈕載入測驗</p>',
-            " <button onclick=\"window.speakQuestion(this.closest('#quizArea'))\" class=\"text-2xl ml-3 text-blue-500 hover:text-blue-700 transition\">🔊</button>",
+            " <button onclick=\"window.speakQuestion(this.closest('#quizArea'))\"  ontouchstart=\"window.speakQuestion(this.closest('#quizArea'))\" class=\"text-2xl ml-3 text-blue-500 hover:text-blue-700 transition\">🔊</button>",
 
             '</div>',
             '</div>',
@@ -4892,8 +4903,8 @@ let cleanQuizText = document.getElementById('quizData').innerHTML.replace(/<br\s
             '<div id="optionsContainer" class="space-y-3" style="font-size:35px" ></div>',
             
             '<div class="mt-6 flex justify-between space-x-4">',
-            " <button id=\"editButton\" onclick=\"window.toggleEditMode(this.closest('#quizArea'), true)\" class=\"px-4 py-2 text-md font-semibold text-white bg-gray-600 rounded-xl hover:bg-gray-700 transition duration-150\">編輯數據</button>",
-            " <button id=\"nextButton\" onclick=\"window.nextQuestion(this.closest('#quizArea'))\" class=\"hidden px-6 py-3 text-lg font-semibold text-white bg-green-600 rounded-xl hover:bg-green-700 transition duration-150 shadow-lg shadow-green-500/50\">下一題</button>",
+            " <button id=\"editButton\" onclick=\"window.toggleEditMode(this.closest('#quizArea'), true)\"   ontouchstart=\"window.toggleEditMode(this.closest('#quizArea'), true)\" class=\"px-4 py-2 text-md font-semibold text-white bg-gray-600 rounded-xl hover:bg-gray-700 transition duration-150\">編輯數據</button>",
+            " <button id=\"nextButton\"  ontouchstart=\"window.nextQuestion(this.closest('#quizArea'))\"  onclick=\"window.nextQuestion(this.closest('#quizArea'))\" class=\"hidden px-6 py-3 text-lg font-semibold text-white bg-green-600 rounded-xl hover:bg-green-700 transition duration-150 shadow-lg shadow-green-500/50\">下一題</button>",
             '</div>',
             '</div>',
             '</div>'
