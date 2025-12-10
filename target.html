@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>圖像捕捉遊戲</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+ @import url('https://fonts?family=Nunito:wght@600;700;800&display=swap'); 
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 核心佈局: Flexbox，鎖定視窗高度，垂直分配空間 */
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a, #0c4a6e);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            overflow: hidden; /* 防止整個頁面滾動 */
+        }
+
+        /* 隱藏的目標 DIV，不應影響佈局和點擊 */
+        #targetDiv {
+            display: none !important;
+            position: absolute;
+            z-index: -1;
+        }
+        
+        /* 目標顯示區 */
+        #displayer {
+            position: relative;
+            z-index: 800;
+            text-align: center;
+            padding: 0.5rem 1rem;
+            margin-bottom: 0.5rem;
+            width: 100%;
+            max-width: 1200px;
+            background: #1f2937;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 工具列 (Toolbar) - 確保高堆疊層級和不被擠壓 */
+        .p-4.bg-white.rounded-xl {
+            position: relative;
+            z-index: 900;
+            flex-shrink: 0;
+            margin-bottom: 1rem;
+            max-width: 1200px;
+            /* 限制最大高度並允許內部滾動，防止推擠編輯器 */
+            max-height: 40vh; 
+            overflow-y: auto; 
+        }
+
+        /* 編輯器區域 - 佔用所有剩餘空間 */
+        #editor {
+            flex-grow: 1;
+            width: 100%;
+            max-width: 1200px;
+            min-height: 0; /* 允許 Flexbox 壓縮 */
+            
+            position: relative;
+            z-index: 10;
+            
+            background: linear-gradient(to top right, #e0f2f1, #b2dfdb);
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transition: opacity 0.3s;
+            cursor: none; 
+        }
+
+        /* 遊戲內容子容器 */
+        #game-content-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        /* 可拖曳圖像（移動目標） */
+        .draggable-image {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #fca5a5;
+            background-size: cover;
+            background-position: center;
+            cursor: default;
+            border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: border-color 0.1s, transform 0.1s, opacity 0.1s, background-color 0.1s; /* 添加背景色過渡 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: #7f1d1d;
+            user-select: none;
+            z-index: 20;
+        }
+
+        /* 遊標玩家 (由滑鼠或觸控控制) */
+        #cursor-player {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #38bdf8, #22d3ee);
+            border: 4px solid #164e63;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.8), 0 0 5px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            z-index: 30;
+            transition: background-color 0.1s;
+        }
+    </style>
+
+    <script>
+        // 核心狀態定義
+        window.DRAG_SPEED = 1.5;
+        window.isAnimationRunning = false;
+        window.score = 0;
+        window.currentTargetId = null;
+        window.currentAnimationType = 'flow-left';
+        window.draggableStates = new Map();
+        window.animationFrameId = null;
+        window.timerId = null;
+// ✨ 新增的鎖定狀態變數
+window.isSelectingNewTarget = false; // <--- 請確保添加這一行
+        // 元素引用
+        window.speedSlider = null;
+        window.currentSpeedDisplay = null;
+        window.scoreDisplay = null;
+        window.cursorPlayer = null;
+        window.editor = null;
+        window.gameContentContainer = null;
+
+/**
+ * 處理目標物體的閃爍視覺效果 (引入 Hit 狀態鎖定)
+ * @param {HTMLElement} element - 目標元素
+ * @param {string} flashColor - 閃爍顏色
+ * @param {boolean} isCorrectHit - 是否為正確捕捉
+ */
+function flashTarget(element, flashColor, isCorrectHit) {
+    if (!element) return;
+    
+    // 設置鎖定狀態，防止立即再次觸發碰撞
+    element.isHit = true; 
+    
+    const originalBorderColor = 'white'; 
+    const originalBorderWidth = '4px'; 
+    
+    // 步驟 1: 變為閃爍色和寬度
+    element.style.borderColor = flashColor;
+    element.style.borderWidth = '6px'; 
+    
+    // 步驟 2: 延遲後恢復原來的邊框並解鎖
+    setTimeout(() => {
+        element.style.borderColor = originalBorderColor;
+        element.style.borderWidth = originalBorderWidth;
+        
+        // 只有當元素不是當前目標時，才解鎖 (如果它是正確目標，它會在 selectNewTarget 中被移除，但安全起見，我們在這裡解鎖)
+        element.isHit = false; 
+    }, 100); 
+}
+
+
+/**
+ * 將單個目標物體瞬移到新的安全隨機位置 (已修正: 引入安全偏移量)
+ * @param {HTMLElement} item - 要移動的目標元素
+ */
+function teleportTargetToNewPosition(item) {
+    if (!window.editor || !item) return;
+
+    const editorWidth = window.editor.offsetWidth;
+    const editorHeight = window.editor.offsetHeight;
+    
+    const w = item.offsetWidth;
+    const h = item.offsetHeight;
+    
+    const PADDING = 10;
+    const SAFE_OFFSET = 150; // <<< 關鍵修正: 最小偏移量 (150px)
+
+    const maxX = editorWidth - w - PADDING;
+    const maxY = editorHeight - h - PADDING;
+    
+    // 1. 生成 X 軸隨機位置
+    let randomX = Math.random() * (maxX - PADDING) + PADDING;
+
+    // 2. 生成 Y 軸隨機位置
+    let randomY = Math.random() * (maxY - PADDING) + PADDING;
+    
+    
+    // --- 應用安全偏移 (核心邏輯) ---
+    
+    // 確保 X 軸位置不在中央游標附近 (例如: 在水平模式下游標被鎖定在中央 X 軸)
+    const centerX = editorWidth / 2;
+    if (Math.abs(randomX - centerX) < SAFE_OFFSET) {
+        // 如果太靠近中央，強制它移到左邊或右邊的安全區
+        if (randomX < centerX) {
+            randomX = Math.max(PADDING, randomX - SAFE_OFFSET); // 移到左邊
+        } else {
+            randomX = Math.min(maxX, randomX + SAFE_OFFSET); // 移到右邊
+        }
+    }
+
+    // 確保 Y 軸位置不在中央游標附近 (例如: 在垂直模式下游標被鎖定在中央 Y 軸)
+    const centerY = editorHeight / 2;
+    if (Math.abs(randomY - centerY) < SAFE_OFFSET) {
+         // 如果太靠近中央，強制它移到上邊或下邊的安全區
+        if (randomY < centerY) {
+            randomY = Math.max(PADDING, randomY - SAFE_OFFSET); // 移到上邊
+        } else {
+            randomY = Math.min(maxY, randomY + SAFE_OFFSET); // 移到下邊
+        }
+    }
+    // ------------------------------------
+    
+    // 執行瞬移
+    item.style.left = `${randomX}px`;
+    item.style.top = `${randomY}px`;
+    
+    // 重設該目標的速度狀態
+    window.draggableStates.delete(item);
+    window.resetDraggablePosition(item, window.currentAnimationType);
+}
+
+
+
+
+
+        /**
+         * 執行從 localStorage 載入的內容注入和遊戲狀態重置
+         */
+        function updateStage() {
+            const content = document.getElementById('targetDiv').innerHTML;
+            if (window.gameContentContainer) {
+                 window.gameContentContainer.innerHTML = content;
+            }
+            window.rebindElementsAndState();
+            window.setSafeInitialPositions();
+            window.selectNewTarget();
+
+            if (window.isAnimationRunning) {
+                window.animateAllRandomly(window.currentAnimationType);
+            }
+        }
+
+        /**
+         * 重新獲取所有 DOM 元素引用
+         */
+        window.rebindElementsAndState = function() {
+            window.speedSlider = document.getElementById('speedSlider');
+            window.currentSpeedDisplay = document.getElementById('currentSpeedDisplay');
+            window.scoreDisplay = document.getElementById('scoreDisplay');
+            window.cursorPlayer = document.getElementById('cursor-player');
+            window.editor = document.getElementById('editor');
+            window.gameContentContainer = document.getElementById('game-content-container');
+
+            if (window.speedSlider && !window.speedSlider._listenerAdded) {
+                window.speedSlider.addEventListener('input', (e) => {
+                    window.DRAG_SPEED = parseFloat(e.target.value);
+                    window.currentSpeedDisplay.textContent = window.DRAG_SPEED.toFixed(2);
+                });
+                window.speedSlider._listenerAdded = true;
+            }
+            
+            if (!window.cursorPlayer) {
+                window.cursorPlayer = document.getElementById('cursor-player');
+            }
+
+            window.DRAG_SPEED = parseFloat(window.speedSlider ? window.speedSlider.value : 1.5);
+        }
+
+        // --- Helper: 獲取元素邊界信息 ---
+        function getRect(el) {
+            if (!el) return { x: 0, y: 0, w: 0, h: 0 };
+            return {
+                x: el.offsetLeft,
+                y: el.offsetTop,
+                w: el.offsetWidth,
+                h: el.offsetHeight
+            };
+        }
+
+        // --- 遊戲邏輯: 選擇新目標 (顯示 ID，無高亮) ---
+        window.selectNewTarget = function(previousTarget = null) {
+            if (!window.gameContentContainer) return;
+            const targets = Array.from(window.gameContentContainer.querySelectorAll('.draggable-image'));
+            const currentTargetEl = previousTarget || document.getElementById(window.currentTargetId);
+
+            // 清除舊目標的邊框 (如果還有殘留)
+            if (currentTargetEl) {
+                currentTargetEl.style.border = '4px solid white';
+            }
+
+            const availableTargets = targets.filter(item => item.id !== previousTarget?.id);
+
+            const displayer = document.getElementById('displayer');
+
+            if (availableTargets.length > 0) {
+                const randomIndex = Math.floor(Math.random() * availableTargets.length);
+                const newTarget = availableTargets[randomIndex];
+                window.currentTargetId = newTarget.id;
+
+                if (displayer) {
+                    displayer.innerHTML = `<span style="color: #60a5fa; font-size: 24px; font-weight: bold;">目標: ${newTarget.id}</span>`;
+                }
+                
+                newTarget.style.border = '4px solid white';
+                
+            } else {
+                window.currentTargetId = null;
+                if (displayer) {
+                    displayer.innerHTML = `<span style="color: #6ee7b7; font-size: 20px;">無可用目標!</span>`;
+                }
+            }
+        }
+
+
+// --- 遊戲邏輯: 碰撞檢測、計分與懲罰 (最終穩定版 - 空間解決方案) ---
+function checkCollisionAndScore() {
+    if (!window.isAnimationRunning || !window.cursorPlayer || !window.gameContentContainer) return;
+
+    const playerRect = getRect(window.cursorPlayer);
+    const targets = window.gameContentContainer.querySelectorAll('.draggable-image');
+    
+    let correctTargetHit = null; 
+    let wrongTargetHit = null;  
+
+    // 階段 1: 找出所有碰撞目標
+    targets.forEach(targetEl => {
+        // 🚨 這裡不再需要檢查 isHit 狀態
+        // if (targetEl.isHit) { return; } 
+
+        const targetRect = getRect(targetEl);
+        
+        const collision = (
+            playerRect.x < targetRect.x + targetRect.w &&
+            playerRect.x + playerRect.w > targetRect.x &&
+            playerRect.y < targetRect.y + targetRect.h &&
+            playerRect.y + playerRect.h > targetRect.y 
+        );
+
+        if (collision) {
+            if (targetEl.id === window.currentTargetId) {
+                correctTargetHit = targetEl; 
+            } else {
+                wrongTargetHit = targetEl;  
+            }
+        }
+    });
+
+    // --- 階段 2: 處理正確捕捉 (最高優先級) ---
+    if (correctTargetHit) {
+        
+        // 💎 碰撞到正確目標：加分
+        window.score++;
+        if (window.scoreDisplay) window.scoreDisplay.textContent = window.score;
+        
+        // 1. 執行瞬移，將目標移出游標區域
+        teleportTargetToNewPosition(correctTargetHit); 
+
+        // 2. 視覺回饋 (成功)
+        flashTarget(correctTargetHit, '#10b981', true); 
+
+        // 3. 玩家視覺回饋 
+        window.cursorPlayer.style.backgroundColor = '#6ee7b7'; 
+        setTimeout(window.restorePlayerColor, 100);
+
+        // 4. 選擇下一個新目標 (傳遞舊目標，確保不選到自己)
+        window.selectNewTarget(correctTargetHit);
+        
+        // *** 關鍵: 立即返回，防止同一幀懲罰 ***
+        return; 
+    }
+
+    // --- 階段 3: 處理錯誤捕捉 (次要優先級) ---
+    if (wrongTargetHit) {
+        // ❌ 碰撞到錯誤目標：扣分
+        if (window.score > 0) {
+            window.score--; 
+        }
+        if (window.scoreDisplay) window.scoreDisplay.textContent = window.score;
+
+        // 視覺回饋 (錯誤)
+        flashTarget(wrongTargetHit, '#ef4444', false); 
+
+        // 玩家視覺回饋 
+        window.cursorPlayer.style.backgroundColor = '#ef4444'; 
+        setTimeout(window.restorePlayerColor, 100);
+    }
+}
+        
+        /**
+         * 根據當前模式恢復玩家游標的顏色
+         */
+        window.restorePlayerColor = function() {
+            if (['fall-down', 'vertical'].includes(window.currentAnimationType)) {
+                 window.cursorPlayer.style.backgroundColor = '#9333ea';
+             } else if (['flow-left', 'horizontal'].includes(window.currentAnimationType)) {
+                 window.cursorPlayer.style.backgroundColor = '#f59e0b';
+             } else {
+                 window.cursorPlayer.style.backgroundColor = '#38bdf8';
+             }
+        }
+
+// --- Helper: 設置元素初始位置 (已修正: 重新定義 editorWidth/editorHeight) ---
+window.setSafeInitialPositions = function() {
+    if (!window.editor || !window.gameContentContainer) return;
+
+    // 🚨 關鍵修正：重新獲取並定義 editorWidth 和 editorHeight
+    const editorWidth = window.editor.offsetWidth;
+    const editorHeight = window.editor.offsetHeight;
+    
+    const targets = window.gameContentContainer.querySelectorAll('.draggable-image');
+    
+    targets.forEach((item, index) => {
+        if (!item.id) {
+            item.id = `default-item-${index}`;
+        }
+        
+        // 使用新的函數將每個目標移動到隨機位置
+        teleportTargetToNewPosition(item); 
+        
+        item.style.backgroundColor = '#fca5a5';
+    });
+    
+    // 游標邏輯也需要用到這些尺寸
+    if (window.cursorPlayer) {
+        const playerW = window.cursorPlayer.offsetWidth;
+        const playerH = window.cursorPlayer.offsetHeight;
+        window.cursorPlayer.style.left = `${(editorWidth / 2) - (playerW / 2)}px`;
+        window.cursorPlayer.style.top = `${(editorHeight / 2) - (playerH / 2)}px`;
+    }
+    
+    window.score = 0;
+    if (window.scoreDisplay) window.scoreDisplay.textContent = window.score;
+}
+
+
+// --- Helper: 重設元素位置並計算新速度 (修正: 環繞時加入隨機位置偏移) ---
+window.resetDraggablePosition = function(item, animationType) {
+    if (!window.editor) return { vx: 0, vy: 0 };
+    const editorWidth = window.editor.offsetWidth;
+    const editorHeight = window.editor.offsetHeight;
+    let x = item.offsetLeft;
+    let y = item.offsetTop;
+    const w = item.offsetWidth;
+    const h = item.offsetHeight;
+    let state = window.draggableStates.get(item) || { vx: 0, vy: 0 };
+    let needsNewVelocity = false;
+    
+    const PADDING = 10;
+    const maxX = editorWidth - w - PADDING;
+    const maxY = editorHeight - h - PADDING;
+    
+    // --- 環繞邏輯 (Wrapping) ---
+    let wasWrapped = false;
+
+    // 檢查 X 軸環繞
+    if (x + w < 0) { 
+        x = editorWidth; 
+        wasWrapped = true; 
+    } else if (x > editorWidth) { 
+        x = -w; 
+        wasWrapped = true; 
+    }
+    
+    // 檢查 Y 軸環繞
+    if (y + h < 0) { 
+        y = editorHeight; 
+        wasWrapped = true; 
+    } else if (y > editorHeight) { 
+        y = -h; 
+        wasWrapped = true; 
+    }
+    
+    // 🚨 關鍵修正：當發生環繞時 (wasWrapped)，隨機重定位其非運動軸線
+    if (wasWrapped) {
+        needsNewVelocity = true; // 即使速度相同，也需要重新計算位置
+
+        switch (animationType) {
+            case 'flow-left': // 水平向左流動 (X 軸移動)
+            case 'horizontal': // 水平環繞 (X 軸移動)
+                // 隨機重設 Y 軸位置，以分散目標
+                y = Math.random() * (maxY - PADDING) + PADDING;
+                break;
+            case 'fall-down': // 垂直向下流動 (Y 軸移動)
+            case 'vertical': // 垂直環繞 (Y 軸移動)
+                // 隨機重設 X 軸位置，以分散目標
+                x = Math.random() * (maxX - PADDING) + PADDING;
+                break;
+            case 'random': // 隨機模式 (X, Y 都移動)
+            default:
+                // 如果是隨機移動模式，環繞後也重新生成整個速度方向，確保位置分散
+                if (wasWrapped) {
+                   teleportTargetToNewPosition(item);
+                   return window.draggableStates.get(item); // 讓 teleport 函數處理位置和速度
+                }
+                break;
+        }
+    }
+
+    // 重新應用計算過的位置 (如果是隨機模式，teleportTargetToNewPosition 已經設置了)
+    if (animationType !== 'random' || !wasWrapped) {
+         item.style.left = `${x}px`;
+         item.style.top = `${y}px`;
+    }
+
+    // 速度邏輯 (當環繞發生或速度為零時重新計算)
+    if (needsNewVelocity || (state.vx === 0 && state.vy === 0)) {
+        let angle;
+        switch (animationType) {
+            // ... (速度計算邏輯保持不變，略)
+            case 'flow-left': state.vx = -window.DRAG_SPEED; state.vy = 0; break;
+            case 'fall-down': state.vx = 0; state.vy = window.DRAG_SPEED; break;
+            case 'vertical': angle = Math.random() < 0.5 ? Math.PI / 2 : 3 * Math.PI / 2; state.vx = 0; state.vy = Math.sin(angle) * window.DRAG_SPEED; break;
+            case 'horizontal': angle = Math.random() < 0.5 ? 0 : Math.PI; state.vx = Math.cos(angle) * window.DRAG_SPEED; state.vy = 0; break;
+            case 'random': default: angle = Math.random() * 2 * Math.PI; state.vx = Math.cos(angle) * window.DRAG_SPEED; state.vy = Math.sin(angle) * window.DRAG_SPEED; break;
+        }
+    }
+    
+    window.draggableStates.set(item, state);
+    return state;
+}
+
+
+// --- 核心動畫循環 (確保遞迴呼叫) ---
+window.animateAllRandomly = function(animationType) {
+    if (!window.gameContentContainer) return;
+
+    const targets = window.gameContentContainer.querySelectorAll('.draggable-image');
+    if (targets.length === 0) {
+        window.stopAnimation();
+        return;
+    }
+
+    function step() {
+        if (!window.isAnimationRunning) {
+            cancelAnimationFrame(window.animationFrameId);
+            window.animationFrameId = null;
+            return;
+        }
+
+        targets.forEach(item => {
+            const state = window.resetDraggablePosition(item, animationType);
+            let currentX = item.offsetLeft + state.vx;
+            let currentY = item.offsetTop + state.vy;
+            item.style.left = `${currentX}px`;
+            item.style.top = `${currentY}px`;
+        });
+
+        checkCollisionAndScore();
+        // 確保這裡有遞迴呼叫，讓動畫繼續
+        window.animationFrameId = requestAnimationFrame(step); 
+    }
+
+    // 只有在動畫尚未啟動時才啟動新的循環
+    if (!window.animationFrameId) { 
+        window.animationFrameId = requestAnimationFrame(step);
+    }
+}
+
+        // --- 遊標玩家移動處理 (保持不變) ---
+        function handlePlayerMove(e) {
+            if (!window.cursorPlayer || !window.isAnimationRunning || !window.editor) return;
+
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+
+            const rect = window.editor.getBoundingClientRect();
+            const playerW = window.cursorPlayer.offsetWidth;
+            const playerH = window.cursorPlayer.offsetHeight;
+
+            let newX = clientX - rect.left - playerW / 2;
+            let newY = clientY - rect.top - playerH / 2;
+
+            newX = Math.max(0, Math.min(newX, rect.width - playerW));
+            newY = Math.max(0, Math.min(newY, rect.height - playerH));
+
+            // 根據模式鎖定軸向並變色
+            if (['fall-down', 'vertical'].includes(window.currentAnimationType)) {
+                newY = (rect.height / 2) - (playerH / 2);
+                window.cursorPlayer.style.backgroundColor = '#9333ea';
+            } else if (['flow-left', 'horizontal'].includes(window.currentAnimationType)) {
+                newX = (rect.width / 2) - (playerW / 2);
+                window.cursorPlayer.style.backgroundColor = '#f59e0b';
+            } else {
+                window.cursorPlayer.style.backgroundColor = '#38bdf8';
+            }
+
+            window.cursorPlayer.style.left = `${newX}px`;
+            window.cursorPlayer.style.top = `${newY}px`;
+            
+            if (e.type === 'touchmove') e.preventDefault();
+        }
+
+        // --- 動畫控制函數 (停止) (保持不變) ---
+        window.stopAnimation = function() {
+            if (window.animationFrameId) {
+                cancelAnimationFrame(window.animationFrameId);
+                window.animationFrameId = null;
+            }
+            if (window.timerId) {
+                clearTimeout(window.timerId);
+                window.timerId = null;
+            }
+            window.isAnimationRunning = false;
+            window.draggableStates.clear();
+            window.currentTargetId = null;
+            
+            if (window.editor) {
+                window.editor.classList.add('opacity-50');
+                window.editor.style.cursor = 'auto';
+                document.querySelectorAll('.draggable-image').forEach(item => item.style.border = '4px solid white');
+            }
+            
+            const displayer = document.getElementById('displayer');
+            if (displayer) displayer.innerHTML = `<span style="color: #9ca3af;">點擊開始遊戲!</span>`;
+            console.log("Game stopped.");
+        };
+
+// --- 動畫控制函數 (啟動) (確保呼叫了 animateAllRandomly) ---
+window.setAndStartAnimation = function(type) {
+    window.stopAnimation();
+    
+    window.currentAnimationType = type;
+    window.setSafeInitialPositions();
+    
+    document.querySelectorAll('.draggable-image').forEach(item => {
+        // 確保為每個目標設置初始速度狀態
+        window.resetDraggablePosition(item, type); 
+    });
+
+    window.isAnimationRunning = true;
+    
+    // 🚨 這是最關鍵的一行，必須確保它存在且被呼叫
+    window.animateAllRandomly(type); 
+    
+    window.selectNewTarget();
+
+    if (window.editor) {
+        window.editor.classList.remove('opacity-50');
+        window.editor.style.cursor = 'none';
+    }
+
+    const DURATION_SECONDS = 60;
+    window.timerId = setTimeout(() => {
+        window.stopAnimation();
+        // ... (省略 alertUser 邏輯)
+    }, DURATION_SECONDS * 1000);
+    
+    console.log(`Game set and started: ${type} mode.`);
+};
+
+
+        // --- 初始化函數 ---
+        window.initGame = function() {
+            window.rebindElementsAndState();
+            
+            // 載入 localStorage 或預設內容，並執行 updateStage
+            const targetDiv = document.getElementById('targetDiv');
+            const receivedContent = localStorage.getItem('editorContentKey');
+            
+            if (receivedContent && targetDiv) {
+                 targetDiv.innerHTML = receivedContent;
+                 updateStage(); 
+            } else {
+                // 如果沒有內容，加入預設目標
+                const defaultContent = `
+                    <div class="draggable-image" style="top: 10%; left: 10%;">A</div>
+                    <div class="draggable-image" style="top: 80%; left: 80%;">B</div>
+                `;
+                if (targetDiv) targetDiv.innerHTML = defaultContent;
+                updateStage(); 
+            }
+
+            window.setSafeInitialPositions();
+            window.stopAnimation();
+            
+            // 綁定移動事件
+            document.removeEventListener('mousemove', handlePlayerMove);
+            document.removeEventListener('touchmove', handlePlayerMove, { passive: false });
+            document.addEventListener('mousemove', handlePlayerMove);
+            document.addEventListener('touchmove', handlePlayerMove, { passive: false });
+        }
+        
+        document.addEventListener('DOMContentLoaded', window.initGame);
+    </script>
+</head>
+<body class="p-4" >
+    <div id="targetDiv" onclick="this.style.display='none';updateStage();" >---</div>
+
+    <div class="p-4 bg-white rounded-xl shadow-xl flex flex-wrap justify-center gap-4 max-w-4xl w-full">
+        <h1 class="text-2xl font-extrabold text-gray-800 w-full text-center mb-2">圖像捕捉遊戲 (自動計時 60 秒)</h1>
+
+        <div class="w-full flex justify-between items-center mb-4 px-2">
+            <div class="text-lg font-bold text-gray-700">
+                分數: <span id="scoreDisplay" class="text-4xl text-pink-600 font-extrabold ml-2">0</span>
+            </div>
+            <div class="text-right">
+                <label for="speedSlider" class="block text-sm font-medium text-gray-700">動畫速度:</label>
+                <span id="currentSpeedDisplay" class="font-extrabold text-indigo-700 text-lg">1.50</span>x
+                <input type="range" id="speedSlider" min="0.5" max="5.0" step="0.1" value="1.5"
+                       class="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+            </div>
+        </div>
+
+        <button id="startRandomBtn" onclick="window.setAndStartAnimation('random')" class="px-3 py-2 bg-indigo-500 text-white font-bold rounded-full hover:bg-indigo-600 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
+            🌀 隨機模式 (X/Y 皆可動)
+        </button>
+        <button id="startFlowLeftBtn" onclick="window.setAndStartAnimation('flow-left')" class="px-3 py-2 bg-cyan-600 text-white font-bold rounded-full hover:bg-cyan-700 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
+            ⬅️ 靠左流動 (玩家 X 軸鎖定)
+        </button>
+        <button id="startFallDownBtn" onclick="window.setAndStartAnimation('fall-down')" class="px-3 py-2 bg-fuchsia-600 text-white font-bold rounded-full hover:bg-fuchsia-700 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
+            ⬇️ 垂直落下 (玩家 Y 軸鎖定)
+        </button>
+        <button id="startVerticalBtn" onclick="window.setAndStartAnimation('vertical')" class="px-3 py-2 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
+            ↕️ 垂直環繞 (玩家 Y 軸鎖定)
+        </button>
+        <button id="startHorizontalBtn" onclick="window.setAndStartAnimation('horizontal')" class="px-3 py-2 bg-yellow-500 text-gray-800 font-bold rounded-full hover:bg-yellow-600 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
+            ↔️ 水平環繞 (玩家 X 軸鎖定)
+        </button>
+        <button id="stopAnimationBtn" onclick="window.stopAnimation()" class="px-3 py-2 bg-red-600 text-white font-bold rounded-full hover:bg-red-700 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
+            🛑 停止遊戲
+        </button>
+    </div>
+
+    <div id="displayer">
+        <span style="color: #9ca3af;">點擊開始遊戲!</span>
+    </div>
+
+    <div id="editor">
+        <div id="cursor-player"></div>
+
+        <div id="game-content-container">
+        </div>
+    </div>
+</body>
+</html>
