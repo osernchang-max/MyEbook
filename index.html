@@ -1,5 +1,4 @@
-﻿
-<html lang="en">
+﻿<html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -754,7 +753,6 @@ align-items: center;
 </head>
 <body onclick="window.dropmenu();window.expand();"  ontouchstart="window.expand();" >
 
-     <div id="screenArea" class="p-0 bg-white shadow-lg rounded-xl" style="border:2px double gray "><!-- 全螢幕範圍開始 -->
 
 
 
@@ -1666,7 +1664,28 @@ align-items: center;
     </button>
 </div>
 
+<form id="editorForm" action="target.html" method="POST">
 
+
+    <input type="hidden" name="editorContent" id="hiddenContent">
+
+    <button type="submit" >🎡more</button>
+</form>
+<script>
+document.getElementById('editorForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Stop the form from submitting normally
+
+    const content = document.getElementById('editor').innerHTML;
+    alert(content);
+    // Save the content to the browser's local storage
+    localStorage.setItem('editorContentKey', content);
+
+    // Navigate to the target page
+	window.open('target.html');
+    //window.location.href = 'target.html';
+});
+</script>
+     <div id="screenArea" class="p-0 bg-white shadow-lg rounded-xl" style="border:2px double gray "><!-- 全螢幕範圍開始 -->
 
 <span class="mx-2 text-gray-400" onclick="document.getElementById('movementControls').style.display=(document.getElementById('movementControls').style.display=='none')?'':'none';" >🕹️</span>
 
@@ -5231,38 +5250,9 @@ document.getElementById('quizArea').querySelector('#quizData').innerText=quizDat
             const renderedOption = '<span class="font-bold mr-3">' + optionLabels[index] + '.</span> ' + optionText;
             
             button.innerHTML = renderedOption;
-
-
-
-                // 使用一個 flag 確保只觸發一次
-            let touchHandled = false;
-
-            // 1. 處理滑鼠點擊 (Click)
-            button.onclick = function() {
-                // 如果已經通過觸控處理了，就不要再執行
-                if (touchHandled) return; 
-                window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);
-            };
             
-            // 2. 處理觸控事件 (Touchend)
-            // 使用 touchend 而非 touchstart，更能模擬 click
-            button.ontouchend = function(e) {
-                // 阻止瀏覽器在 300ms 之後發出模擬的 click 事件
-                e.preventDefault(); 
-                
-                touchHandled = true; // 設置標記，阻止後續的 click 再次執行
-                window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);
-                
-                // 為了下次點擊，重置標記
-                setTimeout(() => { touchHandled = false; }, 500); 
-            };
-
-
-
-
-            //button.ontouchstart = () => window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);              
-            //button.onclick = () => window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);
-          
+            button.onclick = () => window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);
+           button.ontouchstart = () => window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);            
             if (optionsContainer) optionsContainer.appendChild(button);
         });
 
@@ -6534,6 +6524,7 @@ document.getElementById('tmBar').style.display='none';
     // Create a new Promise that will resolve when all items are done moving
     return new Promise(resolve => {
         targets.forEach(item => {
+           if(item.classList.contains('.locked')){return;}
             // --- Generate Random Target Coordinates (same as before) ---
             const maxRandX = Math.max(0, editorWidth - item.offsetWidth);
             const maxRandY = Math.max(0, editorHeight - item.offsetHeight);
