@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -93,18 +93,18 @@
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background-color: #fca5a5;
+            background-color: ;
             background-size: cover;
             background-position: center;
             cursor: default;
-            border: 4px solid white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border: 4px solid transparent;
+            /*box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);*/
             transition: border-color 0.1s, transform 0.1s, opacity 0.1s, background-color 0.1s; /* 添加背景色過渡 */
             display: flex;
             justify-content: center;
             align-items: center;
             font-weight: bold;
-            color: #7f1d1d;
+            /*color: #7f1d1d;*/
             user-select: none;
             z-index: 20;
         }
@@ -115,8 +115,11 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: linear-gradient(45deg, #38bdf8, #22d3ee);
-            border: 4px solid #164e63;
+            /*background: linear-gradient(45deg, #38bdf8, #22d3ee);*/
+			background-image:url('https://media.baamboozle.com/uploads/images/1181573/1681220963_61297_gif-url.gif');
+			background-size: cover;
+            background-position: center;
+            /*border: 4px solid #164e63;*/
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.8), 0 0 5px rgba(0, 0, 0, 0.5);
             pointer-events: none;
             z-index: 30;
@@ -156,8 +159,8 @@ function flashTarget(element, flashColor, isCorrectHit) {
     // 設置鎖定狀態，防止立即再次觸發碰撞
     element.isHit = true; 
     
-    const originalBorderColor = 'white'; 
-    const originalBorderWidth = '4px'; 
+    const originalBorderColor = 'transparent'; 
+    const originalBorderWidth = '0px'; 
     
     // 步驟 1: 變為閃爍色和寬度
     element.style.borderColor = flashColor;
@@ -300,7 +303,7 @@ function teleportTargetToNewPosition(item) {
 
             // 清除舊目標的邊框 (如果還有殘留)
             if (currentTargetEl) {
-                currentTargetEl.style.border = '4px solid white';
+                currentTargetEl.style.border = '0px solid white';
             }
 
             const availableTargets = targets.filter(item => item.id !== previousTarget?.id);
@@ -316,7 +319,7 @@ function teleportTargetToNewPosition(item) {
                     displayer.innerHTML = `<span style="color: #60a5fa; font-size: 24px; font-weight: bold;">目標: ${newTarget.id}</span>`;
                 }
                 
-                newTarget.style.border = '4px solid white';
+                newTarget.style.border = '0px solid white';
                 
             } else {
                 window.currentTargetId = null;
@@ -432,7 +435,7 @@ window.setSafeInitialPositions = function() {
         // 使用新的函數將每個目標移動到隨機位置
         teleportTargetToNewPosition(item); 
         
-        item.style.backgroundColor = '#fca5a5';
+        item.style.backgroundColor = '';
     });
     
     // 游標邏輯也需要用到這些尺寸
@@ -622,7 +625,7 @@ window.animateAllRandomly = function(animationType) {
             if (window.editor) {
                 window.editor.classList.add('opacity-50');
                 window.editor.style.cursor = 'auto';
-                document.querySelectorAll('.draggable-image').forEach(item => item.style.border = '4px solid white');
+                document.querySelectorAll('.draggable-image').forEach(item => item.style.border = '0px solid white');
             }
             
             const displayer = document.getElementById('displayer');
@@ -702,7 +705,7 @@ window.setAndStartAnimation = function(type) {
     <div id="targetDiv" onclick="this.style.display='none';updateStage();" >---</div>
 
     <div class="p-4 bg-white rounded-xl shadow-xl flex flex-wrap justify-center gap-4 max-w-4xl w-full">
-        <h1 class="text-2xl font-extrabold text-gray-800 w-full text-center mb-2">圖像捕捉遊戲 (自動計時 60 秒)</h1>
+      
 
         <div class="w-full flex justify-between items-center mb-4 px-2">
             <div class="text-lg font-bold text-gray-700">
@@ -717,19 +720,19 @@ window.setAndStartAnimation = function(type) {
         </div>
 
         <button id="startRandomBtn" onclick="window.setAndStartAnimation('random')" class="px-3 py-2 bg-indigo-500 text-white font-bold rounded-full hover:bg-indigo-600 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
-            🌀 隨機模式 (X/Y 皆可動)
+            🌀(X/Y)
         </button>
         <button id="startFlowLeftBtn" onclick="window.setAndStartAnimation('flow-left')" class="px-3 py-2 bg-cyan-600 text-white font-bold rounded-full hover:bg-cyan-700 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
-            ⬅️ 靠左流動 (玩家 X 軸鎖定)
+            ⬅️ 靠左流動
         </button>
         <button id="startFallDownBtn" onclick="window.setAndStartAnimation('fall-down')" class="px-3 py-2 bg-fuchsia-600 text-white font-bold rounded-full hover:bg-fuchsia-700 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
-            ⬇️ 垂直落下 (玩家 Y 軸鎖定)
+            ⬇️ 垂直落下
         </button>
         <button id="startVerticalBtn" onclick="window.setAndStartAnimation('vertical')" class="px-3 py-2 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
-            ↕️ 垂直環繞 (玩家 Y 軸鎖定)
+            ↕️ 垂直環繞
         </button>
         <button id="startHorizontalBtn" onclick="window.setAndStartAnimation('horizontal')" class="px-3 py-2 bg-yellow-500 text-gray-800 font-bold rounded-full hover:bg-yellow-600 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
-            ↔️ 水平環繞 (玩家 X 軸鎖定)
+            ↔️ 水平環繞
         </button>
         <button id="stopAnimationBtn" onclick="window.stopAnimation()" class="px-3 py-2 bg-red-600 text-white font-bold rounded-full hover:bg-red-700 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
             🛑 停止遊戲
