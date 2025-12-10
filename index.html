@@ -1669,14 +1669,14 @@ align-items: center;
 
     <input type="hidden" name="editorContent" id="hiddenContent">
 
-    <button type="submit" >🎡more</button>
+    <button type="submit" class="px-2 py-1 bg-blue-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition duration-150 shadow-md">🎡more</button>
 </form>
 <script>
 document.getElementById('editorForm').addEventListener('submit', function(event) {
     event.preventDefault(); // Stop the form from submitting normally
 
     const content = document.getElementById('editor').innerHTML;
-    alert(content);
+    //alert(content);
     // Save the content to the browser's local storage
     localStorage.setItem('editorContentKey', content);
 
@@ -5251,8 +5251,34 @@ document.getElementById('quizArea').querySelector('#quizData').innerText=quizDat
             
             button.innerHTML = renderedOption;
             
-            button.onclick = () => window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);
-           button.ontouchstart = () => window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);            
+			                // 使用一個 flag 確保只觸發一次
+            let touchHandled = false;
+
+            // 1. 處理滑鼠點擊 (Click)
+            button.onclick = function() {
+                // 如果已經通過觸控處理了，就不要再執行
+                if (touchHandled) return; 
+                window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);
+            };
+            
+            // 2. 處理觸控事件 (Touchend)
+            // 使用 touchend 而非 touchstart，更能模擬 click
+            button.ontouchend = function(e) {
+                // 阻止瀏覽器在 300ms 之後發出模擬的 click 事件
+                e.preventDefault(); 
+                
+                touchHandled = true; // 設置標記，阻止後續的 click 再次執行
+                window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);
+                
+                // 為了下次點擊，重置標記
+                setTimeout(() => { touchHandled = false; }, 500); 
+            };
+			
+			
+			
+			
+            //button.onclick = () => window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);
+           //button.ontouchstart = () => window.checkAnswer(option.isCorrect, button, optionsContainer, shuffledOptions, quizArea);            
             if (optionsContainer) optionsContainer.appendChild(button);
         });
 
