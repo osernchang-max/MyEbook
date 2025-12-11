@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -41,8 +42,8 @@
             text-align: center;
             padding: 0.5rem 1rem;
             margin-bottom: 0.5rem;
-            width: 100%;
-            max-width: 1200px;
+            width: 60%;
+            max-width: 600px;
             background: #1f2937;
             border-radius: 0.5rem;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -112,15 +113,46 @@
         /* 遊標玩家 (由滑鼠或觸控控制) */
         #cursor-player {
             position: absolute;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            border-radius: 20%;
             /*background: linear-gradient(45deg, #38bdf8, #22d3ee);*/
-			background-image:url('https://media.baamboozle.com/uploads/images/1181573/1681220963_61297_gif-url.gif');
+			/*background-image:url('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/0d270214-20f5-4a0b-a163-cb9f4390f2ca/dj16xo7-ab93225b-740f-48d6-8883-eb6b466deb04.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiIvZi8wZDI3MDIxNC0yMGY1LTRhMGItYTE2My1jYjlmNDM5MGYyY2EvZGoxNnhvNy1hYjkzMjI1Yi03NDBmLTQ4ZDYtODg4My1lYjZiNDY2ZGViMDQuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.xr-ZRn4lwkwcMUwZ714sEsCeM6UicEmNOKmP6c6eqF0');*/
+			background-size:cover;          /*contain  cover  40px 40px*/
+            background-position: center;
+			background-repeat:no-repeat;
+            /*border: 4px solid #164e63;*/
+           /* box-shadow: 0 0 15px rgba(56, 189, 248, 0.8), 0 0 5px rgba(0, 0, 0, 0.5);*/
+            pointer-events: none;
+            z-index: 30;
+            transition: background-color 0.1s;
+        }
+		 #explosion {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+			display:;
+           /* border-radius: 50%;*/
+            /*background: linear-gradient(45deg, #38bdf8, #22d3ee);*/
+			background-image:url('https://i.gifer.com/origin/00/00ae53a95ee7af0be395f5291d792c9a_w200.gif');
+			background-size: contain;
+            background-position: center;
+
+            pointer-events: none;
+            z-index: 30;
+            transition: background-color 0.1s;
+        }
+		 #scored {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+			display:;
+             
+            /*background: linear-gradient(45deg, #38bdf8, #22d3ee);*/
+			background-image:url('https://cdn.pixabay.com/animation/2024/12/18/02/29/02-29-17-754_512.gif');
 			background-size: cover;
             background-position: center;
-            /*border: 4px solid #164e63;*/
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.8), 0 0 5px rgba(0, 0, 0, 0.5);
+
             pointer-events: none;
             z-index: 30;
             transition: background-color 0.1s;
@@ -146,6 +178,16 @@ window.isSelectingNewTarget = false; // <--- 請確保添加這一行
         window.cursorPlayer = null;
         window.editor = null;
         window.gameContentContainer = null;
+        const explosion=document.getElementById('explosion');
+		const scored=document.getElementById('scored');
+		
+window.animationFrameId = null;
+window.gameTimeoutId = null; // 原來的 60 秒總時長 ID
+window.timerIntervalId = null; // 新增：用於 UI 更新的 Interval ID
+
+window.TOTAL_GAME_DURATION = 60; // 遊戲總時長 (秒)
+window.timeLeft = 0;             // 當前剩餘時間
+window.timerDisplay = null; // 新增：用於計時器 UI 元素引用
 
 /**
  * 處理目標物體的閃爍視覺效果 (引入 Hit 狀態鎖定)
@@ -256,6 +298,8 @@ function teleportTargetToNewPosition(item) {
             if (window.isAnimationRunning) {
                 window.animateAllRandomly(window.currentAnimationType);
             }
+			window.scored.style.display='none';
+			window.explosion.style.display='none';
         }
 
         /**
@@ -268,6 +312,7 @@ function teleportTargetToNewPosition(item) {
             window.cursorPlayer = document.getElementById('cursor-player');
             window.editor = document.getElementById('editor');
             window.gameContentContainer = document.getElementById('game-content-container');
+			window.timerDisplay = document.getElementById('timerDisplay');
 
             if (window.speedSlider && !window.speedSlider._listenerAdded) {
                 window.speedSlider.addEventListener('input', (e) => {
@@ -295,6 +340,57 @@ function teleportTargetToNewPosition(item) {
             };
         }
 
+
+ window.speakText = function(textToSpeak) {
+            //if(speaking==false){return;}
+		   let seed=Math.floor(Math.random()*2);
+		   let lan=4;
+		if (textToSpeak.charCodeAt() > 255) {
+
+		   //showModal('Chinese',seed);
+
+		   lan=seed;
+		}else{
+		  if(textToSpeak.substring(0,1)=='*'){lan=5}else{lan=4;}
+		  //lan=4;
+		}
+            if ('speechSynthesis' in window) {
+                //const textToSpeak = document.getElementById('textInput').value;
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+
+                // Optional: Customize properties   5:en-US   female    6:UK-GB Female 7 :en-UK-GB-Male   1國女~2國男:zh-TW
+                utterance.lang = 'en-US';
+                utterance.pitch = 1;
+                utterance.rate = 0.8;
+                utterance.volume = 1;
+		// To select a specific voice:
+		  const voices = speechSynthesis.getVoices();
+ 		 utterance.voice = voices[lan]; // Choose a voice from the available list   4:en-US   female 5:en-GB  male 5:en-GB   1~3:zh-TW
+                speechSynthesis.speak(utterance);
+            } else {
+                alert("Your browser does not support Web Speech API.");
+            }
+ 
+	//Text to speech-----------https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/getVoices
+        }
+
+        const synth = window.speechSynthesis;
+       // const statusEl = document.getElementById('status-message');
+
+        window.stopSpeaking = function() {
+            if (synth.speaking || synth.pending) {
+                synth.cancel();
+               // statusEl.textContent = "Status: Speech stopped manually.";
+            } else {
+                // statusEl.textContent = "Status: Not currently speaking.";
+            }
+           // updateButtonState(false);
+        }
+
+
+
+
+
         // --- 遊戲邏輯: 選擇新目標 (顯示 ID，無高亮) ---
         window.selectNewTarget = function(previousTarget = null) {
             if (!window.gameContentContainer) return;
@@ -317,6 +413,7 @@ function teleportTargetToNewPosition(item) {
 
                 if (displayer) {
                     displayer.innerHTML = `<span style="color: #60a5fa; font-size: 24px; font-weight: bold;">目標: ${newTarget.id}</span>`;
+					speakText(newTarget.id);
                 }
                 
                 newTarget.style.border = '0px solid white';
@@ -379,7 +476,12 @@ function checkCollisionAndScore() {
         // 3. 玩家視覺回饋 
         window.cursorPlayer.style.backgroundColor = '#6ee7b7'; 
         setTimeout(window.restorePlayerColor, 100);
-
+		
+		window.scored.style.display='';
+		window.scored.style.left=window.cursorPlayer.style.left;
+		window.scored.style.top=window.cursorPlayer.style.top;
+		setTimeout(() => { window.scored.style.display='none';},500);
+		
         // 4. 選擇下一個新目標 (傳遞舊目標，確保不選到自己)
         window.selectNewTarget(correctTargetHit);
         
@@ -397,10 +499,15 @@ function checkCollisionAndScore() {
 
         // 視覺回饋 (錯誤)
         flashTarget(wrongTargetHit, '#ef4444', false); 
-
+        teleportTargetToNewPosition(wrongTargetHit); 
         // 玩家視覺回饋 
         window.cursorPlayer.style.backgroundColor = '#ef4444'; 
         setTimeout(window.restorePlayerColor, 100);
+		
+		window.explosion.style.display='';
+		window.explosion.style.left=window.cursorPlayer.style.left;
+		window.explosion.style.top=window.cursorPlayer.style.top;
+		setTimeout(() => { window.explosion.style.display='none';},500);
     }
 }
         
@@ -531,6 +638,7 @@ window.resetDraggablePosition = function(item, animationType) {
             case 'horizontal': angle = Math.random() < 0.5 ? 0 : Math.PI; state.vx = Math.cos(angle) * window.DRAG_SPEED; state.vy = 0; break;
             case 'random': default: angle = Math.random() * 2 * Math.PI; state.vx = Math.cos(angle) * window.DRAG_SPEED; state.vy = Math.sin(angle) * window.DRAG_SPEED; break;
         }
+
     }
     
     window.draggableStates.set(item, state);
@@ -541,7 +649,7 @@ window.resetDraggablePosition = function(item, animationType) {
 // --- 核心動畫循環 (確保遞迴呼叫) ---
 window.animateAllRandomly = function(animationType) {
     if (!window.gameContentContainer) return;
-
+ 
     const targets = window.gameContentContainer.querySelectorAll('.draggable-image');
     if (targets.length === 0) {
         window.stopAnimation();
@@ -575,6 +683,7 @@ window.animateAllRandomly = function(animationType) {
 }
 
         // --- 遊標玩家移動處理 (保持不變) ---
+
         function handlePlayerMove(e) {
             if (!window.cursorPlayer || !window.isAnimationRunning || !window.editor) return;
 
@@ -595,13 +704,22 @@ window.animateAllRandomly = function(animationType) {
             if (['fall-down', 'vertical'].includes(window.currentAnimationType)) {
                 newY = (rect.height / 2) - (playerH / 2);
                 window.cursorPlayer.style.backgroundColor = '#9333ea';
+ 				 window.cursorPlayer.style.background=`url('https://i.pinimg.com/originals/88/aa/da/88aada2ab09fb918c34403c8186a4b30.gif')`;
+			      window.cursorPlayer.style.backgroundSize='contain'; 
+				  window.cursorPlayer.style.backgroundRepeat='no-repeat'; 
             } else if (['flow-left', 'horizontal'].includes(window.currentAnimationType)) {
                 newX = (rect.width / 2) - (playerW / 2);
                 window.cursorPlayer.style.backgroundColor = '#f59e0b';
+				  window.cursorPlayer.style.background=`url('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/0d270214-20f5-4a0b-a163-cb9f4390f2ca/dj16xo7-ab93225b-740f-48d6-8883-eb6b466deb04.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiIvZi8wZDI3MDIxNC0yMGY1LTRhMGItYTE2My1jYjlmNDM5MGYyY2EvZGoxNnhvNy1hYjkzMjI1Yi03NDBmLTQ4ZDYtODg4My1lYjZiNDY2ZGViMDQuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.xr-ZRn4lwkwcMUwZ714sEsCeM6UicEmNOKmP6c6eqF0')`;
+			      window.cursorPlayer.style.backgroundSize='contain'; 
+				  window.cursorPlayer.style.backgroundRepeat='no-repeat'; 
             } else {
                 window.cursorPlayer.style.backgroundColor = '#38bdf8';
+				  window.cursorPlayer.style.background=`url('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/0d270214-20f5-4a0b-a163-cb9f4390f2ca/dj16xo7-ab93225b-740f-48d6-8883-eb6b466deb04.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiIvZi8wZDI3MDIxNC0yMGY1LTRhMGItYTE2My1jYjlmNDM5MGYyY2EvZGoxNnhvNy1hYjkzMjI1Yi03NDBmLTQ4ZDYtODg4My1lYjZiNDY2ZGViMDQuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.xr-ZRn4lwkwcMUwZ714sEsCeM6UicEmNOKmP6c6eqF0')`;
+			      window.cursorPlayer.style.backgroundSize='contain'; 
+				  window.cursorPlayer.style.backgroundRepeat='no-repeat'; 
             }
-
+			//window.cursorPlayer.style.background=`url('${iconx}')`;
             window.cursorPlayer.style.left = `${newX}px`;
             window.cursorPlayer.style.top = `${newY}px`;
             
@@ -613,7 +731,22 @@ window.animateAllRandomly = function(animationType) {
             if (window.animationFrameId) {
                 cancelAnimationFrame(window.animationFrameId);
                 window.animationFrameId = null;
+
             }
+			// 🚨 關鍵修正：清除兩個計時器
+    if (window.gameTimeoutId) {
+        clearTimeout(window.gameTimeoutId);
+        window.gameTimeoutId = null;
+    }
+    if (window.timerIntervalId) {
+        clearInterval(window.timerIntervalId);
+        window.timerIntervalId = null;
+    }
+    
+    window.isAnimationRunning = false;
+    window.draggableStates.clear();
+    window.currentTargetId = null;
+	
             if (window.timerId) {
                 clearTimeout(window.timerId);
                 window.timerId = null;
@@ -630,7 +763,19 @@ window.animateAllRandomly = function(animationType) {
             
             const displayer = document.getElementById('displayer');
             if (displayer) displayer.innerHTML = `<span style="color: #9ca3af;">點擊開始遊戲!</span>`;
-            console.log("Game stopped.");
+ 
+          // 重置剩餘時間顯示
+			window.timeLeft = window.TOTAL_GAME_DURATION;
+			if (window.timerDisplay) {
+				window.timerDisplay.textContent = window.timeLeft;
+			}
+// ⬇️ 這裡是最合適的位置 ⬇️
+    //const displayer = document.getElementById('displayer');
+    if (displayer) {
+        displayer.innerHTML = `<span style="color: #ef4444; font-size: 24px; font-weight: bold;">時間到! 最終得分: ${window.score}</span>`; 
+        // 建議加上最終分數，讓結束訊息更完整
+    }
+             console.log("Game stopped.");
         };
 
 // --- 動畫控制函數 (啟動) (確保呼叫了 animateAllRandomly) ---
@@ -658,10 +803,37 @@ window.setAndStartAnimation = function(type) {
     }
 
     const DURATION_SECONDS = 60;
-    window.timerId = setTimeout(() => {
+// 🚨 關鍵修正區域：啟動計時器和總時長
+    window.timeLeft = window.TOTAL_GAME_DURATION;
+    if (window.timerDisplay) {
+        window.timerDisplay.textContent = window.timeLeft;
+    }
+
+    // 1. 啟動總時長計時（60秒後停止遊戲）
+    window.gameTimeoutId = setTimeout(() => {
         window.stopAnimation();
-        // ... (省略 alertUser 邏輯)
-    }, DURATION_SECONDS * 1000);
+        // 可以在這裡加入 alert user 的邏輯，但暫時略過
+    }, window.TOTAL_GAME_DURATION * 1000);
+
+    // 2. 啟動 UI 更新計時器（每秒更新螢幕）
+    window.timerIntervalId = setInterval(() => {
+        window.timeLeft--;
+        if (window.timerDisplay) {
+            window.timerDisplay.textContent = window.timeLeft;
+
+        }
+ 
+
+ 
+        // 雖然總時長由 gameTimeoutId 控制，但這裡也要確保同步停止
+        if (window.timeLeft <= 0) {	
+	
+            clearInterval(window.timerIntervalId);
+            if (window.isAnimationRunning) {
+                window.stopAnimation(); // 雙重保險
+            }
+        }
+    }, 1000); // 每 1000 毫秒 (1 秒) 執行一次
     
     console.log(`Game set and started: ${type} mode.`);
 };
@@ -670,7 +842,7 @@ window.setAndStartAnimation = function(type) {
         // --- 初始化函數 ---
         window.initGame = function() {
             window.rebindElementsAndState();
-            
+
             // 載入 localStorage 或預設內容，並執行 updateStage
             const targetDiv = document.getElementById('targetDiv');
             const receivedContent = localStorage.getItem('editorContentKey');
@@ -699,6 +871,7 @@ window.setAndStartAnimation = function(type) {
         }
         
         document.addEventListener('DOMContentLoaded', window.initGame);
+
     </script>
 </head>
 <body class="p-4" >
@@ -707,17 +880,7 @@ window.setAndStartAnimation = function(type) {
     <div class="p-4 bg-white rounded-xl shadow-xl flex flex-wrap justify-center gap-4 max-w-4xl w-full">
       
 
-        <div class="w-full flex justify-between items-center mb-4 px-2">
-            <div class="text-lg font-bold text-gray-700">
-                分數: <span id="scoreDisplay" class="text-4xl text-pink-600 font-extrabold ml-2">0</span>
-            </div>
-            <div class="text-right">
-                <label for="speedSlider" class="block text-sm font-medium text-gray-700">動畫速度:</label>
-                <span id="currentSpeedDisplay" class="font-extrabold text-indigo-700 text-lg">1.50</span>x
-                <input type="range" id="speedSlider" min="0.5" max="5.0" step="0.1" value="1.5"
-                       class="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-            </div>
-        </div>
+ 
 
         <button id="startRandomBtn" onclick="window.setAndStartAnimation('random')" class="px-3 py-2 bg-indigo-500 text-white font-bold rounded-full hover:bg-indigo-600 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
             🌀(X/Y)
@@ -737,14 +900,34 @@ window.setAndStartAnimation = function(type) {
         <button id="stopAnimationBtn" onclick="window.stopAnimation()" class="px-3 py-2 bg-red-600 text-white font-bold rounded-full hover:bg-red-700 transition duration-150 shadow-md transform hover:scale-105 flex-grow">
             🛑 停止遊戲
         </button>
+		
+		       <div class="w-full flex justify-between items-center mb-4 px-2">
+            <div class="text-lg font-bold text-gray-700">
+                分數: <span id="scoreDisplay" class="text-4xl text-pink-600 font-extrabold ml-2">0</span>
+            </div>
+			
+			<div class="text-lg font-bold text-gray-700 text-right">
+            剩餘時間: <span id="timerDisplay" class="text-4xl text-indigo-600 font-extrabold ml-2">60</span>s
+        </div>
+			    <div id="displayer">
+                     <span style="color: #9ca3af;">點擊開始遊戲!</span>
+               </div>
+            <div class="text-right">
+                <label for="speedSlider" class="block text-sm font-medium text-gray-700" style="display:inline">動畫速度:</label>
+                <span id="currentSpeedDisplay" class="font-extrabold text-indigo-700 text-lg">1.50</span>x
+                <input type="range" id="speedSlider" min="0.5" max="5.0" step="0.1" value="1.5"
+                       class="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+            </div>
+        </div>
+		
+		
+		
     </div>
 
-    <div id="displayer">
-        <span style="color: #9ca3af;">點擊開始遊戲!</span>
-    </div>
+
 
     <div id="editor">
-        <div id="cursor-player"></div>
+        <div id="cursor-player"></div>        <div id="explosion"></div>        <div id="scored"></div>
 
         <div id="game-content-container">
         </div>
