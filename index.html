@@ -1775,14 +1775,21 @@ document.getElementById('editorForm').addEventListener('submit', function(event)
 
 
 import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+import { GEMINI_CONFIG } from './config.js';
 
+
+
+
+//const genAI = new GoogleGenerativeAI(GEMINI_CONFIG.apiKey);
 // --- AI CONFIGURATION ---
-const API_KEY = "YOUR_GEMINI_API_KEY"; // Get this from Google AI Studio
+
+
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({ 
     model: "gemini-1.5-flash",
     systemInstruction: "You are a quiz generator. Output ONLY the quiz data in this format: ID|Question|CorrectIndex(1-4)|OptA|OptB|OptC|OptD. Use <br> to separate questions. No markdown, no intro text."
 });
+
 
 
         // --- 1. FIREBASE CONFIGURATION ---
