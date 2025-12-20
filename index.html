@@ -1772,26 +1772,6 @@ document.getElementById('editorForm').addEventListener('submit', function(event)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
         import { getFirestore, doc, setDoc,getDoc, onSnapshot, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
 //import { getFirestore, collection, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-
-import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
-import { GEMINI_CONFIG } from './config.js';
-
-
-
-
-//const genAI = new GoogleGenerativeAI(GEMINI_CONFIG.apiKey);
-// --- AI CONFIGURATION ---
-
-
-const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
-    systemInstruction: "You are a quiz generator. Output ONLY the quiz data in this format: ID|Question|CorrectIndex(1-4)|OptA|OptB|OptC|OptD. Use <br> to separate questions. No markdown, no intro text."
-});
-
-
-
         // --- 1. FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyA-psoCWI_u2iYoLXznb6kH_g3KTw00Qow",
@@ -2708,70 +2688,6 @@ window.movePage = function(pageId, direction) {
     renderPageList();
     window.saveProject(); 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-window.generateQuizWithAI = async function(quizContainer) {
-    const activeItem = document.querySelector('.floating-div');
-    if (!activeItem) {
-        alert("Please click on a text block first to select it (activeItem)!");
-        return;
-    }
-
-    const sourceText = activeItem.innerText;
-    const quizDataEditor = quizContainer.querySelector('#quizData');
-    const aiBtn = event.target;
-
-    try {
-        aiBtn.innerText = "⏳ Generating...";
-        aiBtn.disabled = true;
-
-        const prompt = `Create a 3-question quiz based on this text: ${sourceText}`;
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        let text = response.text();
-
-        // Clean up any accidental markdown or spaces
-        text = text.replace(/```/g, '').trim();
-
-        // Inject into the quiz editor
-        quizDataEditor.innerHTML = text;
-        
-        alert("Quiz generated! You can now edit it or click '載入並開始測驗'.");
-    } catch (error) {
-        console.error("Gemini Error:", error);
-        alert("AI Generation failed. Check console.");
-    } finally {
-        aiBtn.innerText = "✨ AI 產生題目";
-        aiBtn.disabled = false;
-    }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
  
 
@@ -4974,16 +4890,6 @@ let cleanQuizText = document.getElementById('quizData').innerHTML.replace(/<br\s
             '</div>',
             
             "    <button onclick=\"window.parsePsvAndLoadQuiz(this.closest('#quizArea'))\" ontouchstart=\"window.parsePsvAndLoadQuiz(this.closest('#quizArea'))\" class=\"w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700\">載入並開始測驗</button>",
-
-// Modify this part of your getQuizUIHTML string:
-'<div class="flex space-x-2 mb-3">',
-'<button onclick="window.insertImageTag(this.closest(\'#quizArea\'))" class="flex-1 px-2 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition duration-150">🖼️ 插入圖片</button>',
-// NEW BUTTON BELOW:
-'<button onclick="window.generateQuizWithAI(this.closest(\'#quizArea\'))" class="flex-1 px-2 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition duration-150">✨ AI 產生題目</button>',
-'</div>',
-
-
-
 
 
           
